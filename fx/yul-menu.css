@@ -99,3 +99,25 @@ html:has(.mobile-menu.open){ overflow:hidden; }
 @media (prefers-reduced-motion: reduce){
   .mobile-menu.open .mobile-menu-item, .mobile-menu.open .mm-card{ animation:none; }
 }
+
+/* ---------- Sélecteur de langue FR | EN ---------- */
+.lang-switch{
+  display:inline-flex; align-items:center; padding:3px; border-radius:999px;
+  border:1px solid var(--line); background:rgba(7,13,28,.6);
+}
+.lang-switch button{
+  font-family:var(--ff-mono); font-size:.64rem; letter-spacing:.12em; font-weight:600;
+  color:var(--dim); background:none; border:0; padding:.38rem .62rem; border-radius:999px; line-height:1;
+  transition:background .2s ease, color .2s ease;
+}
+.lang-switch button:hover{ color:var(--ink); }
+.lang-switch button.on{ background:var(--gold); color:var(--void); }
+header .lang-switch.in-header{ margin-left:.8rem; }
+@media (max-width:900px){
+  header .lang-switch.in-header{ margin-left:auto; margin-right:.9rem; }
+  header .lang-switch button{ padding:.42rem .6rem; }
+}
+.mm-lang{ margin-top:1.8rem; display:flex; flex-direction:column; gap:.8rem; }
+.mm-lang .mobile-menu-head{ display:block; }
+.mm-lang .lang-switch{ align-self:flex-start; }
+.mm-lang .lang-switch button{ font-size:.8rem; padding:.6rem 1.1rem; }
