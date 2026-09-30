@@ -201,11 +201,19 @@
      ------------------------------------------------------------------ */
   safe('marquee', () => {
     if(!hero) return;
-    const words = ['ON VIENT.', 'ON GAGNE.', 'YUL FC', 'MONTRÉAL', 'SAISON 01', 'LSAQ', 'DIGITAL STADIUM'];
-    const unit = words.map((w,i) => `<span class="${i%2 ? 'on' : ''}">${w}</span><span class="star">★</span>`).join('');
+    // L'effectif YUL FC qui défile : numéro + nom de chaque joueur
+    const cards = $$('#playersGrid .player-card');
+    const esc = t => t.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+    const roll = cards.map(c => {
+      const num = ($('.player-badge', c) || {}).textContent || '';
+      const name = ($('.player-name', c) || {}).textContent || '';
+      return name ? `<span class="num">${esc(num.trim())}</span><span class="nm">${esc(name.trim().toUpperCase())}</span><span class="star">★</span>` : '';
+    }).join('');
+    if(!roll) return;
+    const unit = `<span class="lead">L'EFFECTIF YUL FC</span><span class="star">★</span>` + roll;
     const m = document.createElement('div');
     m.className = 'fx-marquee'; m.setAttribute('aria-hidden','true');
-    m.innerHTML = `<div class="fx-marquee-track">${unit.repeat(4)}</div>`;
+    m.innerHTML = `<div class="fx-marquee-track">${unit.repeat(2)}</div>`;
     m.setAttribute('data-view', 'home'); // visible sur l'accueil seulement
     hero.after(m);
     if(RM) return;
@@ -344,51 +352,12 @@
   });
 
   /* ------------------------------------------------------------------
-     9. Son d'ambiance (synthétisé, aucun fichier) — désactivé par défaut
-     ------------------------------------------------------------------ */
-  let audioCtx = null, soundOn = false;
-  try{ soundOn = localStorage.getItem('yulfx-sound') === '1'; }catch(e){}
-  function roar(){
-    if(!soundOn) return;
-    try{
-      audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
-      const ctx = audioCtx, dur = 2.4, n = ctx.sampleRate * dur;
-      const buf = ctx.createBuffer(1, n, ctx.sampleRate), d = buf.getChannelData(0);
-      for(let i=0;i<n;i++) d[i] = (Math.random()*2-1);
-      const src = ctx.createBufferSource(); src.buffer = buf;
-      const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 900; bp.Q.value = .6;
-      const g = ctx.createGain(); const now = ctx.currentTime;
-      g.gain.setValueAtTime(0, now); g.gain.linearRampToValueAtTime(.35, now+.25); g.gain.exponentialRampToValueAtTime(.001, now+dur);
-      bp.frequency.linearRampToValueAtTime(1500, now+.4);
-      src.connect(bp).connect(g).connect(ctx.destination); src.start();
-      // coup de sifflet
-      const o = ctx.createOscillator(), og = ctx.createGain();
-      o.type = 'square'; o.frequency.setValueAtTime(2900, now); o.frequency.setValueAtTime(3100, now+.08);
-      og.gain.setValueAtTime(.05, now); og.gain.exponentialRampToValueAtTime(.001, now+.35);
-      o.connect(og).connect(ctx.destination); o.start(now); o.stop(now+.4);
-    }catch(e){}
-  }
-  safe('sound-toggle', () => {
-    const b = document.createElement('button');
-    b.className = 'fx-sound'; b.type = 'button';
-    b.setAttribute('aria-label', 'Son des célébrations'); b.setAttribute('aria-pressed', String(soundOn));
-    b.innerHTML = '<svg class="fx-on" viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16 8a5 5 0 0 1 0 8M19 5a9 9 0 0 1 0 14"/></svg>'
-                + '<svg class="fx-off" viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M17 9l5 6M22 9l-5 6"/></svg>';
-    b.addEventListener('click', () => {
-      soundOn = !soundOn; b.setAttribute('aria-pressed', String(soundOn));
-      try{ localStorage.setItem('yulfx-sound', soundOn ? '1' : '0'); }catch(e){}
-      if(soundOn) roar(); buzz(10);
-    });
-    document.body.appendChild(b);
-  });
-
-  /* ------------------------------------------------------------------
      10. Célébration : confettis bleu/or + "BUT !" + tremblement
      ------------------------------------------------------------------ */
   let celebrating = false;
   function celebrate(word){
     if(celebrating) return; celebrating = true;
-    buzz([30, 40, 60]); roar();
+    buzz([30, 40, 60]);
     if(RM){ celebrating = false; return; }
     const flash = document.createElement('div'); flash.className = 'fx-flash'; document.body.appendChild(flash);
     const w = document.createElement('div'); w.className = 'fx-goal-word'; w.textContent = word || 'BUT !'; document.body.appendChild(w);

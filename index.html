@@ -81,20 +81,6 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
   outline:2px solid var(--gold); outline-offset:3px;
 }
 
-/* Custom cursor (desktop only) */
-.cursor-dot{
-  position:fixed; top:0; left:0; width:8px; height:8px; border-radius:50%;
-  background:var(--gold); pointer-events:none; z-index:9999; transform:translate(-50%,-50%);
-  transition:width .18s ease, height .18s ease, background .18s ease;
-  mix-blend-mode:difference;
-}
-.cursor-ring{
-  position:fixed; top:0; left:0; width:34px; height:34px; border-radius:50%;
-  border:1px solid var(--gold); pointer-events:none; z-index:9998; transform:translate(-50%,-50%);
-  transition:width .25s ease, height .25s ease, opacity .25s ease, border-color .25s ease;
-  opacity:.6;
-}
-@media (hover:none){ .cursor-dot,.cursor-ring{display:none;} }
 
 /* ============================================================
    INTRO / OPENING SEQUENCE
@@ -2087,8 +2073,6 @@ footer{ background:var(--void); border-top:1px solid var(--line); padding:3rem 6
 <body>
 
 
-<div class="cursor-dot" id="cursorDot"></div>
-<div class="cursor-ring" id="cursorRing"></div>
 
 <!-- THE GATE — INTRO -->
 <div id="intro">
@@ -2321,9 +2305,9 @@ footer{ background:var(--void); border-top:1px solid var(--line); padding:3rem 6
       <div class="micro-tag">THE SQUAD</div>
       <h2 class="section-title" style="font-size:clamp(1.6rem,3.5vw,2.2rem);">Meet The Team.</h2>
     </div>
-    <a href="#pitch" class="btn-ghost">View Full Squad</a>
   </div>
   <div class="players-grid reveal" id="homeSquadPreview"></div>
+  <div class="home-squad-more reveal"><a href="#pitch" class="btn-ghost">View Full Squad →</a></div>
 </section>
 
 <!-- THE PITCH -->
@@ -4201,20 +4185,6 @@ menuBtn.addEventListener('click', ()=>{
 });
 mobileMenu.querySelectorAll('a').forEach(a=> a.addEventListener('click', closeMenu));
 window.addEventListener('keydown', e=>{ if(e.key==='Escape') closeMenu(); });
-
-/* ---------------- CURSOR ---------------- */
-if(matchMedia('(hover:hover)').matches){
-  const dot = document.getElementById('cursorDot');
-  const ring = document.getElementById('cursorRing');
-  window.addEventListener('mousemove', e=>{
-    dot.style.left = e.clientX+'px'; dot.style.top = e.clientY+'px';
-    ring.style.left = e.clientX+'px'; ring.style.top = e.clientY+'px';
-  });
-  document.querySelectorAll('a, button, .player-card, .zone-btn, .tl-item').forEach(el=>{
-    el.addEventListener('mouseenter', ()=>{ ring.style.width='54px'; ring.style.height='54px'; ring.style.opacity='1'; });
-    el.addEventListener('mouseleave', ()=>{ ring.style.width='34px'; ring.style.height='34px'; ring.style.opacity='.6'; });
-  });
-}
 
 /* ---------------- TICKER ---------------- */
 const tickerItems = [
