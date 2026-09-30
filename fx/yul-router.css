@@ -6,6 +6,7 @@
    ========================================================================== */
 
 html[data-page="home"]         [data-view]:not([data-view~="home"]),
+html[data-page="histoire"]     [data-view]:not([data-view~="histoire"]),
 html[data-page="pitch"]        [data-view]:not([data-view~="pitch"]),
 html[data-page="match"]        [data-view]:not([data-view~="match"]),
 html[data-page="season-hub"]   [data-view]:not([data-view~="season-hub"]),
@@ -122,7 +123,10 @@ html[data-page="home"] #homeLatestGrid{ grid-template-columns:repeat(3, minmax(0
   html[data-page="home"] #homeLatestGrid::-webkit-scrollbar{ display:none; }
   html[data-page="home"] #homeLatestGrid > *{ scroll-snap-align:start; }
   /* Dernière tuile seule : pleine largeur */
-  #stadiumMap .stadium-map-grid > .map-tile:last-child:nth-child(odd){ grid-column:1 / -1; }
 }
 
 .home-squad-more{ display:flex; justify-content:center; margin-top:2rem; }
+
+/* Explore The Stadium : 10 tuiles → 5 × 2 sur grand écran, 2 colonnes ailleurs */
+@media (min-width:1100px){ #stadiumMap .stadium-map-grid{ grid-template-columns:repeat(5, minmax(0,1fr)); } }
+@media (max-width:1099px){ #stadiumMap .stadium-map-grid{ grid-template-columns:repeat(2, minmax(0,1fr)); } }

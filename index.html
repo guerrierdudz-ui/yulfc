@@ -2068,7 +2068,8 @@ footer{ background:var(--void); border-top:1px solid var(--line); padding:3rem 6
 </style>
 <link rel="stylesheet" href="fx/yul-fx.css">
 <link rel="stylesheet" href="fx/yul-router.css">
-<script>/* YUL Router : choisit la page avant le premier affichage */(function(){var v=["pitch","match","season-hub","data-center","media","fanzone","scouting","partners","locker","coach-center"],h=location.hash.slice(1);document.documentElement.setAttribute("data-page",v.indexOf(h)>-1?h:"home");})();</script>
+<link rel="stylesheet" href="fx/yul-histoire.css">
+<script>/* YUL Router : choisit la page avant le premier affichage */(function(){var v=["histoire","pitch","match","season-hub","data-center","media","fanzone","scouting","partners","locker","coach-center"],h=location.hash.slice(1);document.documentElement.setAttribute("data-page",v.indexOf(h)>-1?h:"home");})();</script>
 </head>
 <body>
 
@@ -2108,14 +2109,15 @@ footer{ background:var(--void); border-top:1px solid var(--line); padding:3rem 6
 
 <div class="mobile-menu" id="mobileMenu">
   <div class="mobile-menu-head">DIGITAL STADIUM</div>
-  <a href="#pitch" class="mobile-menu-item"><span class="mnum">01</span>THE PITCH<span class="msub">Équipe</span></a>
-  <a href="#match" class="mobile-menu-item"><span class="mnum">02</span>MATCH CENTER<span class="msub">Matchs</span></a>
-  <a href="#season-hub" class="mobile-menu-item"><span class="mnum">03</span>SEASON HUB<span class="msub">Classement</span></a>
-  <a href="#data-center" class="mobile-menu-item"><span class="mnum">04</span>DATA CENTER<span class="msub">Statistiques</span></a>
-  <a href="#media" class="mobile-menu-item"><span class="mnum">05</span>MEDIA CENTER<span class="msub">Actualités</span></a>
-  <a href="#fanzone" class="mobile-menu-item"><span class="mnum">06</span>FAN ZONE<span class="msub">Prédictions</span></a>
-  <a href="#scouting" class="mobile-menu-item"><span class="mnum">07</span>SCOUTING ROOM<span class="msub">Recrutement</span></a>
-  <a href="#partners" class="mobile-menu-item"><span class="mnum">08</span>PARTNERS LOUNGE<span class="msub">Partenaires</span></a>
+  <a href="#histoire" class="mobile-menu-item"><span class="mnum">01</span>NOTRE HISTOIRE<span class="msub">Qui sommes-nous</span></a>
+  <a href="#pitch" class="mobile-menu-item"><span class="mnum">02</span>THE PITCH<span class="msub">Équipe</span></a>
+  <a href="#match" class="mobile-menu-item"><span class="mnum">03</span>MATCH CENTER<span class="msub">Matchs</span></a>
+  <a href="#season-hub" class="mobile-menu-item"><span class="mnum">04</span>SEASON HUB<span class="msub">Classement</span></a>
+  <a href="#data-center" class="mobile-menu-item"><span class="mnum">05</span>DATA CENTER<span class="msub">Statistiques</span></a>
+  <a href="#media" class="mobile-menu-item"><span class="mnum">06</span>MEDIA CENTER<span class="msub">Actualités</span></a>
+  <a href="#fanzone" class="mobile-menu-item"><span class="mnum">07</span>FAN ZONE<span class="msub">Prédictions</span></a>
+  <a href="#scouting" class="mobile-menu-item"><span class="mnum">08</span>SCOUTING ROOM<span class="msub">Recrutement</span></a>
+  <a href="#partners" class="mobile-menu-item"><span class="mnum">09</span>PARTNERS LOUNGE<span class="msub">Partenaires</span></a>
   <a href="#locker" class="nav-cta">THE LOCKER ROOM · ACCÈS JOUEURS</a>
 </div>
 
@@ -2694,15 +2696,16 @@ footer{ background:var(--void); border-top:1px solid var(--line); padding:3rem 6
     <p class="section-note">Chaque zone du club, à un clic.</p>
   </div>
   <div class="stadium-map-grid reveal">
-    <a href="#pitch" class="map-tile"><div class="mt-num">01</div><div class="mt-title">THE PITCH</div><div class="mt-sub">Équipe</div></a>
-    <a href="#match" class="map-tile"><div class="mt-num">02</div><div class="mt-title">MATCH CENTER</div><div class="mt-sub">Matchs</div></a>
-    <a href="#season-hub" class="map-tile"><div class="mt-num">03</div><div class="mt-title">SEASON HUB</div><div class="mt-sub">Saison 2026</div></a>
-    <a href="#data-center" class="map-tile"><div class="mt-num">04</div><div class="mt-title">DATA CENTER</div><div class="mt-sub">Statistiques</div></a>
-    <a href="#media" class="map-tile"><div class="mt-num">05</div><div class="mt-title">MEDIA CENTER</div><div class="mt-sub">Actualités</div></a>
-    <a href="#fanzone" class="map-tile"><div class="mt-num">06</div><div class="mt-title">FAN ZONE</div><div class="mt-sub">Prédictions</div></a>
-    <a href="#scouting" class="map-tile"><div class="mt-num">07</div><div class="mt-title">SCOUTING ROOM</div><div class="mt-sub">Recrutement</div></a>
-    <a href="#partners" class="map-tile"><div class="mt-num">08</div><div class="mt-title">PARTNERS LOUNGE</div><div class="mt-sub">Partenaires</div></a>
-    <a href="#locker" class="map-tile"><div class="mt-num">09</div><div class="mt-title">LOCKER ROOM</div><div class="mt-sub">Accès joueurs</div></a>
+    <a href="#histoire" class="map-tile"><div class="mt-num">01</div><div class="mt-title">NOTRE HISTOIRE</div><div class="mt-sub">Qui sommes-nous</div></a>
+    <a href="#pitch" class="map-tile"><div class="mt-num">02</div><div class="mt-title">THE PITCH</div><div class="mt-sub">Équipe</div></a>
+    <a href="#match" class="map-tile"><div class="mt-num">03</div><div class="mt-title">MATCH CENTER</div><div class="mt-sub">Matchs</div></a>
+    <a href="#season-hub" class="map-tile"><div class="mt-num">04</div><div class="mt-title">SEASON HUB</div><div class="mt-sub">Saison 2026</div></a>
+    <a href="#data-center" class="map-tile"><div class="mt-num">05</div><div class="mt-title">DATA CENTER</div><div class="mt-sub">Statistiques</div></a>
+    <a href="#media" class="map-tile"><div class="mt-num">06</div><div class="mt-title">MEDIA CENTER</div><div class="mt-sub">Actualités</div></a>
+    <a href="#fanzone" class="map-tile"><div class="mt-num">07</div><div class="mt-title">FAN ZONE</div><div class="mt-sub">Prédictions</div></a>
+    <a href="#scouting" class="map-tile"><div class="mt-num">08</div><div class="mt-title">SCOUTING ROOM</div><div class="mt-sub">Recrutement</div></a>
+    <a href="#partners" class="map-tile"><div class="mt-num">09</div><div class="mt-title">PARTNERS LOUNGE</div><div class="mt-sub">Partenaires</div></a>
+    <a href="#locker" class="map-tile"><div class="mt-num">10</div><div class="mt-title">LOCKER ROOM</div><div class="mt-sub">Accès joueurs</div></a>
   </div>
 </section>
 
@@ -2716,6 +2719,76 @@ footer{ background:var(--void); border-top:1px solid var(--line); padding:3rem 6
       <a href="#scouting" class="btn-primary">REJOINDRE YUL FC</a>
       <a href="#partners" class="btn-ghost">DEVENIR PARTENAIRE</a>
     </div>
+  </div>
+</section>
+
+
+<!-- NOTRE HISTOIRE — page "qui est le YUL FC" -->
+<section class="section-pad story-page" id="histoire" data-view="histoire">
+  <div class="story-head reveal">
+    <div class="micro-tag">NOTRE HISTOIRE <span class="on">// DEPUIS 2025</span></div>
+    <h2 class="section-title">Who We Are.</h2>
+    <p class="story-lede">YUL FC est un club de football compétitif de Montréal. Trois lettres qui désignent la ville partout dans le monde, une devise — <b>On vient. On gagne.</b> — et un groupe qui se bat pour son badge chaque week-end.</p>
+  </div>
+
+  <figure class="story-photo reveal">
+    <img src="histoire.jpg" alt="L'équipe du YUL FC" onerror="this.closest('.story-photo').classList.add('is-empty')">
+    <div class="story-photo-empty" aria-hidden="true">
+      <span class="spe-icon">▣</span>
+      <span class="spe-title">PHOTO À VENIR</span>
+      <span class="spe-sub">Déposer le fichier <code>histoire.jpg</code> à la racine du site</span>
+    </div>
+    <figcaption>YUL FC — Montréal</figcaption>
+  </figure>
+
+  <div class="story-grid">
+    <div class="story-text reveal">
+      <h3>Né à Montréal, en 2025.</h3>
+      <p>Le YUL FC dispute sa première saison en 2025 dans la ligue LSAQ, en football à 11. Pour une équipe qui découvre la compétition, le départ est solide : 4<sup>e</sup> sur 6, et une qualification en séries dès la saison fondatrice, jusqu'en demi-finale.</p>
+      <p>En 2026, la ligue s'agrandit à 11 équipes. Le YUL FC marque 31 buts — son meilleur total — et se qualifie de nouveau pour les séries, cette fois jusqu'en quart de finale.</p>
+      <p>Deux saisons, deux qualifications en séries. Le club se construit match après match, avec l'ambition d'aller chercher plus haut.</p>
+    </div>
+    <div class="story-stats reveal">
+      <div class="ss-cell"><div class="ss-n" data-count="2">2</div><div class="ss-l">Saisons</div></div>
+      <div class="ss-cell"><div class="ss-n" data-count="21">21</div><div class="ss-l">Matchs de ligue</div></div>
+      <div class="ss-cell"><div class="ss-n" data-count="57">57</div><div class="ss-l">Buts marqués</div></div>
+      <div class="ss-cell"><div class="ss-n" data-count="2">2</div><div class="ss-l">Qualifications en séries</div></div>
+    </div>
+  </div>
+
+  <div class="hub-section-title story-sub">LE PARCOURS</div>
+  <ol class="story-timeline">
+    <li class="reveal">
+      <div class="st-year">2025</div>
+      <div class="st-body">
+        <div class="st-tag">SAISON FONDATRICE</div>
+        <h4>Premiers pas en LSAQ 11v11</h4>
+        <p>4<sup>e</sup> sur 6 · 5 V · 1 N · 4 D · 26 buts marqués · 16 pts</p>
+        <p class="st-result">Séries : demi-finale</p>
+      </div>
+    </li>
+    <li class="reveal">
+      <div class="st-year">2026</div>
+      <div class="st-body">
+        <div class="st-tag">UNE LIGUE PLUS GRANDE</div>
+        <h4>11 équipes, 31 buts</h4>
+        <p>7<sup>e</sup> sur 11 · 4 V · 2 N · 5 D · 31 buts marqués · 14 pts</p>
+        <p class="st-result">Séries : quart de finale</p>
+      </div>
+    </li>
+    <li class="reveal is-next">
+      <div class="st-year">2027</div>
+      <div class="st-body">
+        <div class="st-tag">LA SUITE</div>
+        <h4>Le prochain chapitre s'écrit maintenant</h4>
+        <p>Le recrutement pour la saison 2027 est ouvert.</p>
+        <a href="#scouting" class="btn-primary st-cta">REJOINDRE YUL FC</a>
+      </div>
+    </li>
+  </ol>
+
+  <div class="story-motto reveal">
+    <span>ON VIENT.</span><span class="g">ON GAGNE.</span>
   </div>
 </section>
 
@@ -4129,6 +4202,7 @@ footer{ background:var(--void); border-top:1px solid var(--line); padding:3rem 6
     </div>
     <div class="footer-col">
       <div class="footer-col-title">CLUB</div>
+      <a href="#histoire">Notre histoire</a>
       <a href="#pitch">The Squad</a>
       <a href="#match">Match Center</a>
       <a href="#season-hub">Season Hub</a>

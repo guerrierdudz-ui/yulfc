@@ -9,6 +9,7 @@
   'use strict';
 
   const PAGES = [
+    ['histoire',     'NOTRE HISTOIRE',  'Qui sommes-nous'],
     ['pitch',        'THE PITCH',       'Équipe'],
     ['match',        'MATCH CENTER',    'Matchs'],
     ['season-hub',   'SEASON HUB',      'Saison 2026'],

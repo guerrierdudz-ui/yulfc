@@ -400,16 +400,7 @@
       new MutationObserver(() => { if(toast.classList.contains('show')) celebrate('BUT !'); })
         .observe(toast, {attributes:true, attributeFilter:['class']});
     }
-    // b) Bouton dans le hero
-    const actions = hero && $('.hero-actions', hero);
-    if(actions){
-      const b = document.createElement('button');
-      b.type = 'button'; b.className = 'fx-celebrate';
-      b.innerHTML = '<span class="ball">⚽</span> CÉLÉBRER UN BUT';
-      b.addEventListener('click', () => celebrate('BUT !'));
-      actions.after(b);
-    }
-    // c) Easter egg : 5 taps rapides sur le logo
+    // b) Easter egg : 5 taps rapides sur le logo
     const logo = $('header .brand');
     if(logo){
       let taps = 0, timer;
@@ -455,7 +446,7 @@
       else if(v < -6 || y < 400) dock.classList.remove('fx-hidden');
     });
     requestAnimationFrame(() => setOn(cur()));
-    window.addEventListener('resize', () => setOn((links.find(a => a.classList.contains('on')) || links[0]).dataset.fxSec), {passive:true});
+    window.addEventListener('resize', () => setOn(cur()), {passive:true});
   });
 
 })();
