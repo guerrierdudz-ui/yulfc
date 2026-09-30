@@ -15,3 +15,6 @@ desktop.ini
 # Temp / downloads artifacts
 *.crdownload
 *.part
+
+# Cloudflare local dev
+.wrangler/
