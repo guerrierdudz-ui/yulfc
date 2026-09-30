@@ -2069,6 +2069,7 @@ footer{ background:var(--void); border-top:1px solid var(--line); padding:3rem 6
 <link rel="stylesheet" href="fx/yul-fx.css">
 <link rel="stylesheet" href="fx/yul-router.css">
 <link rel="stylesheet" href="fx/yul-histoire.css">
+<link rel="stylesheet" href="fx/yul-menu.css">
 <script>/* YUL Router : choisit la page avant le premier affichage */(function(){var v=["histoire","pitch","match","season-hub","data-center","media","fanzone","scouting","partners","locker","coach-center"],h=location.hash.slice(1);document.documentElement.setAttribute("data-page",v.indexOf(h)>-1?h:"home");})();</script>
 </head>
 <body>
@@ -2100,25 +2101,42 @@ footer{ background:var(--void); border-top:1px solid var(--line); padding:3rem 6
     <a href="#partners" data-section="partners"><span class="conceptual">PARTNERS LOUNGE</span><span class="plain">Partenaires</span></a>
     <a href="#fanzone" data-section="fanzone"><span class="conceptual">FAN ZONE</span><span class="plain">Prédictions</span></a>
   </nav>
-  <a href="#locker" class="locker-link">THE LOCKER ROOM</a>
+  <div class="access-links">
+    <a href="#locker" class="locker-link">ZONE JOUEUR</a>
+    <a href="#coach-center" class="locker-link coach">ZONE COACH</a>
+  </div>
   <a href="#match" class="live-indicator" id="liveIndicator" style="display:none;"><span class="live-dot"></span><span class="li-label">LIVE</span></a>
   <button class="menu-btn" id="menuBtn" aria-label="Ouvrir le menu" aria-expanded="false">
     <span></span><span></span><span></span>
   </button>
 </header>
 
-<div class="mobile-menu" id="mobileMenu">
-  <div class="mobile-menu-head">DIGITAL STADIUM</div>
-  <a href="#histoire" class="mobile-menu-item"><span class="mnum">01</span>NOTRE HISTOIRE<span class="msub">Qui sommes-nous</span></a>
-  <a href="#pitch" class="mobile-menu-item"><span class="mnum">02</span>THE PITCH<span class="msub">Équipe</span></a>
-  <a href="#match" class="mobile-menu-item"><span class="mnum">03</span>MATCH CENTER<span class="msub">Matchs</span></a>
-  <a href="#season-hub" class="mobile-menu-item"><span class="mnum">04</span>SEASON HUB<span class="msub">Classement</span></a>
-  <a href="#data-center" class="mobile-menu-item"><span class="mnum">05</span>DATA CENTER<span class="msub">Statistiques</span></a>
-  <a href="#media" class="mobile-menu-item"><span class="mnum">06</span>MEDIA CENTER<span class="msub">Actualités</span></a>
-  <a href="#fanzone" class="mobile-menu-item"><span class="mnum">07</span>FAN ZONE<span class="msub">Prédictions</span></a>
-  <a href="#scouting" class="mobile-menu-item"><span class="mnum">08</span>SCOUTING ROOM<span class="msub">Recrutement</span></a>
-  <a href="#partners" class="mobile-menu-item"><span class="mnum">09</span>PARTNERS LOUNGE<span class="msub">Partenaires</span></a>
-  <a href="#locker" class="nav-cta">THE LOCKER ROOM · ACCÈS JOUEURS</a>
+<div class="mobile-menu" id="mobileMenu" role="dialog" aria-label="Menu">
+  <div class="mm-inner">
+  <a href="#top" class="mm-home">← ACCUEIL</a>
+  <div class="mm-group">
+    <div class="mobile-menu-head">LE CLUB</div>
+    <a href="#histoire" class="mobile-menu-item"><span class="mnum">01</span><span class="mt">NOTRE HISTOIRE</span><span class="msub">Qui sommes-nous</span></a>
+    <a href="#pitch" class="mobile-menu-item"><span class="mnum">02</span><span class="mt">THE PITCH</span><span class="msub">Équipe</span></a>
+    <a href="#match" class="mobile-menu-item"><span class="mnum">03</span><span class="mt">MATCH CENTER</span><span class="msub">Matchs</span></a>
+    <a href="#season-hub" class="mobile-menu-item"><span class="mnum">04</span><span class="mt">SEASON HUB</span><span class="msub">Saison 2026</span></a>
+    <a href="#data-center" class="mobile-menu-item"><span class="mnum">05</span><span class="mt">DATA CENTER</span><span class="msub">Statistiques</span></a>
+    <a href="#media" class="mobile-menu-item"><span class="mnum">06</span><span class="mt">MEDIA CENTER</span><span class="msub">Actualités</span></a>
+    <a href="#fanzone" class="mobile-menu-item"><span class="mnum">07</span><span class="mt">FAN ZONE</span><span class="msub">Prédictions</span></a>
+  </div>
+  <div class="mm-group">
+    <div class="mobile-menu-head">NOUS REJOINDRE</div>
+    <a href="#scouting" class="mobile-menu-item"><span class="mnum">08</span><span class="mt">SCOUTING ROOM</span><span class="msub">Recrutement</span></a>
+    <a href="#partners" class="mobile-menu-item"><span class="mnum">09</span><span class="mt">PARTNERS LOUNGE</span><span class="msub">Partenaires</span></a>
+  </div>
+  <div class="mm-group">
+    <div class="mobile-menu-head">ESPACES MEMBRES</div>
+    <div class="mm-access">
+      <a href="#locker" class="mm-card"><span class="mm-ic">◎</span><span class="mm-ct">ZONE JOUEUR</span><span class="mm-cs">Locker Room · connexion joueurs</span></a>
+      <a href="#coach-center" class="mm-card"><span class="mm-ic">▦</span><span class="mm-ct">ZONE COACH</span><span class="mm-cs">Command Center · staff</span></a>
+    </div>
+  </div>
+  </div>
 </div>
 
 <!-- HERO -->
