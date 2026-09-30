@@ -1,14 +1,12 @@
 /* ==========================================================================
-   YUL FC — API des photos (Cloudflare Pages Function + R2)
-   --------------------------------------------------------------------------
-   GET    /api/media              → liste publique des photos { items:[...] }
-   GET    /api/media?check=1      → vérifie la clé staff (en-tête X-Staff-Key)
-   POST   /api/media              → envoi d'une photo (multipart : file, slot, caption)
-   DELETE /api/media?id=<id>      → suppression
-   Configuration (tableau de bord Cloudflare → projet Pages → Settings) :
-   - Bindings : R2 bucket, nom de variable  MEDIA
-   - Variables and Secrets : STAFF_UPLOAD_KEY (chiffrée) = la clé du staff
+   YUL FC — Worker Cloudflare
+   - /api/media   : API des photos (liste publique, envoi et suppression staff)
+   - /media/<id>  : sert les photos stockées dans R2
+   - tout le reste: fichiers du site (index.html, fx/, images...)
+   Réglages : wrangler.jsonc (bucket R2 « MEDIA »)
+              + secret STAFF_UPLOAD_KEY (tableau de bord → Settings → Variables and Secrets)
    ========================================================================== */
+
 
 const SLOT_RE = /^(hero|histoire|gallery|player-\d{1,3})$/;
 const SINGLE_SLOT = s => s !== 'gallery';          // une seule photo par emplacement (sauf galerie)
@@ -40,7 +38,7 @@ async function writeIndex(env, index){
 }
 const clean = (v, max) => String(v || '').replace(/[<>]/g, '').trim().slice(0, max);
 
-export async function onRequestGet({ request, env }){
+async function mediaGet(request, env){
   if(!env.MEDIA) return json({ error: 'Stockage non configuré (binding R2 « MEDIA » manquant).' }, 503);
   const url = new URL(request.url);
   if(url.searchParams.has('check')){
@@ -50,7 +48,7 @@ export async function onRequestGet({ request, env }){
   return json(await readIndex(env));
 }
 
-export async function onRequestPost({ request, env }){
+async function mediaPost(request, env){
   if(!env.MEDIA) return json({ error: 'Stockage non configuré (binding R2 « MEDIA » manquant).' }, 503);
   if(!authorized(request, env)) return json({ error: 'Clé staff invalide.' }, 401);
 
@@ -91,7 +89,7 @@ export async function onRequestPost({ request, env }){
   return json(item, 201);
 }
 
-export async function onRequestDelete({ request, env }){
+async function mediaDelete(request, env){
   if(!env.MEDIA) return json({ error: 'Stockage non configuré.' }, 503);
   if(!authorized(request, env)) return json({ error: 'Clé staff invalide.' }, 401);
   const id = new URL(request.url).searchParams.get('id');
@@ -103,3 +101,36 @@ export async function onRequestDelete({ request, env }){
   await writeIndex(env, index);
   return json({ ok: true });
 }
+
+async function serveMedia(pathname, env){
+  if(!env.MEDIA) return new Response('Stockage non configuré', { status: 503 });
+  const path = pathname.replace(/^\/media\//, '');
+  if(!/^[\w-]+\.(jpg|png|webp|gif)$/.test(path)) return new Response('Introuvable', { status: 404 });
+  const obj = await env.MEDIA.get('media/' + path);
+  if(!obj) return new Response('Introuvable', { status: 404 });
+  const headers = new Headers();
+  obj.writeHttpMetadata(headers);
+  headers.set('etag', obj.httpEtag);
+  if(!headers.has('cache-control')) headers.set('cache-control', 'public, max-age=31536000, immutable');
+  return new Response(obj.body, { headers });
+}
+
+export default {
+  async fetch(request, env){
+    const url = new URL(request.url);
+    try{
+      if(url.pathname === '/api/media'){
+        if(request.method === 'GET' || request.method === 'HEAD') return await mediaGet(request, env);
+        if(request.method === 'POST') return await mediaPost(request, env);
+        if(request.method === 'DELETE') return await mediaDelete(request, env);
+        return json({ error: 'Méthode non permise.' }, 405);
+      }
+      if(url.pathname.startsWith('/media/') && (request.method === 'GET' || request.method === 'HEAD')){
+        return await serveMedia(url.pathname, env);
+      }
+    }catch(e){
+      return json({ error: 'Erreur serveur.' }, 500);
+    }
+    return env.ASSETS.fetch(request);
+  }
+};
