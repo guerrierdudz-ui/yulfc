@@ -206,8 +206,8 @@
     const m = document.createElement('div');
     m.className = 'fx-marquee'; m.setAttribute('aria-hidden','true');
     m.innerHTML = `<div class="fx-marquee-track">${unit.repeat(4)}</div>`;
-    const latest = $('#homeLatestSection');
-    (latest || hero).parentNode.insertBefore(m, latest || hero.nextSibling);
+    m.setAttribute('data-view', 'home'); // visible sur l'accueil seulement
+    hero.after(m);
     if(RM) return;
     const track = m.firstElementChild;
     let x = 0, speed = 0, half = 0, inView = false;
@@ -473,20 +473,19 @@
     const setOn = id => {
       links.forEach(a => a.classList.toggle('on', a.dataset.fxSec === id));
       const on = links.find(a => a.dataset.fxSec === id);
-      if(on){ pill.style.width = on.offsetWidth + 'px'; pill.style.transform = `translateX(${on.offsetLeft}px)`; }
+      if(on){ pill.style.opacity = '1'; pill.style.width = on.offsetWidth + 'px'; pill.style.transform = `translateX(${on.offsetLeft}px)`; } else pill.style.opacity = '0';
     };
     links.forEach(a => a.addEventListener('click', () => { buzz(8); setOn(a.dataset.fxSec); }));
-    // scroll-spy
-    const secs = items.map(([id]) => document.getElementById(id));
+    // Onglet actif = page courante (YUL Router) ; autres pages → aucun onglet
+    const pageToTab = p => p === 'home' ? 'top' : p;
+    const cur = () => pageToTab(window.YULRouter ? window.YULRouter.current() : 'home');
+    window.addEventListener('yul:page', e => { setOn(pageToTab(e.detail.page)); dock.classList.remove('fx-hidden'); });
     onScrollFns.push((y, v) => {
-      let cur = items[0][0];
-      for(const s of secs){ if(s.getBoundingClientRect().top < innerHeight * .45) cur = s.id; }
-      setOn(cur);
       // se cache en descendant, réapparaît en remontant
       if(y > 400 && v > 6) dock.classList.add('fx-hidden');
       else if(v < -6 || y < 400) dock.classList.remove('fx-hidden');
     });
-    requestAnimationFrame(() => setOn(items[0][0]));
+    requestAnimationFrame(() => setOn(cur()));
     window.addEventListener('resize', () => setOn((links.find(a => a.classList.contains('on')) || links[0]).dataset.fxSec), {passive:true});
   });
 

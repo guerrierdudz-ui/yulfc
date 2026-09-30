@@ -1,0 +1,126 @@
+/* ==========================================================================
+   YUL Router — une page par zone au lieu de tout empiler sur l'accueil.
+   Chaque bloc porte data-view="<page>" ; <html data-page="..."> choisit
+   ce qui est affiché. Les overlays (match, joueur, portails...) n'ont pas
+   de data-view et restent donc toujours disponibles.
+   ========================================================================== */
+
+html[data-page="home"]         [data-view]:not([data-view~="home"]),
+html[data-page="pitch"]        [data-view]:not([data-view~="pitch"]),
+html[data-page="match"]        [data-view]:not([data-view~="match"]),
+html[data-page="season-hub"]   [data-view]:not([data-view~="season-hub"]),
+html[data-page="data-center"]  [data-view]:not([data-view~="data-center"]),
+html[data-page="media"]        [data-view]:not([data-view~="media"]),
+html[data-page="fanzone"]      [data-view]:not([data-view~="fanzone"]),
+html[data-page="scouting"]     [data-view]:not([data-view~="scouting"]),
+html[data-page="partners"]     [data-view]:not([data-view~="partners"]),
+html[data-page="locker"]       [data-view]:not([data-view~="locker"]),
+html[data-page="coach-center"] [data-view]:not([data-view~="coach-center"]){
+  display:none !important;
+}
+
+/* ---------- Accueil épuré ---------- */
+/* Match : seulement la carte du prochain match */
+html[data-page="home"] #mcPublicTabs,
+html[data-page="home"] #match .form-guide,
+html[data-page="home"] #match .hub-section-title,
+html[data-page="home"] #seasonRecordGrid,
+html[data-page="home"] #match .mc-public-view:not([data-mctabpanel="next"]){ display:none !important; }
+html[data-page="home"] #match{ padding-top:5rem; padding-bottom:3rem; }
+/* Nouvelles : 3 cartes max */
+html[data-page="home"] #homeLatestGrid > :nth-child(n+4){ display:none !important; }
+html[data-page="home"] #homeLatestSection{ padding-top:2.5rem !important; }
+html[data-page="home"] #homeSquadSection{ padding-top:1.5rem !important; }
+/* Liens "voir plus" vers la page courante : inutiles */
+html[data-page="season-hub"] a.btn-ghost[href="#season-hub"]{ display:none !important; }
+
+/* CTA final de l'accueil */
+.home-cta{ padding-top:2rem !important; }
+.home-cta-inner{
+  position:relative; overflow:hidden; text-align:center;
+  border:1px solid var(--line); border-radius:16px; padding:clamp(2.4rem,6vw,4.5rem) 6vw;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(240,180,41,.16), transparent 60%),
+    linear-gradient(165deg, var(--raised), var(--surface));
+}
+.home-cta-inner .micro-tag{ justify-content:center; }
+.home-cta-inner .section-title{ margin:.6rem auto 0; max-width:16ch; }
+.home-cta-inner .section-note{ margin:1rem auto 0; max-width:46ch; text-align:center; }
+.home-cta-actions{ display:flex; gap:.9rem; justify-content:center; flex-wrap:wrap; margin-top:1.8rem; }
+
+/* ---------- Pages intérieures ---------- */
+html:not([data-page="home"]) section.section-pad,
+html:not([data-page="home"]) section.stats-band > .section-pad{ padding-top:3rem !important; }
+
+.fx-crumb{ display:none; }
+html:not([data-page="home"]) .fx-crumb{
+  display:flex; align-items:center; justify-content:space-between; gap:1rem;
+  padding:6.2rem 6vw 0;
+  font-family:var(--ff-mono); font-size:.68rem; letter-spacing:.18em; text-transform:uppercase; color:var(--dim-2);
+}
+.fx-crumb a{ color:var(--gold); display:inline-flex; align-items:center; gap:.5rem; }
+.fx-crumb a:hover{ color:var(--gold-pale); }
+.fx-crumb .fx-crumb-count{ color:var(--dim-2); }
+.fx-crumb .fx-crumb-count b{ color:var(--ink); font-weight:600; }
+
+.fx-pager{ display:none; }
+html:not([data-page="home"]) .fx-pager{
+  display:grid; grid-template-columns:1fr 1fr; gap:1rem; padding:1rem 6vw 5rem;
+}
+.fx-pager a{
+  display:flex; flex-direction:column; gap:.35rem; padding:1.3rem 1.4rem; border-radius:12px;
+  border:1px solid var(--line); background:linear-gradient(165deg, var(--raised), var(--surface));
+  transition:border-color .3s ease, transform .3s ease;
+}
+.fx-pager a:hover{ border-color:var(--gold-dim); transform:translateY(-3px); }
+.fx-pager a.next{ text-align:right; align-items:flex-end; }
+.fx-pager .lab{ font-family:var(--ff-mono); font-size:.62rem; letter-spacing:.2em; color:var(--dim-2); }
+.fx-pager .ttl{ font-family:var(--ff-display); font-size:clamp(1.1rem,3vw,1.6rem); letter-spacing:.02em; color:var(--ink); }
+.fx-pager a:hover .ttl{ color:var(--gold); }
+@media (max-width:560px){
+  html:not([data-page="home"]) .fx-crumb{ padding-top:5.4rem; }
+  html:not([data-page="home"]) section.section-pad,
+  html:not([data-page="home"]) section.stats-band > .section-pad{ padding-top:2.2rem !important; }
+  .fx-pager .ttl{ font-size:1rem; }
+  .fx-pager a{ padding:1rem; }
+}
+
+/* Onglet actif du menu = page courante */
+html[data-page="home"] nav.desktop-nav a.active:not(:hover){ color:var(--dim); }
+html[data-page="home"] nav.desktop-nav a.active::after{ width:0; }
+nav.desktop-nav a.fx-cur{ color:var(--ink); }
+nav.desktop-nav a.fx-cur::after{ width:100%; }
+.mobile-menu a.fx-cur{ color:var(--gold); }
+
+/* ---------- Transition entre pages : balayage doré ---------- */
+.fx-wipe{
+  position:fixed; inset:0; z-index:450; pointer-events:none; background:var(--void);
+  transform:translateX(101%); border-left:3px solid var(--gold);
+  box-shadow:-30px 0 60px -10px rgba(240,180,41,.35);
+  display:flex; align-items:center; justify-content:center;
+}
+.fx-wipe span{ font-family:var(--ff-display); font-size:clamp(2rem,7vw,4.5rem); letter-spacing:.04em; color:var(--gold); opacity:.9; }
+.fx-wipe.cover{ transition:transform .34s cubic-bezier(.7,0,.3,1); transform:none; }
+.fx-wipe.reveal{ transition:transform .42s cubic-bezier(.7,0,.3,1); transform:translateX(-101%); border-left:0; border-right:3px solid var(--gold); }
+.fx-page-in{ animation:fxPageIn .5s cubic-bezier(.2,.8,.2,1); }
+@keyframes fxPageIn{ from{ opacity:0; transform:translateY(18px); } to{ opacity:1; transform:none; } }
+
+@media (prefers-reduced-motion: reduce){
+  .fx-wipe{ display:none; }
+  .fx-page-in{ animation:none; }
+}
+
+/* ---------- Ajustements accueil (grilles) ---------- */
+html[data-page="home"] #homeLatestGrid{ grid-template-columns:repeat(3, minmax(0,1fr)); }
+@media (max-width:720px){
+  /* Nouvelles : carrousel horizontal à glisser au lieu de 3 grandes cartes empilées */
+  html[data-page="home"] #homeLatestGrid{
+    display:grid; grid-auto-flow:column; grid-template-columns:none; grid-auto-columns:78%;
+    overflow-x:auto; scroll-snap-type:x mandatory; gap:.8rem; padding-bottom:.6rem;
+    margin-right:-6vw; padding-right:6vw; scrollbar-width:none;
+  }
+  html[data-page="home"] #homeLatestGrid::-webkit-scrollbar{ display:none; }
+  html[data-page="home"] #homeLatestGrid > *{ scroll-snap-align:start; }
+  /* Dernière tuile seule : pleine largeur */
+  #stadiumMap .stadium-map-grid > .map-tile:last-child:nth-child(odd){ grid-column:1 / -1; }
+}

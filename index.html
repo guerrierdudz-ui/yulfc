@@ -2081,6 +2081,8 @@ footer{ background:var(--void); border-top:1px solid var(--line); padding:3rem 6
 
 </style>
 <link rel="stylesheet" href="fx/yul-fx.css">
+<link rel="stylesheet" href="fx/yul-router.css">
+<script>/* YUL Router : choisit la page avant le premier affichage */(function(){var v=["pitch","match","season-hub","data-center","media","fanzone","scouting","partners","locker","coach-center"],h=location.hash.slice(1);document.documentElement.setAttribute("data-page",v.indexOf(h)>-1?h:"home");})();</script>
 </head>
 <body>
 
@@ -2134,7 +2136,7 @@ footer{ background:var(--void); border-top:1px solid var(--line); padding:3rem 6
 </div>
 
 <!-- HERO -->
-<section class="hero" id="top">
+<section class="hero" id="top" data-view="home">
   <div class="hero-coords">
     <span>45.4972° N, 73.6104° W</span>
     <span>MTL / SAISON 01</span>
@@ -2174,44 +2176,8 @@ footer{ background:var(--void); border-top:1px solid var(--line); padding:3rem 6
   </div>
 </div>
 
-<!-- LATEST FROM YUL FC — homepage integration -->
-<section class="section-pad" style="padding-top:4rem; padding-bottom:4rem;" id="homeLatestSection">
-  <div class="section-head reveal">
-    <div>
-      <div class="micro-tag">MEDIA CENTER</div>
-      <h2 class="section-title" style="font-size:clamp(1.8rem,4vw,2.6rem);">Latest From YUL FC.</h2>
-    </div>
-    <a href="#media" class="btn-ghost">View Media Center</a>
-  </div>
-  <div class="latest-strip reveal" id="homeLatestGrid"></div>
-</section>
-
-<!-- STADIUM STATUS -->
-<div class="ticker-wrap">
-  <div class="ticker-track" id="tickerTrack"></div>
-</div>
-
-<!-- FAN ZONE — homepage dynamic widget -->
-<section class="section-pad" style="padding-top:3.5rem; padding-bottom:2rem;">
-  <div class="reveal" id="homeFanWidgetWrap"></div>
-  <div class="reveal" id="homeCheckinBannerWrap"></div>
-</section>
-
-<!-- THIS SEASON — homepage mini connection -->
-<section class="section-pad" style="padding-top:1.5rem; padding-bottom:3.5rem;">
-  <div class="section-head reveal">
-    <div>
-      <div class="micro-tag">2026 SEASON</div>
-      <h2 class="section-title" style="font-size:clamp(1.6rem,3.5vw,2.2rem);">This Season.</h2>
-    </div>
-    <a href="#season-hub" class="btn-ghost">Explore Season</a>
-  </div>
-  <div class="mc-kpi-grid reveal" id="thisSeasonStrip"></div>
-  <div class="leaders-grid reveal" id="home2026LeadersGrid" style="margin-top:1.4rem;"></div>
-</section>
-
 <!-- MATCH CENTER -->
-<section class="match-center section-pad" id="match">
+<section class="match-center section-pad" id="match" data-view="home match">
   <div class="section-head reveal">
     <div>
       <div class="micro-tag">MATCH CENTER <span class="on">// ACTIVE</span></div>
@@ -2301,6 +2267,44 @@ footer{ background:var(--void); border-top:1px solid var(--line); padding:3rem 6
   </div>
 </section>
 
+<!-- LATEST FROM YUL FC — homepage integration -->
+<section class="section-pad" style="padding-top:4rem; padding-bottom:4rem;" id="homeLatestSection" data-view="home">
+  <div class="section-head reveal">
+    <div>
+      <div class="micro-tag">MEDIA CENTER</div>
+      <h2 class="section-title" style="font-size:clamp(1.8rem,4vw,2.6rem);">Latest From YUL FC.</h2>
+    </div>
+    <a href="#media" class="btn-ghost">View Media Center</a>
+  </div>
+  <div class="latest-strip reveal" id="homeLatestGrid"></div>
+</section>
+
+<!-- STADIUM STATUS -->
+<div class="ticker-wrap" data-view="match">
+  <div class="ticker-track" id="tickerTrack"></div>
+</div>
+
+<!-- FAN ZONE — homepage dynamic widget (masqué : doublon de la page Fan Zone) -->
+<section data-view="off" class="section-pad" style="padding-top:3.5rem; padding-bottom:2rem;">
+  <div class="reveal" id="homeFanWidgetWrap"></div>
+  <div class="reveal" id="homeCheckinBannerWrap"></div>
+</section>
+
+<!-- THIS SEASON — résumé en tête de la page Season Hub -->
+<section data-view="season-hub" class="section-pad" style="padding-top:1.5rem; padding-bottom:3.5rem;">
+  <div class="section-head reveal">
+    <div>
+      <div class="micro-tag">2026 SEASON</div>
+      <h2 class="section-title" style="font-size:clamp(1.6rem,3.5vw,2.2rem);">This Season.</h2>
+    </div>
+    <a href="#season-hub" class="btn-ghost">Explore Season</a>
+  </div>
+  <div class="mc-kpi-grid reveal" id="thisSeasonStrip"></div>
+  <div class="leaders-grid reveal" id="home2026LeadersGrid" style="margin-top:1.4rem;"></div>
+</section>
+
+
+
 <!-- MATCH PAGE — full match experience overlay -->
 <div id="matchPage" role="dialog" aria-modal="true" aria-label="Match details">
   <div class="hub-header">
@@ -2311,7 +2315,7 @@ footer{ background:var(--void); border-top:1px solid var(--line); padding:3rem 6
 </div>
 
 <!-- THE SQUAD — homepage preview (a few players + CTA) -->
-<section class="section-pad" style="padding-top:3.5rem; padding-bottom:3.5rem;">
+<section data-view="home" id="homeSquadSection" class="section-pad" style="padding-top:3.5rem; padding-bottom:3.5rem;">
   <div class="section-head reveal">
     <div>
       <div class="micro-tag">THE SQUAD</div>
@@ -2323,7 +2327,7 @@ footer{ background:var(--void); border-top:1px solid var(--line); padding:3rem 6
 </section>
 
 <!-- THE PITCH -->
-<section class="section-pad" id="pitch">
+<section class="section-pad" id="pitch" data-view="pitch">
   <div class="section-head reveal">
     <div>
       <div class="micro-tag">PLAYER DATABASE</div>
@@ -2343,7 +2347,7 @@ footer{ background:var(--void); border-top:1px solid var(--line); padding:3rem 6
 </section>
 
 <!-- DATA CENTER -->
-<section class="stats-band" id="data-center">
+<section class="stats-band" id="data-center" data-view="data-center">
   <div class="section-pad" style="padding-top:5rem; padding-bottom:5rem;">
     <div class="section-head reveal">
       <div>
@@ -2375,7 +2379,7 @@ footer{ background:var(--void); border-top:1px solid var(--line); padding:3rem 6
 </section>
 
 <!-- SEASON JOURNEY -->
-<section class="section-pad" id="saison">
+<section class="section-pad" id="saison" data-view="season-hub">
   <div class="section-head reveal">
     <div>
       <div class="micro-tag">SEASON JOURNEY</div>
@@ -2392,7 +2396,7 @@ footer{ background:var(--void); border-top:1px solid var(--line); padding:3rem 6
      used elsewhere on the site). League Table is the one thing staff
      must enter manually — never invented.
 ================================================================ -->
-<section class="section-pad" id="season-hub">
+<section class="section-pad" id="season-hub" data-view="season-hub">
   <div class="section-head reveal">
     <div>
       <div class="micro-tag">SEASON HUB</div>
@@ -2558,7 +2562,7 @@ footer{ background:var(--void); border-top:1px solid var(--line); padding:3rem 6
      (staff-published via Command Center) plus live Matchday/Full Time
      cards computed directly from matchDB — never duplicated by hand.
 ================================================================ -->
-<section class="section-pad" id="media">
+<section class="section-pad" id="media" data-view="media">
   <div class="section-head reveal">
     <div>
       <div class="micro-tag">MEDIA CENTER</div>
@@ -2616,7 +2620,7 @@ footer{ background:var(--void); border-top:1px solid var(--line); padding:3rem 6
 </div>
 
 <!-- THE LOCKER ROOM -->
-<section class="locker-band section-pad" id="locker">
+<section class="locker-band section-pad" id="locker" data-view="locker">
   <div class="locker-badge reveal">AUTHORIZED PLAYERS ONLY</div>
   <div class="locker-wrap">
     <div class="reveal">
@@ -2659,7 +2663,7 @@ footer{ background:var(--void); border-top:1px solid var(--line); padding:3rem 6
 </section>
 
 <!-- COACH CENTER ENTRY + TROPHY ROOM -->
-<section class="section-pad" id="coach-center">
+<section class="section-pad" id="coach-center" data-view="coach-center">
   <div class="locked-grid">
     <div class="reveal login-panel" style="border-color:var(--gold-dim);">
       <div class="lab" style="font-family:var(--ff-mono); font-size:.64rem; letter-spacing:.2em; color:var(--dim-2);">STAFF ACCESS</div>
@@ -2696,8 +2700,8 @@ footer{ background:var(--void); border-top:1px solid var(--line); padding:3rem 6
   </div>
 </section>
 
-<!-- STADIUM MAP -->
-<section class="section-pad">
+<!-- STADIUM MAP — point d'entrée vers chaque page -->
+<section class="section-pad" id="stadiumMap" data-view="home">
   <div class="section-head reveal">
     <div>
       <div class="micro-tag">YULFC <span class="on">// DIGITAL STADIUM</span></div>
@@ -2708,11 +2712,26 @@ footer{ background:var(--void); border-top:1px solid var(--line); padding:3rem 6
   <div class="stadium-map-grid reveal">
     <a href="#pitch" class="map-tile"><div class="mt-num">01</div><div class="mt-title">THE PITCH</div><div class="mt-sub">Équipe</div></a>
     <a href="#match" class="map-tile"><div class="mt-num">02</div><div class="mt-title">MATCH CENTER</div><div class="mt-sub">Matchs</div></a>
-    <a href="#data-center" class="map-tile"><div class="mt-num">03</div><div class="mt-title">DATA CENTER</div><div class="mt-sub">Statistiques</div></a>
-    <a href="#scouting" class="map-tile"><div class="mt-num">04</div><div class="mt-title">SCOUTING ROOM</div><div class="mt-sub">Recrutement</div></a>
-    <a href="#partners" class="map-tile"><div class="mt-num">05</div><div class="mt-title">PARTNERS LOUNGE</div><div class="mt-sub">Partenaires</div></a>
-    <a href="#locker" class="map-tile"><div class="mt-num">06</div><div class="mt-title">LOCKER ROOM</div><div class="mt-sub">Accès joueurs</div></a>
-    <a href="#coach-center" class="map-tile"><div class="mt-num">07</div><div class="mt-title">COMMAND CENTER</div><div class="mt-sub">Staff only</div></a>
+    <a href="#season-hub" class="map-tile"><div class="mt-num">03</div><div class="mt-title">SEASON HUB</div><div class="mt-sub">Saison 2026</div></a>
+    <a href="#data-center" class="map-tile"><div class="mt-num">04</div><div class="mt-title">DATA CENTER</div><div class="mt-sub">Statistiques</div></a>
+    <a href="#media" class="map-tile"><div class="mt-num">05</div><div class="mt-title">MEDIA CENTER</div><div class="mt-sub">Actualités</div></a>
+    <a href="#fanzone" class="map-tile"><div class="mt-num">06</div><div class="mt-title">FAN ZONE</div><div class="mt-sub">Prédictions</div></a>
+    <a href="#scouting" class="map-tile"><div class="mt-num">07</div><div class="mt-title">SCOUTING ROOM</div><div class="mt-sub">Recrutement</div></a>
+    <a href="#partners" class="map-tile"><div class="mt-num">08</div><div class="mt-title">PARTNERS LOUNGE</div><div class="mt-sub">Partenaires</div></a>
+    <a href="#locker" class="map-tile"><div class="mt-num">09</div><div class="mt-title">LOCKER ROOM</div><div class="mt-sub">Accès joueurs</div></a>
+  </div>
+</section>
+
+<!-- CTA FINAL — accueil -->
+<section class="section-pad home-cta" id="homeCta" data-view="home">
+  <div class="home-cta-inner reveal">
+    <div class="micro-tag">SAISON 2027 <span class="on">// RECRUTEMENT OUVERT</span></div>
+    <h2 class="section-title">Think You Can Wear The Badge?</h2>
+    <p class="section-note">Joueurs, bénévoles, partenaires : il y a une place pour toi à YUL FC.</p>
+    <div class="home-cta-actions">
+      <a href="#scouting" class="btn-primary">REJOINDRE YUL FC</a>
+      <a href="#partners" class="btn-ghost">DEVENIR PARTENAIRE</a>
+    </div>
   </div>
 </section>
 
@@ -2723,7 +2742,7 @@ footer{ background:var(--void); border-top:1px solid var(--line); padding:3rem 6
 </div>
 
 <!-- SCOUTING ROOM -->
-<section class="section-pad" id="scouting">
+<section class="section-pad" id="scouting" data-view="scouting">
   <div class="recruit reveal">
     <div class="eyebrow">Recruitment Center</div>
     <h2 class="recruit-title">THINK YOU CAN<br>WEAR THE<br><span class="line2">BADGE?</span></h2>
@@ -2981,7 +3000,7 @@ footer{ background:var(--void); border-top:1px solid var(--line); padding:3rem 6
 </div>
 
 <!-- PARTNERS LOUNGE -->
-<section class="sponsors-band section-pad" id="partners">
+<section class="sponsors-band section-pad" id="partners" data-view="partners">
   <div class="reveal">
     <div class="micro-tag">PARTNERSHIPS</div>
     <h2 class="sponsor-hero-title">PARTNER<br>WITH YUL FC.<span class="fr">Be part of the journey from the beginning.</span></h2>
@@ -3089,7 +3108,7 @@ footer{ background:var(--void); border-top:1px solid var(--line); padding:3rem 6
      all use real Match Center + Squad data — zero fake engagement,
      honest empty states throughout.
 ================================================================ -->
-<section class="section-pad fanzone-band" id="fanzone">
+<section class="section-pad fanzone-band" id="fanzone" data-view="fanzone">
   <div class="section-head reveal">
     <div>
       <div class="micro-tag">FAN ZONE</div>
@@ -9374,6 +9393,7 @@ renderPlayersGrid('all');
 renderHomeSquadPreview();
 renderSeasonHubAll();
 </script>
+<script src="fx/yul-router.js" defer></script>
 <script src="fx/yul-fx.js" defer></script>
 </body>
 </html>
