@@ -268,6 +268,7 @@
     ["L'effectif", 'The Squad'], ['Notre histoire', 'Our story'], ["S'IMPLIQUER", 'GET INVOLVED'], ['Rejoindre YUL FC', 'Join YUL FC'],
     ['Partenariat', 'Partnership'], ['Accès joueurs', 'Player Access'], ['Accès staff', 'Staff Access'],
     // Partenaires (accueil + page)
+    ["L'OFFRE", 'THE OFFER'], ['Devenez partenaire fondateur.', 'Become a founding partner.'], ["L'entente est construite sur mesure, selon vos objectifs et votre budget.", 'The agreement is tailor-made around your goals and budget.'],
     ['PARTENAIRES', 'PARTNERS'],
     ['// STATUT FONDATEUR OUVERT', '// FOUNDING STATUS OPEN'],
     ['Votre marque.', 'Your brand.'],
