@@ -1,5 +1,5 @@
 /* ==========================================================================
-   YUL FX — couche "spectacle" pour YUL FC Digital Stadium
+   YUL FX · couche "spectacle" pour YUL FC Digital Stadium
    Script autonome, chargé en fin de <body>. Aucune dépendance.
    Chaque module est isolé dans un try/catch : si l'un échoue, le site
    continue de fonctionner normalement.

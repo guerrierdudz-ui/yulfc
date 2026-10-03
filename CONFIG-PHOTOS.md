@@ -1,4 +1,4 @@
-# Photos depuis la zone staff — configuration Cloudflare (Worker)
+# Photos depuis la zone staff · configuration Cloudflare (Worker)
 
 Le site est hébergé comme **Worker Cloudflare**. Les photos sont stockées dans **R2** et
 gérées par `worker/index.js`. La liaison au stockage est déclarée dans `wrangler.jsonc`

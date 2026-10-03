@@ -1,5 +1,5 @@
 /* ==========================================================================
-   YUL FC — Worker Cloudflare
+   YUL FC · Worker Cloudflare
    - /api/media   : API des photos (liste publique, envoi et suppression staff)
    - /media/<id>  : sert les photos stockées dans R2
    - tout le reste: fichiers du site (index.html, fx/, images...)

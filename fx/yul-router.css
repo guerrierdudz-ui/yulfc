@@ -1,5 +1,5 @@
 /* ==========================================================================
-   YUL Router — une page par zone au lieu de tout empiler sur l'accueil.
+   YUL Router · une page par zone au lieu de tout empiler sur l'accueil.
    Chaque bloc porte data-view="<page>" ; <html data-page="..."> choisit
    ce qui est affiché. Les overlays (match, joueur, portails...) n'ont pas
    de data-view et restent donc toujours disponibles.

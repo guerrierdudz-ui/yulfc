@@ -1,5 +1,5 @@
 /* ==========================================================================
-   YUL Media — envoi de photos depuis la zone staff + affichage sur le site
+   YUL Media · envoi de photos depuis la zone staff + affichage sur le site
    --------------------------------------------------------------------------
    - Command Center → MEDIA CENTER → onglet PHOTOS : glisser-déposer / choisir
      des images, choisir où elles vont (galerie, accueil, Notre histoire,
@@ -248,7 +248,7 @@
     lbIndex = (i + list.length) % list.length;
     const lb = lightbox(), p = list[lbIndex];
     $('img', lb).src = p.url; $('img', lb).alt = p.caption || '';
-    $('figcaption', lb).textContent = [p.album, p.caption].filter(Boolean).join(' — ');
+    $('figcaption', lb).textContent = [p.album, p.caption].filter(Boolean).join(' · ');
     $('.yul-lb-count', lb).textContent = `${lbIndex + 1} / ${list.length}`;
   }
   function openLightbox(i){ lightbox().classList.add('open'); document.documentElement.style.overflow = 'hidden'; showLb(i); }
@@ -258,7 +258,7 @@
   }
 
   /* ==================================================================
-     ZONE STAFF — onglet PHOTOS du Media Center
+     ZONE STAFF · onglet PHOTOS du Media Center
      ================================================================== */
   const SLOT_LABEL = s => s === 'gallery' ? 'Galerie' : s === 'hero' ? "Photo d'accueil" : s === 'histoire' ? 'Notre histoire'
     : s.startsWith('player-') ? 'Joueur #' + s.slice(7) : s;
@@ -269,7 +269,7 @@
     if(!list.length){
       list = $$('#playersGrid .player-card[data-num]').map(c => ({ num: c.dataset.num, name: ($('.player-name', c) || {}).textContent || '' }));
     }
-    return list.map(p => `<option value="player-${esc(p.num)}">#${esc(p.num)} — ${esc(p.name)}</option>`).join('');
+    return list.map(p => `<option value="player-${esc(p.num)}">#${esc(p.num)}-${esc(p.name)}</option>`).join('');
   }
 
   function buildStaffPanel(){
@@ -305,7 +305,7 @@
             </select>
           </div>
           <div class="login-field" id="yulUpAlbumField"><label for="yulUpAlbum">Album (facultatif)</label>
-            <input id="yulUpAlbum" placeholder="ex. YUL FC vs Atlas MTL — 27 sept.">
+            <input id="yulUpAlbum" placeholder="ex. YUL FC vs Atlas MTL · 27 sept.">
           </div>
         </div>
         <div class="login-field"><label for="yulUpCaption">Légende (facultatif)</label>

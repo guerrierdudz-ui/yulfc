@@ -1,5 +1,5 @@
 /* ==========================================================================
-   YUL Router — navigation par pages (#pitch, #match, ...) sans rechargement.
+   YUL Router · navigation par pages (#pitch, #match, ...) sans rechargement.
    - Tous les liens "#zone" existants continuent de marcher.
    - Les appels existants à element.scrollIntoView() ouvrent d'abord la bonne page.
    - Bouton retour du navigateur supporté.
