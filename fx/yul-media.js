@@ -151,7 +151,11 @@
   /* ==================================================================
      AFFICHAGE PUBLIC
      ================================================================== */
-  const bySlot = slot => items.find(i => i.slot === slot);
+  /* Photos fixes livrées avec le site (utilisées si aucune photo n'a été envoyée depuis la zone staff) */
+  const STATIC = {
+    'player-20': 'players/chris-frettier.jpg'
+  };
+  const bySlot = slot => items.find(i => i.slot === slot) || (STATIC[slot] ? { id: 'static-' + slot, slot, url: STATIC[slot], static: true } : undefined);
   const gallery = () => items.filter(i => i.slot === 'gallery');
 
   function applyHero(){
