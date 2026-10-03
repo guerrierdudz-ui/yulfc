@@ -269,7 +269,7 @@
     if(!list.length){
       list = $$('#playersGrid .player-card[data-num]').map(c => ({ num: c.dataset.num, name: ($('.player-name', c) || {}).textContent || '' }));
     }
-    return list.map(p => `<option value="player-${esc(p.num)}">#${esc(p.num)}-${esc(p.name)}</option>`).join('');
+    return list.map(p => `<option value="player-${esc(p.num)}">#${esc(p.num)} · ${esc(p.name)}</option>`).join('');
   }
 
   function buildStaffPanel(){
