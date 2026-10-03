@@ -268,6 +268,31 @@
     ["L'effectif", 'The Squad'], ['Notre histoire', 'Our story'], ["S'IMPLIQUER", 'GET INVOLVED'], ['Rejoindre YUL FC', 'Join YUL FC'],
     ['Partenariat', 'Partnership'], ['Accès joueurs', 'Player Access'], ['Accès staff', 'Staff Access'],
     // Partenaires (accueil + page)
+    ['Vues Instagram en 30 jours', 'Instagram views in 30 days'],
+    ['NOTRE AUDIENCE', 'OUR AUDIENCE'],
+    ['// INSTAGRAM · 30 DERNIERS JOURS', '// INSTAGRAM · LAST 30 DAYS'],
+    ['Une communauté qui regarde.', 'A community that\'s watching.'],
+    ['Vues en 30 jours', 'Views in 30 days'],
+    ['Des vues viennent de non-abonnés', 'Of views come from non-followers'],
+    ['Visites du profil', 'Profile visits'],
+    ['Nouveaux abonnés', 'New followers'],
+    ['Vues sur notre meilleure publication', 'Views on our top post'],
+    ['Âge de l\'audience', 'Audience age'],
+    ['ont entre 18 et 34 ans', 'are aged 18 to 34'],
+    ['sont au Canada', 'are in Canada'],
+    ['d\'hommes', 'are men'],
+    ['Source : statistiques Instagram du club, 30 derniers jours (septembre 2026).', 'Source: the club\'s Instagram insights, last 30 days (September 2026).'],
+    ['70,6 %', '70.6%'],
+    ['59,1 %', '59.1%'],
+    ['19,4 %', '19.4%'],
+    ['14,0 %', '14.0%'],
+    ['6,5 %', '6.5%'],
+    ['78,5 %', '78.5%'],
+    ['86,9 %', '86.9%'],
+    ['81,7 %', '81.7%'],
+    ['1,3 K', '1.3K'],
+    ['8 076', '8,076'],
+    ['8 000+', '8,000+'],
     ["L'OFFRE", 'THE OFFER'], ['Devenez partenaire fondateur.', 'Become a founding partner.'], ["L'entente est construite sur mesure, selon vos objectifs et votre budget.", 'The agreement is tailor-made around your goals and budget.'],
     ['PARTENAIRES', 'PARTNERS'],
     ['// STATUT FONDATEUR OUVERT', '// FOUNDING STATUS OPEN'],
@@ -454,7 +479,7 @@
     if(!ORIG.has(node) || LAST.get(node) !== cur) ORIG.set(node, cur); // texte (re)écrit par le site
     const orig = ORIG.get(node);
     const trimmed = orig.replace(/\s+/g, ' ').trim();
-    if(trimmed.length < 2 || !/\p{L}/u.test(trimmed)){ LAST.set(node, cur); return; }
+    if(trimmed.length < 2 || (!/\p{L}/u.test(trimmed) && !FR2EN.has(trimmed) && !EN2FR.has(trimmed))){ LAST.set(node, cur); return; }
     const t = translate(trimmed, lang);
     const out = t === trimmed ? orig : orig.match(/^\s*/)[0] + t + orig.match(/\s*$/)[0];
     if(out !== cur) node.nodeValue = out;
