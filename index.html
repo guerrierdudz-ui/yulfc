@@ -2072,6 +2072,7 @@ footer{ background:var(--void); border-top:1px solid var(--line); padding:3rem 6
 <link rel="stylesheet" href="fx/yul-menu.css">
 <link rel="stylesheet" href="fx/yul-media.css">
 <link rel="stylesheet" href="fx/yul-table.css">
+<link rel="stylesheet" href="fx/yul-partners.css">
 <script>/* YUL Router : choisit la page avant le premier affichage */(function(){var v=["histoire","pitch","match","season-hub","data-center","media","fanzone","scouting","partners","locker","coach-center"],h=location.hash.slice(1);document.documentElement.setAttribute("data-page",v.indexOf(h)>-1?h:"home");})();</script>
 </head>
 <body>
@@ -2729,6 +2730,47 @@ footer{ background:var(--void); border-top:1px solid var(--line); padding:3rem 6
   </div>
 </section>
 
+
+<!-- PARTENAIRES · accueil -->
+<section class="section-pad yp-home" id="homePartners" data-view="home">
+  <div class="yp-home-card reveal">
+    <div class="yp-home-text">
+      <div class="micro-tag">PARTENAIRES <span class="on">// STATUT FONDATEUR OUVERT</span></div>
+      <h2 class="yp-h">Votre marque.<br><span>Notre maillot.</span></h2>
+      <p class="yp-lede">Associez votre entreprise à un club montréalais qui monte : deux saisons, deux qualifications en séries, et une communauté qui grandit à chaque match.</p>
+      <ul class="yp-proofs">
+        <li><b>2</b><span>Saisons en LSAQ</span></li>
+        <li><b>2</b><span>Qualifications en séries</span></li>
+        <li><b>57</b><span>Buts marqués</span></li>
+      </ul>
+      <div class="yp-actions">
+        <a href="#partners" class="btn-primary">DEVENIR PARTENAIRE</a>
+        <a href="#yp-why" class="btn-ghost">Pourquoi nous soutenir</a>
+      </div>
+    </div>
+    <div class="yp-home-visual">
+      <svg class="yp-jersey" viewBox="0 0 300 330" aria-hidden="true">
+        <defs>
+          <linearGradient id="ypJ" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2B63E6"/><stop offset="1" stop-color="#173C9E"/></linearGradient>
+          <linearGradient id="ypShine" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".35"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+          <clipPath id="ypClip"><path d="M70 22 L22 66 L46 112 L70 96 L70 312 L230 312 L230 96 L254 112 L278 66 L230 22 L198 38 C198 38 182 56 150 56 C118 56 102 38 102 38 Z"/></clipPath>
+        </defs>
+        <path d="M70 22 L22 66 L46 112 L70 96 L70 312 L230 312 L230 96 L254 112 L278 66 L230 22 L198 38 C198 38 182 56 150 56 C118 56 102 38 102 38 Z" fill="url(#ypJ)" stroke="#F0B429" stroke-width="2.5"/>
+        <path d="M102 38 C102 38 118 56 150 56 C182 56 198 38 198 38" fill="none" stroke="#F0B429" stroke-width="5"/>
+        <path d="M22 66 L46 112" stroke="#F0B429" stroke-width="5"/><path d="M278 66 L254 112" stroke="#F0B429" stroke-width="5"/>
+        <g clip-path="url(#ypClip)"><rect class="yp-shine" x="-120" y="0" width="90" height="330" fill="url(#ypShine)" transform="skewX(-18)"/></g>
+        <rect class="yp-logo-slot" x="95" y="105" width="110" height="62" rx="8"/>
+        <text x="150" y="132" text-anchor="middle" class="yp-logo-t1">VOTRE</text>
+        <text x="150" y="154" text-anchor="middle" class="yp-logo-t2">LOGO ICI</text>
+        <text x="150" y="250" text-anchor="middle" class="yp-num">11</text>
+      </svg>
+      <div class="yp-tag t1">Visibilité terrain</div>
+      <div class="yp-tag t2">Présence en ligne</div>
+      <div class="yp-tag t3">Communauté locale</div>
+    </div>
+  </div>
+</section>
+
 <!-- CTA FINAL · accueil -->
 <section class="section-pad home-cta" id="homeCta" data-view="home">
   <div class="home-cta-inner reveal">
@@ -3071,31 +3113,100 @@ footer{ background:var(--void); border-top:1px solid var(--line); padding:3rem 6
 
 <!-- PARTNERS LOUNGE -->
 <section class="sponsors-band section-pad" id="partners" data-view="partners">
-  <div class="reveal">
-    <div class="micro-tag">PARTNERSHIPS</div>
-    <h2 class="sponsor-hero-title">PARTNER<br>WITH YUL FC.<span class="fr">Be part of the journey from the beginning.</span></h2>
-    <p class="section-note" style="margin-top:1.2rem; max-width:560px;">YUL FC construit un projet sportif moderne, ambitieux et tourné vers l'avenir. Nous recherchons des entreprises qui souhaitent grandir avec le club et faire partie de son histoire dès ses premières étapes.</p>
-    <div style="display:flex; gap:1rem; flex-wrap:wrap; margin-top:1.6rem;">
-      <a href="#partner-inquiry-form" class="btn-primary">Become a Partner</a>
-      <a href="#sponsorship-opportunities" class="btn-ghost">Explore Opportunities</a>
+  <div class="yp-hero reveal">
+    <div>
+      <div class="micro-tag">PARTENARIATS <span class="on">// SAISON 2027</span></div>
+      <h2 class="yp-h big">Grandissez<br>avec le<br><span>YUL FC.</span></h2>
+      <p class="yp-lede">Un club de football compétitif de Montréal, une équipe soudée et des supporters fidèles. Soutenir le YUL FC, c'est associer votre nom à une histoire qui commence et à des valeurs qui parlent à tout le monde : effort, ambition, esprit d'équipe.</p>
+      <div class="yp-actions">
+        <a href="#partner-inquiry-form" class="btn-primary">DEVENIR PARTENAIRE</a>
+        <a href="#yp-tiers" class="btn-ghost">Voir les formules</a>
+      </div>
+    </div>
+    <div class="yp-home-visual">
+      <svg class="yp-jersey" viewBox="0 0 300 330" aria-hidden="true">
+        <defs>
+          <linearGradient id="ypJ2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2B63E6"/><stop offset="1" stop-color="#173C9E"/></linearGradient>
+          <linearGradient id="ypShine2" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".35"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+          <clipPath id="ypClip2"><path d="M70 22 L22 66 L46 112 L70 96 L70 312 L230 312 L230 96 L254 112 L278 66 L230 22 L198 38 C198 38 182 56 150 56 C118 56 102 38 102 38 Z"/></clipPath>
+        </defs>
+        <path d="M70 22 L22 66 L46 112 L70 96 L70 312 L230 312 L230 96 L254 112 L278 66 L230 22 L198 38 C198 38 182 56 150 56 C118 56 102 38 102 38 Z" fill="url(#ypJ2)" stroke="#F0B429" stroke-width="2.5"/>
+        <path d="M102 38 C102 38 118 56 150 56 C182 56 198 38 198 38" fill="none" stroke="#F0B429" stroke-width="5"/>
+        <path d="M22 66 L46 112" stroke="#F0B429" stroke-width="5"/><path d="M278 66 L254 112" stroke="#F0B429" stroke-width="5"/>
+        <g clip-path="url(#ypClip2)"><rect class="yp-shine" x="-120" y="0" width="90" height="330" fill="url(#ypShine2)" transform="skewX(-18)"/></g>
+        <rect class="yp-logo-slot" x="95" y="105" width="110" height="62" rx="8"/>
+        <text x="150" y="132" text-anchor="middle" class="yp-logo-t1">VOTRE</text>
+        <text x="150" y="154" text-anchor="middle" class="yp-logo-t2">LOGO ICI</text>
+        <text x="150" y="250" text-anchor="middle" class="yp-num">11</text>
+      </svg>
+      <div class="yp-tag t1">Devant du maillot</div>
+      <div class="yp-tag t2">Contenus « présenté par »</div>
+      <div class="yp-tag t3">Jour de match</div>
     </div>
   </div>
 
-  <!-- FOUNDING PARTNER CONCEPT -->
-  <div class="reveal" style="margin-top:4rem;">
-    <div class="hub-card" style="background:linear-gradient(155deg,var(--raised),var(--surface)); border-color:var(--gold-dim); padding:2.2rem;">
-      <div class="eyebrow" style="margin-bottom:.8rem;">Founding Partner</div>
-      <h3 style="font-size:clamp(1.6rem,3.5vw,2.2rem); font-family:var(--ff-display);">Don't just sponsor the club.<br>Be part of building it.</h3>
-      <p class="section-note" style="margin-top:1rem; max-width:600px;">Les premières entreprises qui rejoignent YUL FC auront l'opportunité d'être associées aux premières étapes du développement du club. Une opportunité exclusive, sans promesse de chiffres inventés.</p>
-      <div class="pillars-grid" style="margin-top:1.6rem;">
-        <div class="pillar-card"><p>Construire une association avec YUL FC dès le début</p></div>
-        <div class="pillar-card"><p>Développer une activation adaptée à l'entreprise</p></div>
-        <div class="pillar-card"><p>Visibilité privilégiée possible selon l'entente</p></div>
-        <div class="pillar-card"><p>Création de contenu conjoint</p></div>
-        <div class="pillar-card"><p>Présence digitale</p></div>
-        <div class="pillar-card"><p>Activations Matchday</p></div>
-        <div class="pillar-card"><p>Visibilité sur les équipements selon l'entente</p></div>
+  <div class="yp-strip reveal">
+    <div><b>2</b><span>Saisons en LSAQ 11v11</span></div>
+    <div><b>2</b><span>Qualifications en séries</span></div>
+    <div><b>57</b><span>Buts en saison régulière</span></div>
+    <div><b>FR / EN</b><span>Site bilingue</span></div>
+    <div><b>MTL</b><span>100 % montréalais</span></div>
+  </div>
+
+  <div class="yp-block reveal" id="yp-why">
+    <div class="micro-tag">POURQUOI NOUS SOUTENIR</div>
+    <h3 class="yp-h3">Quatre bonnes raisons de nous rejoindre.</h3>
+    <div class="yp-why">
+      <article><span class="yp-ic">◎</span><h4>Une visibilité locale ciblée</h4><p>Votre marque devant des joueurs, des familles et des passionnés de soccer de Montréal, chaque fin de semaine, sur le terrain comme en ligne.</p></article>
+      <article><span class="yp-ic">▲</span><h4>Un club qui progresse</h4><p>Qualifié pour les séries dès sa saison fondatrice, puis à nouveau en 2026 dans une ligue de 11 équipes. Vous misez sur un projet qui avance.</p></article>
+      <article><span class="yp-ic">★</span><h4>Un statut de fondateur</h4><p>Les premières entreprises partenaires restent associées au club comme partenaires fondateurs. Une place dans notre histoire, pas seulement un logo.</p></article>
+      <article><span class="yp-ic">◆</span><h4>Une image positive</h4><p>Le sport amateur rassemble. Soutenir une équipe locale, c'est montrer que votre entreprise s'implique dans sa communauté.</p></article>
+    </div>
+  </div>
+
+  <div class="yp-block reveal">
+    <div class="micro-tag">CE QUE VOTRE MARQUE OBTIENT</div>
+    <h3 class="yp-h3">Présente partout où le club vit.</h3>
+    <div class="yp-gets">
+      <div><h4>Sur le terrain</h4><ul><li>Logo sur le maillot de match ou d'entraînement</li><li>Bannière les jours de match</li><li>Présence sur les photos d'équipe</li></ul></div>
+      <div><h4>En ligne</h4><ul><li>Logo et lien sur yulfc.com</li><li>Contenus « présenté par » : jour de match, onze de départ, joueur du match</li><li>Mentions sur les réseaux sociaux du club</li></ul></div>
+      <div><h4>Avec la communauté</h4><ul><li>Activations sur place avec les supporters</li><li>Offres ou concours pour les fans</li><li>Contenu créé ensemble avec les joueurs</li></ul></div>
+    </div>
+  </div>
+
+  <div class="yp-block reveal" id="yp-tiers">
+    <div class="micro-tag">LES FORMULES</div>
+    <h3 class="yp-h3">Choisissez votre niveau d'engagement.</h3>
+    <div class="yp-tiers">
+      <div class="yp-tier">
+        <div class="yp-tname">Supporter local</div>
+        <p class="yp-tfor">Pour les commerces du quartier qui veulent soutenir l'équipe.</p>
+        <ul><li>Logo sur la page Partenaires</li><li>Remerciements sur les réseaux du club</li><li>Une activation par saison</li></ul>
+        <a href="#partner-inquiry-form" class="btn-ghost">En parler</a>
       </div>
+      <div class="yp-tier featured">
+        <div class="yp-badge">LE PLUS COMPLET</div>
+        <div class="yp-tname">Partenaire fondateur</div>
+        <p class="yp-tfor">Pour la marque qui veut être associée au club dès le départ.</p>
+        <ul><li>Logo sur le devant du maillot</li><li>Contenus « présenté par » toute la saison</li><li>Statut de fondateur permanent</li><li>Exclusivité dans votre secteur</li></ul>
+        <a href="#partner-inquiry-form" class="btn-primary">Réserver ma place</a>
+      </div>
+      <div class="yp-tier">
+        <div class="yp-tname">Partenaire officiel</div>
+        <p class="yp-tfor">Pour une présence forte sur un espace précis.</p>
+        <ul><li>Manche, dos ou tenue d'entraînement</li><li>Logo et lien sur yulfc.com</li><li>Bannière les jours de match</li></ul>
+        <a href="#partner-inquiry-form" class="btn-ghost">En parler</a>
+      </div>
+    </div>
+    <p class="yp-note">Chaque entente est construite sur mesure, selon vos objectifs et votre budget.</p>
+  </div>
+
+  <div class="yp-block reveal">
+    <div class="micro-tag">COMMENT ÇA MARCHE</div>
+    <div class="yp-steps">
+      <div><b>01</b><h4>On se parle</h4><p>Vous nous dites ce que vous voulez accomplir. Un message suffit.</p></div>
+      <div><b>02</b><h4>On construit l'entente</h4><p>Nous vous proposons une formule claire, adaptée à votre entreprise.</p></div>
+      <div><b>03</b><h4>Votre marque entre en jeu</h4><p>Maillot, site, jours de match : votre visibilité démarre avec la saison.</p></div>
     </div>
   </div>
 
