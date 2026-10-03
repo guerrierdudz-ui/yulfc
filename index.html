@@ -3393,8 +3393,6 @@ footer{ background:var(--void); border-top:1px solid var(--line); padding:3rem 6
     <div class="modal-bio-row">
       <div>NATIONALITY<b id="modalNat">--</b></div>
       <div>AGE<b id="modalAge">--</b></div>
-      <div>HEIGHT<b id="modalHeight">--</b></div>
-      <div>PREFERRED FOOT<b id="modalFoot">--</b></div>
     </div>
 
     <div class="modal-section-title">SEASON STATS</div>
@@ -4488,8 +4486,6 @@ function openModal(num){
   document.getElementById('modalName').textContent = p.name;
   document.getElementById('modalPos').textContent = p.pos || 'Position à confirmer';
   document.getElementById('modalAge').textContent = p.age || '-';
-  document.getElementById('modalHeight').textContent = p.height || '-';
-  document.getElementById('modalFoot').textContent = p.foot || '-';
   document.getElementById('modalNat').innerHTML = p.country ? `<span class="flag">${p.flag}</span>${p.country}` : '-';
 
   const statsGrid = document.getElementById('modalStatsGrid');
