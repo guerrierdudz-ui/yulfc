@@ -42,7 +42,7 @@
 .yp-logo-slot{ fill:rgba(255,255,255,.08); stroke:#F0B429; stroke-width:2; stroke-dasharray:6 5; animation:ypDash 1.6s linear infinite; }
 @keyframes ypDash{ to{ stroke-dashoffset:-22; } }
 .yp-logo-t1{ font-family:var(--ff-mono); font-size:11px; letter-spacing:3px; fill:#FCE7A6; }
-.yp-logo-t2{ font-family:var(--ff-display); font-size:20px; letter-spacing:1px; fill:#fff; }
+.yp-logo-t2{ font-family:var(--ff-display); font-size:22px; letter-spacing:1px; fill:#fff; }
 .yp-num{ font-family:var(--ff-display); font-size:74px; fill:rgba(255,255,255,.14); }
 .yp-tag{
   position:absolute; font-family:var(--ff-mono); font-size:.62rem; letter-spacing:.1em; text-transform:uppercase; white-space:nowrap;
@@ -52,8 +52,8 @@
 }
 .yp-tag::before{ content:'●'; color:var(--gold); margin-right:.45rem; font-size:.6rem; }
 .yp-tag.t1{ top:12%; left:-2%; }
-.yp-tag.t2{ top:46%; right:-4%; animation-delay:-2s; }
-.yp-tag.t3{ bottom:10%; left:4%; animation-delay:-4s; }
+.yp-tag.t2{ top:64%; right:-4%; animation-delay:-2s; }
+.yp-tag.t3{ bottom:6%; left:0; animation-delay:-4s; }
 @keyframes ypTag{ 50%{ transform:translateY(-6px); } }
 
 /* ---------- Page Partenaires ---------- */
