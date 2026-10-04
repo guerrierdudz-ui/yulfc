@@ -76,7 +76,7 @@
     // Season Hub
     ['LE PARCOURS DE LA SAISON', 'SEASON JOURNEY'], ['Match par match.', 'Match by Match.'],
     ["Saison 2026, les 11 matchs officiels LSAQ, séries comprises. Cliquez sur un match pour l'ouvrir.", '2026 season, all 11 official LSAQ matches, playoffs included. Click a match to open it.'],
-    ['Saison régulière', 'Regular season'], ['Séries éliminatoires', 'Playoffs'], ['Quart de finale', 'Quarter-final'], ['Demi-finale', 'Semi-final'],
+    ['Saison régulière', 'Regular season'], ['Séries éliminatoires', 'Playoffs'], ['Quart de finale', 'Quarter-final'], ['Demi-finale', 'Semi-final'], ['Date à confirmer', 'Date TBC'],
     ['Nos saisons.', 'Our Seasons.'], ['Chaque saison. Chaque match. Notre histoire.', 'Every season. Every match. Our history.'],
     ['SAISON TERMINÉE', 'SEASON COMPLETED'], ['ÉTÉ · 11v11', 'SUMMER · 11v11'], ['2025 · ANNÉE FONDATRICE', '2025 · FOUNDING YEAR'],
     ['2027 · bientôt', '2027 · coming soon'], ['2028 · bientôt', '2028 · coming soon'], ['☀️ ÉTÉ · 11v11', '☀️ SUMMER · 11v11'],

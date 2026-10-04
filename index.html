@@ -4532,6 +4532,7 @@ const LSAQ_RESULTS = [
   ['2025-07-20T10:00:00-04:00','YUL FC',4,3,'Frittata FC','league'],
   ['2025-08-03T10:00:00-04:00','YUL FC',4,2,'Impact Laval','league'],
   ['2025-08-10T10:00:00-04:00','YUL FC',1,4,'Haboub FC','league'],
+  [null,'YUL FC',2,3,'Frittata FC','playoff','Demi-finale','2025'],
   ['2026-05-17T11:15:00-04:00','Atlas MTL',0,1,'YUL FC','league'],
   ['2026-05-24T11:15:00-04:00','YUL FC',7,0,'Rush FC','league'],
   ['2026-06-07T09:30:00-04:00','YUL FC',9,4,'Montréal Town FC','league'],
@@ -4543,11 +4544,14 @@ const LSAQ_RESULTS = [
   ['2026-08-02T09:30:00-04:00','AS Autmont',3,0,'YUL FC','league'],
   ['2026-08-09T09:30:00-04:00','YUL FC',0,1,'Haboub FC','league'],
   ['2026-08-22T11:45:00-04:00','Haboub FC',3,1,'YUL FC','playoff','Quart de finale'],
-].map(([date,home,hs,as,away,comp,round])=>{
-  const isHome = home==='YUL FC';
-  const scoreYul = isHome?hs:as, scoreOpp = isHome?as:hs;
-  const year = date.slice(0,4);
-  return { id:'lsaq-'+date.slice(0,10), opponent: isHome?away:home, venue: year==='2026'?'Collège Letendre':'',
+].map(([date,home,hs,as,away,comp,round,yr])=>{
+  // date null = date non fournie : on n'en invente pas (match placé à son rang dans la saison)
+  const isYulFirst = home==='YUL FC';
+  const isHome = date ? isYulFirst : null;
+  const scoreYul = isYulFirst?hs:as, scoreOpp = isYulFirst?as:hs;
+  const year = yr || date.slice(0,4);
+  return { id: date ? 'lsaq-'+date.slice(0,10) : 'lsaq-'+year+'-'+(round||comp).toLowerCase().replace(/[^a-z]+/g,'-'),
+    opponent: isYulFirst?away:home, venue: year==='2026'?'Collège Letendre':'',
     comp, round: round||'', date, kickoff:date, result: scoreYul>scoreOpp?'W':scoreYul<scoreOpp?'L':'D',
     scoreYul, scoreOpp, status:'full-time', isHome, events:[], stats:null, ratings:{}, potm:null,
     reportPublished:false, year, segment:'summer', format:'11v11' };
@@ -4561,7 +4565,7 @@ tl.innerHTML = results.map((x,i)=>`
     <div class="mnum">${x.m.comp==='playoff' ? 'SÉRIES' : 'MATCH '+String(i+1).padStart(2,'0')}</div>
     <div class="res">${x.r}</div>
     <div class="score">${x.score}</div>
-    <div class="opp">${x.m.isHome?'vs':'@'} ${x.m.opponent}</div>
+    <div class="opp">${x.m.isHome===false?'@':'vs'} ${x.m.opponent}</div>
   </div>
 `).join('');
 function openTimelineMatch(item){
@@ -4592,8 +4596,8 @@ const demoComps = ['league','league','league','cup','league','league','friendly'
 const compLabel = {league:'LSAQ · Saison régulière', playoff:'LSAQ · Séries éliminatoires', cup:'Coupe Régionale', friendly:'Match Amical'};
 function compText(m){ return (compLabel[m.comp]||'') + (m.round ? ' · '+m.round : ''); }
 
-function loadMatchDB(){ try{ return JSON.parse(localStorage.getItem('yulfc_matches_v3')); }catch(e){ return null; } }
-function saveMatchDB(){ localStorage.setItem('yulfc_matches_v3', JSON.stringify(matchDB)); }
+function loadMatchDB(){ try{ return JSON.parse(localStorage.getItem('yulfc_matches_v4')); }catch(e){ return null; } }
+function saveMatchDB(){ localStorage.setItem('yulfc_matches_v4', JSON.stringify(matchDB)); }
 
 function buildDefaultMatchDB(){
   // Prochain match : à annoncer. Archive : vrais résultats LSAQ uniquement.
@@ -4633,6 +4637,7 @@ function fmtMatchDate(iso){
     d.toLocaleTimeString('fr-CA', {hour:'2-digit', minute:'2-digit'});
 }
 function fmtShortDate(iso){
+  if(!iso) return 'Date à confirmer';
   const d = new Date(iso);
   return d.toLocaleDateString('fr-CA', {day:'2-digit', month:'short', year:'numeric'});
 }
@@ -4996,7 +5001,7 @@ function renderShResults(){
   el.innerHTML = list.map(m=>`
     <div class="archive-card" data-id="${m.id}">
       <div class="ac-score">YUL FC ${m.scoreYul}-${m.scoreOpp} ${m.opponent}<span class="res ${m.result}">${m.result}</span></div>
-      <div class="ac-meta">${fmtShortDate(m.date)} · ${compText(m)} · ${m.isHome?'HOME':'AWAY'}</div>
+      <div class="ac-meta">${fmtShortDate(m.date)} · ${compText(m)}${m.isHome===true?' · HOME':m.isHome===false?' · AWAY':''}</div>
       <div class="ac-meta" style="color:var(--gold-dim); margin-top:.2rem;">${matchFormatTag(m)}</div>
     </div>`).join('');
   el.querySelectorAll('.archive-card').forEach(card=>{
@@ -5040,7 +5045,7 @@ function renderShHomeAway(){
   if(selectedSegment!=='summer'){ el.innerHTML = '<div class="empty-state"><div class="es-title">NO WINTER 7v7 DATA YET.</div></div>'; return; }
   const home = {p:0,w:0,d:0,l:0,gf:0,ga:0};
   const away = {p:0,w:0,d:0,l:0,gf:0,ga:0};
-  matchDB.archive.filter(m=>m.year===selectedSeasonYear).forEach(m=>{
+  matchDB.archive.filter(m=>m.year===selectedSeasonYear && typeof m.isHome==='boolean').forEach(m=>{
     const bucket = m.isHome ? home : away;
     bucket.p++; bucket.gf+=m.scoreYul; bucket.ga+=m.scoreOpp;
     if(m.result==='W') bucket.w++; else if(m.result==='D') bucket.d++; else bucket.l++;
