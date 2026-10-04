@@ -99,3 +99,15 @@
   .st-body{ margin-left:0; }
   .st-year{ font-size:1.4rem; }
 }
+
+/* ---------- Notre ambition ---------- */
+.story-ambition{ display:grid; grid-template-columns:repeat(4,1fr); gap:1rem; margin-top:1.4rem; }
+.story-ambition > div{
+  border:1px solid var(--line); border-radius:14px; padding:1.4rem 1.2rem;
+  background:linear-gradient(165deg, var(--raised), var(--surface));
+}
+.story-ambition span{ font-family:var(--ff-display); font-size:2rem; color:rgba(240,180,41,.4); line-height:1; }
+.story-ambition h4{ font-family:var(--ff-display); font-weight:400; font-size:1.25rem; text-transform:uppercase; letter-spacing:.02em; margin-top:.5rem; color:var(--ink); }
+.story-ambition p{ color:var(--dim); font-size:.9rem; line-height:1.6; margin-top:.4rem; }
+@media (max-width:900px){ .story-ambition{ grid-template-columns:repeat(2,1fr); } }
+@media (max-width:520px){ .story-ambition{ grid-template-columns:1fr; } }

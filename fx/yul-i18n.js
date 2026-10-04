@@ -149,8 +149,8 @@
     ['NOTRE HISTOIRE', 'OUR STORY'],
     // Notre histoire
     ['// DEPUIS 2025', '// SINCE 2025'], ['Qui sommes-nous.', 'Who We Are.'],
-    ['YUL FC est un club de football compétitif de Montréal. Trois lettres qui désignent la ville partout dans le monde, une devise,', 'YUL FC is a competitive football club from Montréal. Three letters that stand for the city all over the world, one motto,'],
-    [', et un groupe qui se bat pour son badge chaque week-end.', ', and a group that fights for its badge every weekend.'],
+    ["YUL FC est un club de football compétitif de Montréal, né à l'aéroport. Trois lettres, celles de l'aéroport Montréal-Trudeau, une devise,", 'YUL FC is a competitive football club from Montréal, born at the airport. Three letters, those of Montréal-Trudeau airport, one motto,'],
+    [", et un groupe d'amis qui se bat pour son badge chaque week-end.", ', and a group of friends who fight for the badge every weekend.'],
     ['PHOTO À VENIR', 'PHOTO COMING SOON'], ['Déposer le fichier', 'Drop the file'], ['à la racine du site', 'in the site root'],
     ['Né à Montréal, en 2025.', 'Born in Montréal, in 2025.'],
     ['Le YUL FC dispute sa première saison en 2025 dans la ligue LSAQ, en football à 11. Pour une équipe qui découvre la compétition, le départ est solide : 4', 'YUL FC played its first season in 2025 in the LSAQ league, in 11-a-side football. For a team new to the competition, it was a solid start: 4'],
@@ -267,6 +267,13 @@
     // Pied de page
     ["L'effectif", 'The Squad'], ['Notre histoire', 'Our story'], ["S'IMPLIQUER", 'GET INVOLVED'], ['Rejoindre YUL FC', 'Join YUL FC'],
     ['Partenariat', 'Partnership'], ['Accès joueurs', 'Player Access'], ['Accès staff', 'Staff Access'],
+    ["Né à l'aéroport YUL.", 'Born at YUL airport.'],
+    ["Le club a été fondé par Adel Mihoubi avec une idée simple : créer une équipe de football pour les employés de l'aéroport YUL. Le nom vient de là.", 'The club was founded by Adel Mihoubi with a simple idea: to create a football team for YUL airport employees. That is where the name comes from.'],
+    ["Avec le temps, l'équipe s'est ouverte à tout le monde, sans perdre ce qui la rend unique : l'identité de l'aéroport et de son univers, qui reste au cœur du club.", 'Over time, the team opened up to everyone without losing what makes it unique: the identity of the airport and its world, which remains at the heart of the club.'],
+    ['NOTRE AMBITION', 'OUR AMBITION'], ['Grandir', 'Grow'], ['Faire avancer le club saison après saison, sur le terrain comme en dehors.', 'Move the club forward season after season, on and off the pitch.'],
+    ['Être compétitif', 'Be competitive'], ['Viser le plus haut niveau possible à chaque match.', 'Aim for the highest possible level in every match.'],
+    ['Gagner des trophées', 'Win trophies'], ["Transformer le travail de l'équipe en titres.", "Turn the team's hard work into titles."],
+    ["Un groupe d'amis", 'A group of friends'], ['Avant tout, une équipe soudée qui partage la même passion.', 'Above all, a close-knit team that shares the same passion.'],
     // Partenaires (accueil + page)
     ['Vues Instagram en 30 jours', 'Instagram views in 30 days'],
     ['NOTRE AUDIENCE', 'OUR AUDIENCE'],
