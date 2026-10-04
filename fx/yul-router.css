@@ -130,3 +130,13 @@ html[data-page="home"] #homeLatestGrid{ grid-template-columns:repeat(3, minmax(0
 /* Explore The Stadium : 10 tuiles → 5 × 2 sur grand écran, 2 colonnes ailleurs */
 @media (min-width:1100px){ #stadiumMap .stadium-map-grid{ grid-template-columns:repeat(5, minmax(0,1fr)); } }
 @media (max-width:1099px){ #stadiumMap .stadium-map-grid{ grid-template-columns:repeat(2, minmax(0,1fr)); } }
+
+/* ---------- Match Center : aucun match programmé ---------- */
+.match-card.is-tbd .match-meta,
+.match-card.is-tbd #viewNextMatchBtn,
+.match-card.is-tbd .team-form,
+.match-card.is-tbd #matchPassportNoteWrap{ display:none !important; }
+.match-card.is-tbd #nextMatchFormatTag{ font-size:.82rem; letter-spacing:.04em; text-transform:none; color:var(--dim); margin:1rem 0 .4rem; }
+.match-card.is-tbd #nextOppCrest{ font-size:1.6rem; color:var(--gold); }
+#match .form-guide:has(.pips:empty){ display:none; }
+html[data-page="home"] #homeLatestSection:has(#homeLatestGrid > .empty-state){ display:none !important; }
