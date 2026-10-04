@@ -1,5 +1,7 @@
 /* ==========================================================================
    YUL FC · Worker Cloudflare
+   - /api/auth, /api/club : espace membres joueurs + staff (voir club.js)
+   - /api/public/matches  : matchs publiés par le staff (site public)
    - /api/media   : API des photos (liste publique, envoi et suppression staff)
    - /media/<id>  : sert les photos stockées dans R2
    - tout le reste: fichiers du site (index.html, fx/, images...)
@@ -7,6 +9,8 @@
               + secret STAFF_UPLOAD_KEY (tableau de bord → Settings → Variables and Secrets)
    ========================================================================== */
 
+
+import { handleClub, currentUser, isStaff } from './club.js';
 
 const SLOT_RE = /^(hero|histoire|gallery|player-\d{1,3})$/;
 const SINGLE_SLOT = s => s !== 'gallery';          // une seule photo par emplacement (sauf galerie)
@@ -18,7 +22,12 @@ const json = (data, status = 200) => new Response(JSON.stringify(data), {
   status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' }
 });
 
-function authorized(request, env){
+// Accès staff : clé X-Staff-Key OU session d'un compte staff (espace membres)
+async function authorized(request, env){
+  if(keyAuthorized(request, env)) return true;
+  try{ return isStaff(await currentUser(request, env)); }catch(e){ return false; }
+}
+function keyAuthorized(request, env){
   const secret = env.STAFF_UPLOAD_KEY || '';
   const given = request.headers.get('X-Staff-Key') || '';
   if(!secret || given.length !== secret.length) return false;
@@ -42,15 +51,15 @@ async function mediaGet(request, env){
   if(!env.MEDIA) return json({ error: 'Stockage non configuré (binding R2 « MEDIA » manquant).' }, 503);
   const url = new URL(request.url);
   if(url.searchParams.has('check')){
-    if(!env.STAFF_UPLOAD_KEY) return json({ error: 'STAFF_UPLOAD_KEY non configurée.' }, 503);
-    return authorized(request, env) ? json({ ok: true }) : json({ error: 'Clé invalide.' }, 401);
+    if(!env.STAFF_UPLOAD_KEY && !(await authorized(request, env))) return json({ error: 'STAFF_UPLOAD_KEY non configurée.' }, 503);
+    return (await authorized(request, env)) ? json({ ok: true }) : json({ error: 'Clé invalide.' }, 401);
   }
   return json(await readIndex(env));
 }
 
 async function mediaPost(request, env){
   if(!env.MEDIA) return json({ error: 'Stockage non configuré (binding R2 « MEDIA » manquant).' }, 503);
-  if(!authorized(request, env)) return json({ error: 'Clé staff invalide.' }, 401);
+  if(!(await authorized(request, env))) return json({ error: 'Clé staff invalide.' }, 401);
 
   let form;
   try{ form = await request.formData(); }catch(e){ return json({ error: 'Envoi invalide.' }, 400); }
@@ -91,7 +100,7 @@ async function mediaPost(request, env){
 
 async function mediaDelete(request, env){
   if(!env.MEDIA) return json({ error: 'Stockage non configuré.' }, 503);
-  if(!authorized(request, env)) return json({ error: 'Clé staff invalide.' }, 401);
+  if(!(await authorized(request, env))) return json({ error: 'Clé staff invalide.' }, 401);
   const id = new URL(request.url).searchParams.get('id');
   const index = await readIndex(env);
   const item = index.items.find(i => i.id === id);
@@ -119,6 +128,9 @@ export default {
   async fetch(request, env){
     const url = new URL(request.url);
     try{
+      if(url.pathname.startsWith('/api/auth/') || url.pathname.startsWith('/api/club/') || url.pathname.startsWith('/api/public/')){
+        return await handleClub(request, env);
+      }
       if(url.pathname === '/api/media'){
         if(request.method === 'GET' || request.method === 'HEAD') return await mediaGet(request, env);
         if(request.method === 'POST') return await mediaPost(request, env);

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#070D1C">
+<title>Espace YUL FC</title>
+<link rel="icon" href="fx/yul-crest.png">
+<link rel="apple-touch-icon" href="fx/yul-crest.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="fx/espace.css">
+</head>
+<body>
+  <div id="app" aria-live="polite">
+    <div class="boot"><img src="fx/yul-crest.png" alt=""><span>Chargement…</span></div>
+  </div>
+  <div id="sheet" class="sheet" hidden>
+    <div class="sheet-backdrop" data-close></div>
+    <div class="sheet-panel" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+      <div class="sheet-head">
+        <h2 id="sheetTitle"></h2>
+        <button class="icon-btn" data-close aria-label="Fermer">✕</button>
+      </div>
+      <div class="sheet-body" id="sheetBody"></div>
+    </div>
+  </div>
+  <div id="toast" class="toast" role="status"></div>
+  <script src="fx/espace.js" defer></script>
+</body>
+</html>

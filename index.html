@@ -2641,12 +2641,12 @@ footer{ background:var(--void); border-top:1px solid var(--line); padding:3rem 6
           <button type="submit" class="login-submit">Login</button>
         </form>
         <a href="#" class="forgot-link" id="forgotLink">Mot de passe oublié</a>
-        <div class="login-note">ACCESS REQUIRED · Aperçu de l'expérience, authentification réelle à connecter à Supabase Auth.</div>
+        <div class="login-note portal-msg" id="lockerMsg">Accès réservé aux joueurs de l'effectif. Ton email et ton code temporaire te sont envoyés par le staff.</div>
       </div>
     </div>
 
     <div class="reveal">
-      <div class="phone-mock" id="phonePreview" role="button" tabindex="0" aria-label="Essayer la démo Player Hub">
+      <div class="phone-mock" id="phonePreview" role="button" tabindex="0" aria-label="Ouvrir l'espace joueur">
         <div class="phone-screen">
           <div class="phone-topbar"><span>YUL FC</span><span>#23 · GK</span></div>
           <div class="phone-card"><div class="l">PROCHAIN MATCH</div><div class="v">À annoncer</div></div>
@@ -2656,7 +2656,7 @@ footer{ background:var(--void); border-top:1px solid var(--line); padding:3rem 6
           <div class="phone-nav">
             <span class="active">HOME</span><span>CALENDAR</span><span>TEAM</span><span>STATS</span><span>PROFILE</span>
           </div>
-          <div class="phone-tap-hint">TAP TO TRY PLAYER HUB →</div>
+          <div class="phone-tap-hint">OUVRIR L'ESPACE JOUEUR →</div>
         </div>
       </div>
     </div>
@@ -2679,18 +2679,9 @@ footer{ background:var(--void); border-top:1px solid var(--line); padding:3rem 6
           <label for="coachPass">Password</label>
           <input type="password" id="coachPass" placeholder="••••••••" autocomplete="off">
         </div>
-        <div class="login-field">
-          <label for="coachRole">Access Level</label>
-          <select id="coachRole" class="role-select">
-            <option value="admin">ADMIN</option>
-            <option value="coach" selected>COACH</option>
-            <option value="assistant">ASSISTANT COACH</option>
-            <option value="manager">TEAM MANAGER</option>
-          </select>
-        </div>
         <button type="submit" class="login-submit">Enter Command Center</button>
       </form>
-      <div class="login-note">ACCESS REQUIRED · Aperçu de l'expérience, rôles et permissions réels à vérifier côté serveur (voir is_staff() dans le schéma).</div>
+      <div class="login-note portal-msg" id="coachMsg">Accès réservé au staff. Le rôle (admin, gérant, coach) est lié à ton compte.</div>
     </div>
     <div class="locked-card reveal">
       <div class="lab">NOTRE HISTOIRE</div>
@@ -9579,5 +9570,6 @@ renderSeasonHubAll();
 <script src="fx/yul-media.js" defer></script>
 <script src="fx/yul-i18n.js" defer></script>
 <script src="fx/yul-table.js" defer></script>
+<script src="fx/yul-portal.js" defer></script>
 </body>
 </html>
