@@ -4386,7 +4386,7 @@ const players = [
   {num:30, name:'Saad Mihoubi', pos:null, posCat:null, flag:'', country:'', appearances:7, goals:1, assists:0, yellow:0, red:0},
   {num:2,  name:'Jawad Mesnaoui', pos:null, posCat:null, flag:'', country:'', appearances:9, goals:0, assists:0, yellow:0, red:0},
   {num:3,  name:'Abdelkarim Mihoubi', pos:null, posCat:null, flag:'', country:'', appearances:3, goals:0, assists:0, yellow:0, red:0},
-  {num:4,  name:'Adnane Bari', pos:null, posCat:null, flag:'', country:'', appearances:10, goals:0, assists:0, yellow:0, red:0},
+  {num:4,  captain:true, name:'Adnane Bari', pos:null, posCat:null, flag:'', country:'', appearances:10, goals:0, assists:0, yellow:0, red:0},
   {num:5,  name:'Sagui Randiambalohery', pos:null, posCat:null, flag:'', country:'', appearances:9, goals:0, assists:0, yellow:1, red:0},
   {num:11, name:'Marc-David Amisial', pos:null, posCat:null, flag:'', country:'', appearances:10, goals:0, assists:0, yellow:1, red:0},
   {num:20, name:'Chris Frettier', pos:null, posCat:null, flag:'', country:'', appearances:7, goals:0, assists:0, yellow:2, red:0},
@@ -4401,10 +4401,11 @@ function playerCardHTML(p){
   const last = parts.length > 1 ? parts.pop() : parts[0];
   const first = parts.length && parts[0] !== last ? parts.join(' ') : '';
   const num = p.noNumber ? '' : `<span class="pc-num"><small>#</small>${p.num}</span>`;
+  const cap = p.captain ? `<span class="pc-cap" title="Capitaine" aria-label="Capitaine">C</span>` : '';
   return `<div class="player-card" data-num="${p.num}" tabindex="0">
       <div class="player-photo"><div class="player-num">${p.noNumber ? '' : p.num}</div></div>
       <div class="pc-shade"></div>
-      <div class="pc-top">${num || '<span></span>'}<img class="pc-crest" src="fx/yul-crest.png" alt="" loading="lazy"></div>
+      <div class="pc-top"><span class="pc-id">${num}${cap}</span><img class="pc-crest" src="fx/yul-crest.png" alt="" loading="lazy"></div>
       <div class="player-info">
         <div class="player-name">${first ? `<span class="pc-first">${first} </span>` : ''}<span class="pc-last">${last}</span></div>
         ${p.pos ? `<span class="player-pos">${p.pos}</span>` : ''}

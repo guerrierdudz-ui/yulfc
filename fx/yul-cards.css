@@ -115,3 +115,12 @@
   .player-card, .player-card .player-photo{ transition:none; }
   .player-card:hover::before{ animation:none; }
 }
+
+/* Brassard de capitaine */
+.pc-id{ display:flex; align-items:center; gap:.45rem; }
+.pc-cap{
+  display:inline-grid; place-items:center; width:clamp(20px, 11cqi, 28px); aspect-ratio:1; border-radius:50%;
+  font-family:var(--ff-display); font-size:clamp(.72rem, 6.5cqi, .95rem); line-height:1; color:#070D1C;
+  background:linear-gradient(180deg, #FCE7A6, #F0B429 60%, #C99A2E);
+  box-shadow:0 0 0 2px rgba(7,13,28,.55), 0 4px 12px -2px rgba(240,180,41,.55);
+}
