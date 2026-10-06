@@ -102,9 +102,9 @@
     if(d && Array.isArray(d.matches) && d.matches.length) applyMatches(d.matches);
   }).catch(() => {});
 
-  /* ---------------- 3. Âge et nationalités sur les cartes joueurs ----------------
-     Saisis par le staff dans l'Espace (fiche joueur), reliés aux cartes par le nom. */
-  const norm = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+  /* ---------------- 3. Poste, âge et nationalités dans la fiche joueur (au clic) ----------------
+     Saisis par le staff dans l'Espace, reliés aux joueurs du site par le nom. */
+  const norm = s => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
   const ISO = { 'canada':'CA','algerie':'DZ','maroc':'MA','tunisie':'TN','france':'FR','haiti':'HT','madagascar':'MG','senegal':'SN',
     'cote d ivoire':'CI','cameroun':'CM','rd congo':'CD','congo':'CG','guinee':'GN','mali':'ML','liban':'LB','syrie':'SY','irak':'IQ',
     'egypte':'EG','belgique':'BE','portugal':'PT','espagne':'ES','italie':'IT','bresil':'BR','colombie':'CO','mexique':'MX',
@@ -117,32 +117,10 @@
     'equateur':'EC','bolivie':'BO','paraguay':'PY','uruguay':'UY','pays bas':'NL','pologne':'PL','roumanie':'RO','ukraine':'UA',
     'russie':'RU','grece':'GR','albanie':'AL','bosnie':'BA','serbie':'RS','croatie':'HR','armenie':'AM','japon':'JP','coree du sud':'KR' };
   // drapeaux en image : les émojis drapeaux ne s'affichent pas sous Windows
-  const flag = n => { const c = ISO[norm(n)]; return c ? `<img class="pc-flag" src="https://flagcdn.com/w40/${c.toLowerCase()}.png" alt="" width="16" height="12" loading="lazy">` : ''; };
+  const flag = n => { const c = ISO[norm(n)]; return c ? `<img class="pc-flag" src="https://flagcdn.com/w40/${c.toLowerCase()}.png" alt="" width="16" height="12" loading="lazy" onerror="this.remove()">` : ''; };
   let SQUAD = null;
   const POS_LABEL = { GK: 'Gardien', DEF: 'Défenseur', MID: 'Milieu', FWD: 'Attaquant' };
 
-  function siteName(card){
-    const num = card.getAttribute('data-num');
-    try{ if(typeof players !== 'undefined'){ const p = players.find(x => String(x.num) === String(num)); if(p) return p.name; } }catch(e){}
-    const n = card.querySelector('.player-name'); return n ? n.textContent : '';
-  }
-  function infoFor(name){ return SQUAD && SQUAD.get(norm(name)); }
-  function decorate(root){
-    if(!SQUAD) return;
-    (root && root.querySelectorAll ? root : document).querySelectorAll('.player-card[data-num]').forEach(card => {
-      const info = infoFor(siteName(card));
-      const old = card.querySelector('.pc-meta');
-      if(!info){ if(old) old.remove(); return; }
-      const bits = [];
-      if(info.age != null) bits.push(`<span>${info.age} ans</span>`);
-      info.nationalities.forEach(n => bits.push(`<span class="pc-nat">${flag(n)}${esc(n)}</span>`));
-      const html = (info.pos ? `<span class="pc-pos">${POS_LABEL[info.pos]}</span>` : '') + bits.join('');
-      if(old){ if(old.innerHTML !== html) old.innerHTML = html; return; }
-      const el = document.createElement('div'); el.className = 'pc-meta'; el.innerHTML = html;
-      const name = card.querySelector('.player-name');
-      if(name) name.insertAdjacentElement('afterend', el); else (card.querySelector('.player-info') || card).appendChild(el);
-    });
-  }
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   function applySquad(list){
     SQUAD = new Map(list.map(x => [norm(x.name), x]));
@@ -157,13 +135,9 @@
     }catch(e){}
     if(!document.getElementById('pc-meta-style')){
       const st = document.createElement('style'); st.id = 'pc-meta-style';
-      st.textContent = `.player-card .pc-meta{ display:flex; flex-wrap:wrap; align-items:center; gap:.2rem .6rem; margin-top:.35rem;
-        font-family:var(--ff-mono, monospace); font-size:clamp(.56rem, 4.6cqi, .7rem); letter-spacing:.04em; color:rgba(244,245,242,.82);
-        text-shadow:0 1px 4px rgba(0,0,0,.7); position:relative; z-index:2; }
-        .player-card .pc-meta .pc-flag, .modal-bio-row .pc-flag{ display:inline-block; width:1.35em; height:auto; border-radius:2px; margin-right:.35em; vertical-align:-.12em; box-shadow:0 0 0 1px rgba(0,0,0,.25); }
-        .player-card .pc-meta > span{ white-space:nowrap; }
-        .player-card .pc-meta .pc-pos{ flex-basis:100%; color:var(--gold, #F0B429); text-transform:uppercase; letter-spacing:.14em; }
-        .player-card:has(.pc-meta) .player-pos{ display:none; }`;
+      // les infos restent dans la fiche au clic, pas sur la photo de la carte
+      st.textContent = `.player-card .player-pos{ display:none !important; }
+        .modal-bio-row .pc-flag{ display:inline-block; width:1.35em; height:auto; border-radius:2px; margin-right:.35em; vertical-align:-.12em; box-shadow:0 0 0 1px rgba(0,0,0,.25); }`;
       document.head.appendChild(st);
     }
     // postes connus : on redessine l'effectif pour que les filtres (Gardiens, Défenseurs…) fonctionnent
@@ -172,9 +146,6 @@
       if(typeof renderPlayersGrid === 'function') renderPlayersGrid(active ? active.dataset.posfilter : 'all');
       if(typeof renderHomeSquadPreview === 'function') renderHomeSquadPreview();
     }catch(e){}
-    decorate(document);
-    new MutationObserver(ms => { for(const m of ms) for(const n of m.addedNodes) if(n.nodeType === 1 && (n.matches('.player-card') || n.querySelector('.player-card'))){ decorate(n.parentElement || n); return; } })
-      .observe(document.body, { childList: true, subtree: true });
   }
   fetch('/api/public/squad').then(r => r.ok ? r.json() : null).then(d => {
     if(d && Array.isArray(d.squad) && d.squad.length) applySquad(d.squad);
