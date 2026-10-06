@@ -117,7 +117,7 @@
     'equateur':'EC','bolivie':'BO','paraguay':'PY','uruguay':'UY','pays bas':'NL','pologne':'PL','roumanie':'RO','ukraine':'UA',
     'russie':'RU','grece':'GR','albanie':'AL','bosnie':'BA','serbie':'RS','croatie':'HR','armenie':'AM','japon':'JP','coree du sud':'KR' };
   // drapeaux en image : les émojis drapeaux ne s'affichent pas sous Windows
-  const flag = n => { const c = ISO[norm(n)]; return c ? `<img class="pc-flag" src="https://flagcdn.com/w40/${c.toLowerCase()}.png" alt="" width="16" height="12" loading="lazy" onerror="this.remove()">` : ''; };
+  const flag = n => { const c = ISO[norm(n)]; return c ? `<img class="pc-flag" src="https://flagcdn.com/w40/${c.toLowerCase()}.png" alt="${esc(n)}" title="${esc(n)}" width="24" height="16" loading="lazy" onerror="var s=document.createElement('span');s.className='pc-nat-txt';s.textContent=this.alt;this.replaceWith(s)">` : ''; };
   let SQUAD = null;
   const POS_LABEL = { GK: 'Gardien', DEF: 'Défenseur', MID: 'Milieu', FWD: 'Attaquant' };
 
@@ -130,14 +130,16 @@
         const i = SQUAD.get(norm(p.name)); if(!i) return;
         if(i.age != null) p.age = i.age + ' ans';
         if(i.pos){ p.posCat = i.pos; p.pos = POS_LABEL[i.pos]; }
-        if(i.nationalities.length){ p.country = i.nationalities.join(' / '); p.flag = i.nationalities.map(flag).join(''); }
+        if(i.nationalities.length){ // drapeaux seulement (nom du pays au survol) ; nom écrit si le pays n'a pas de drapeau connu
+          p.country = i.nationalities.map(n => flag(n) || `<span class="pc-nat-txt">${esc(n)}</span>`).join(''); p.flag = ''; }
       });
     }catch(e){}
     if(!document.getElementById('pc-meta-style')){
       const st = document.createElement('style'); st.id = 'pc-meta-style';
       // les infos restent dans la fiche au clic, pas sur la photo de la carte
       st.textContent = `.player-card .player-pos{ display:none !important; }
-        .modal-bio-row .pc-flag{ display:inline-block; width:24px !important; height:16px !important; max-width:none; object-fit:cover; border-radius:2px; margin-right:6px; vertical-align:-3px; box-shadow:0 0 0 1px rgba(255,255,255,.12); }`;
+        .modal-bio-row .pc-flag{ display:inline-block; width:24px !important; height:16px !important; max-width:none; object-fit:cover; border-radius:2px; margin-right:6px; vertical-align:-3px; box-shadow:0 0 0 1px rgba(255,255,255,.12); }
+        .modal-bio-row .pc-nat-txt{ margin-right:8px; }`;
       document.head.appendChild(st);
     }
     // postes connus : on redessine l'effectif pour que les filtres (Gardiens, Défenseurs…) fonctionnent
