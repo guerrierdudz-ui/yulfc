@@ -153,7 +153,8 @@
      ================================================================== */
   /* Photos fixes livrées avec le site (utilisées si aucune photo n'a été envoyée depuis la zone staff) */
   const STATIC = {
-    'player-12': 'players/aimen-messai.jpg',
+    'player-8': 'players/fourkane-irki.jpg',
+    'player-12':'players/aimen-messai.jpg',
     'player-16': 'players/augustin-stevenson.jpg',
     'player-17':'players/leo-laith-albadri.jpg',
     'player-19': 'players/bilel-fekih.jpg',
