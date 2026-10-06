@@ -164,6 +164,7 @@
     'player-19': 'players/bilel-fekih.jpg',
     'player-20': 'players/chris-frettier.jpg',
     'player-21': 'players/ayoub-meflah.jpg',
+    'player-23': 'players/adel-mihoubi.jpg',
     'player-64': 'players/taha-saidi.jpg'
   };
   const bySlot = slot => items.find(i => i.slot === slot) || (STATIC[slot] ? { id: 'static-' + slot, slot, url: STATIC[slot], static: true } : undefined);
