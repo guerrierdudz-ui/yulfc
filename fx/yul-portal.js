@@ -119,6 +119,7 @@
   // drapeaux en image : les émojis drapeaux ne s'affichent pas sous Windows
   const flag = n => { const c = ISO[norm(n)]; return c ? `<img class="pc-flag" src="https://flagcdn.com/w40/${c.toLowerCase()}.png" alt="" width="16" height="12" loading="lazy">` : ''; };
   let SQUAD = null;
+  const POS_LABEL = { GK: 'Gardien', DEF: 'Défenseur', MID: 'Milieu', FWD: 'Attaquant' };
 
   function siteName(card){
     const num = card.getAttribute('data-num');
@@ -134,8 +135,8 @@
       if(!info){ if(old) old.remove(); return; }
       const bits = [];
       if(info.age != null) bits.push(`<span>${info.age} ans</span>`);
-      if(info.nationalities.length) bits.push(`<span>${info.nationalities.map(n => `${flag(n)}${esc(n)}`).join(' · ')}</span>`);
-      const html = bits.join('<b aria-hidden="true">|</b>');
+      info.nationalities.forEach(n => bits.push(`<span class="pc-nat">${flag(n)}${esc(n)}</span>`));
+      const html = (info.pos ? `<span class="pc-pos">${POS_LABEL[info.pos]}</span>` : '') + bits.join('');
       if(old){ if(old.innerHTML !== html) old.innerHTML = html; return; }
       const el = document.createElement('div'); el.className = 'pc-meta'; el.innerHTML = html;
       const name = card.querySelector('.player-name');
@@ -150,18 +151,27 @@
       if(typeof players !== 'undefined') players.forEach(p => {
         const i = SQUAD.get(norm(p.name)); if(!i) return;
         if(i.age != null) p.age = i.age + ' ans';
+        if(i.pos){ p.posCat = i.pos; p.pos = POS_LABEL[i.pos]; }
         if(i.nationalities.length){ p.country = i.nationalities.join(' / '); p.flag = i.nationalities.map(flag).join(''); }
       });
     }catch(e){}
     if(!document.getElementById('pc-meta-style')){
       const st = document.createElement('style'); st.id = 'pc-meta-style';
-      st.textContent = `.player-card .pc-meta{ display:flex; flex-wrap:wrap; align-items:center; gap:.25rem .45rem; margin-top:.35rem;
+      st.textContent = `.player-card .pc-meta{ display:flex; flex-wrap:wrap; align-items:center; gap:.2rem .6rem; margin-top:.35rem;
         font-family:var(--ff-mono, monospace); font-size:clamp(.56rem, 4.6cqi, .7rem); letter-spacing:.04em; color:rgba(244,245,242,.82);
         text-shadow:0 1px 4px rgba(0,0,0,.7); position:relative; z-index:2; }
         .player-card .pc-meta .pc-flag, .modal-bio-row .pc-flag{ display:inline-block; width:1.35em; height:auto; border-radius:2px; margin-right:.35em; vertical-align:-.12em; box-shadow:0 0 0 1px rgba(0,0,0,.25); }
-        .player-card .pc-meta b{ color:rgba(240,180,41,.6); font-weight:400; }`;
+        .player-card .pc-meta > span{ white-space:nowrap; }
+        .player-card .pc-meta .pc-pos{ flex-basis:100%; color:var(--gold, #F0B429); text-transform:uppercase; letter-spacing:.14em; }
+        .player-card:has(.pc-meta) .player-pos{ display:none; }`;
       document.head.appendChild(st);
     }
+    // postes connus : on redessine l'effectif pour que les filtres (Gardiens, Défenseurs…) fonctionnent
+    try{
+      const active = document.querySelector('#squadFilters button.active');
+      if(typeof renderPlayersGrid === 'function') renderPlayersGrid(active ? active.dataset.posfilter : 'all');
+      if(typeof renderHomeSquadPreview === 'function') renderHomeSquadPreview();
+    }catch(e){}
     decorate(document);
     new MutationObserver(ms => { for(const m of ms) for(const n of m.addedNodes) if(n.nodeType === 1 && (n.matches('.player-card') || n.querySelector('.player-card'))){ decorate(n.parentElement || n); return; } })
       .observe(document.body, { childList: true, subtree: true });

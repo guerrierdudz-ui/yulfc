@@ -552,8 +552,9 @@ async function publicSquad(env){
   const squad = list.filter(p => p.status !== 'inactif').map(p => ({
     name: `${p.firstName || ''} ${p.lastName || ''}`.trim(), num: p.num ?? null,
     age: ageFrom(p.birthDate),
+    pos: ['GK', 'DEF', 'MID', 'FWD'].includes(p.pos) ? p.pos : null,
     nationalities: Array.isArray(p.nationalities) && p.nationalities.length ? p.nationalities : (p.nationality ? [p.nationality] : []),
-  })).filter(p => p.name && (p.age != null || p.nationalities.length));
+  })).filter(p => p.name && (p.age != null || p.pos || p.nationalities.length));
   return new Response(JSON.stringify({ squad }), { headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'public, max-age=60' } });
 }
 
