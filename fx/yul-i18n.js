@@ -62,7 +62,6 @@
     ['DEVENIR PARTENAIRE', 'BECOME A PARTNER'], ['SAISON 2027', 'SEASON 2027'],
     // The Pitch
     ['BASE DE DONNÉES JOUEURS', 'PLAYER DATABASE'], ["L'effectif.", 'The Squad.'], ['Représenter YUL. Défendre le badge.', 'Representing YUL. Defending the badge.'],
-    ["Aucune composition officielle communiquée pour l'instant. Effectif présenté par poste. Cliquez sur une carte pour ouvrir le profil complet.", 'No official line-up announced yet. Squad shown by position. Click a card to open the full profile.'],
     ['GARDIENS', 'GOALKEEPERS'], ['DÉFENSEURS', 'DEFENDERS'], ['MILIEUX', 'MIDFIELDERS'], ['ATTAQUANTS', 'FORWARDS'],
     ['POSTES PAS ENCORE DÉFINIS.', 'POSITIONS NOT YET SET.'],
     ['Le staff peut assigner les postes depuis le Command Center.', 'Staff can assign positions from the Command Center.'],
