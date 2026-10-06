@@ -153,6 +153,7 @@
      ================================================================== */
   /* Photos fixes livrées avec le site (utilisées si aucune photo n'a été envoyée depuis la zone staff) */
   const STATIC = {
+    'player-12': 'players/aimen-messai.jpg',
     'player-20': 'players/chris-frettier.jpg'
   };
   const bySlot = slot => items.find(i => i.slot === slot) || (STATIC[slot] ? { id: 'static-' + slot, slot, url: STATIC[slot], static: true } : undefined);
