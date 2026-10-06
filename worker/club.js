@@ -537,6 +537,26 @@ async function contractFile(request, env, u){
 }
 
 /* ---------------- matchs publics (site) ---------------- */
+/* ---------------- effectif public (âge + nationalités pour les cartes du site) ----------------
+   Seul l'âge est publié, jamais la date de naissance. */
+function ageFrom(d){
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(String(d || ''))) return null;
+  const [y, m, day] = d.split('-').map(Number);
+  const n = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Toronto' }));
+  let a = n.getFullYear() - y;
+  if(n.getMonth() + 1 < m || (n.getMonth() + 1 === m && n.getDate() < day)) a--;
+  return a >= 10 && a < 100 ? a : null;
+}
+async function publicSquad(env){
+  const list = env.MEDIA ? await db(env).all('players/') : [];
+  const squad = list.filter(p => p.status !== 'inactif').map(p => ({
+    name: `${p.firstName || ''} ${p.lastName || ''}`.trim(), num: p.num ?? null,
+    age: ageFrom(p.birthDate),
+    nationalities: Array.isArray(p.nationalities) && p.nationalities.length ? p.nationalities : (p.nationality ? [p.nationality] : []),
+  })).filter(p => p.name && (p.age != null || p.nationalities.length));
+  return new Response(JSON.stringify({ squad }), { headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'public, max-age=60' } });
+}
+
 async function publicMatches(env){
   if(!env.MEDIA) return json({ matches: [] });
   const evs = await db(env).all('events/');
@@ -558,6 +578,7 @@ export async function handleClub(request, env){
   const url = new URL(request.url);
   const p = url.pathname;
   if(p === '/api/public/matches' && request.method === 'GET') return publicMatches(env);
+  if(p === '/api/public/squad' && request.method === 'GET') return publicSquad(env);
   if(!env.MEDIA) return err('Stockage non configuré (binding R2 « MEDIA » manquant).', 503);
 
   if(request.method !== 'GET' && !sameOrigin(request)) return err('Origine refusée.', 403);
