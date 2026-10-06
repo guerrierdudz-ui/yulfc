@@ -137,7 +137,7 @@
       const st = document.createElement('style'); st.id = 'pc-meta-style';
       // les infos restent dans la fiche au clic, pas sur la photo de la carte
       st.textContent = `.player-card .player-pos{ display:none !important; }
-        .modal-bio-row .pc-flag{ display:inline-block; width:1.35em; height:auto; border-radius:2px; margin-right:.35em; vertical-align:-.12em; box-shadow:0 0 0 1px rgba(0,0,0,.25); }`;
+        .modal-bio-row .pc-flag{ display:inline-block; width:24px !important; height:16px !important; max-width:none; object-fit:cover; border-radius:2px; margin-right:6px; vertical-align:-3px; box-shadow:0 0 0 1px rgba(255,255,255,.12); }`;
       document.head.appendChild(st);
     }
     // postes connus : on redessine l'effectif pour que les filtres (Gardiens, Défenseurs…) fonctionnent
