@@ -4,6 +4,8 @@
   "name": "yulfc",
   "main": "worker/index.js",
   "compatibility_date": "2026-09-01",
+  // garde les variables ajoutées dans le tableau de bord Cloudflare lors des déploiements
+  "keep_vars": true,
   "assets": {
     "directory": ".",
     "binding": "ASSETS",
