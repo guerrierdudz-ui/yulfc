@@ -167,6 +167,7 @@
     'player-20': 'players/chris-frettier.jpg',
     'player-21': 'players/ayoub-meflah.jpg',
     'player-23': 'players/adel-mihoubi.jpg',
+    'player-30': 'players/saad-mihoubi.jpg',
     'player-49': 'players/abdallah-eljamri.jpg',
     'player-64': 'players/taha-saidi.jpg'
   };
