@@ -498,7 +498,7 @@ const STAFF_VIEWS = {
         const accTag = !acc ? '<span class="tag">Pas d\'accès</span>' : !acc.active ? '<span class="tag red">Désactivé</span>' : acc.mustChange ? '<span class="tag gold">En attente</span>' : '<span class="tag green">Accès actif</span>';
         return `<div class="li clickable" data-act="player-open" data-id="${p.id}" data-search="${esc((pName(p) + ' ' + (p.num ?? '')).toLowerCase())}">
           <div class="num">${p.num ?? '–'}</div>
-          <div class="main"><div class="t">${esc(pName(p))}</div><div class="s">${esc(POS[p.pos || ''])}${p.status !== 'actif' ? ' · ' + esc(p.status) : ''}</div></div>
+          <div class="main"><div class="t">${esc(pName(p))}</div><div class="s">${esc(playerMeta(p))}${p.status !== 'actif' ? ' · ' + esc(p.status) : ''}</div></div>
           ${accTag}
         </div>`;
       }).join('')}</div>` : '<div class="empty"><b>Aucun joueur</b>Récupère d\'un coup les joueurs affichés sur yulfc.com, ou ajoute-les un par un.<div class="row mt" style="justify-content:center"><button class="btn primary" data-act="squad-import">Importer l\'effectif du site</button><button class="btn" data-act="player-new">+ Ajouter un joueur</button></div></div>'}
@@ -626,6 +626,17 @@ const STAFF_AFTER = {
 };
 
 /* ---------------- fiche joueur ---------------- */
+const NATIONS = ['Canada', 'Algérie', 'Maroc', 'Tunisie', 'France', 'Haïti', 'Madagascar', 'Sénégal', 'Côte d\'Ivoire', 'Cameroun',
+  'RD Congo', 'Guinée', 'Mali', 'Liban', 'Syrie', 'Irak', 'Égypte', 'Belgique', 'Portugal', 'Espagne', 'Italie', 'Brésil',
+  'Colombie', 'Mexique', 'Venezuela', 'Pérou', 'Chili', 'Argentine', 'Salvador', 'Honduras', 'États-Unis', 'Royaume-Uni'];
+function ageOf(d){
+  if(!d) return null;
+  const b = new Date(d + 'T12:00:00'), n = new Date();
+  let a = n.getFullYear() - b.getFullYear();
+  if(n.getMonth() < b.getMonth() || (n.getMonth() === b.getMonth() && n.getDate() < b.getDate())) a--;
+  return a >= 0 && a < 120 ? a : null;
+}
+const playerMeta = p => [POS[p.pos || ''], ageOf(p.birthDate) != null ? ageOf(p.birthDate) + ' ans' : '', p.nationality || ''].filter(Boolean).join(' · ');
 function playerForm(p = {}){
   return `<form data-form="player">
     <input type="hidden" name="id" value="${esc(p.id || '')}">
@@ -637,6 +648,11 @@ function playerForm(p = {}){
       <div class="field"><label>Numéro</label><input name="num" type="number" min="0" max="99" inputmode="numeric" value="${p.num ?? ''}"></div>
       <div class="field"><label>Poste</label><select name="pos">${Object.entries(POS).map(([k, l]) => `<option value="${k}" ${p.pos === k || (!p.pos && k === '') ? 'selected' : ''}>${k ? l : '–'}</option>`).join('')}</select></div>
       <div class="field"><label>Statut</label><select name="status">${['actif', 'blessé', 'suspendu', 'inactif'].map(s => `<option ${p.status === s ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>Date de naissance</label><input name="birthDate" type="date" max="${today()}" value="${esc(p.birthDate || '')}"><div class="hint" id="ageHint">${p.birthDate ? esc(ageOf(p.birthDate) + ' ans') : ''}</div></div>
+      <div class="field"><label>Nationalité</label><input name="nationality" list="natList" autocomplete="off" placeholder="ex. Canada" value="${esc(p.nationality || '')}">
+        <datalist id="natList">${NATIONS.map(n => `<option value="${esc(n)}">`).join('')}</datalist></div>
     </div>
     <div class="grid2">
       <div class="field"><label>Téléphone</label><input name="phone" type="tel" value="${esc(p.phone || '')}"></div>
@@ -1263,6 +1279,9 @@ const FORMS = {
     });
   },
 };
+document.addEventListener('input', e => {
+  if(e.target.name === 'birthDate' && $('#ageHint')){ const a = ageOf(e.target.value); $('#ageHint').textContent = a != null ? a + ' ans' : ''; }
+});
 document.addEventListener('submit', e => {
   const f = e.target.closest('form[data-form]');
   if(!f || !FORMS[f.dataset.form]) return;

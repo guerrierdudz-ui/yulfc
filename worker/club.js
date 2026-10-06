@@ -192,6 +192,8 @@ function cleanPlayer(b, old = {}){
     num: (b.num === '' || b.num == null) ? null : int(b.num, 0, 99),
     pos: oneOf(b.pos, POS, ''),
     phone: str(b.phone, 30),
+    birthDate: (isoDate(b.birthDate) || '').slice(0, 10),
+    nationality: str(b.nationality, 60),
     email: email(b.email) || '',
     status: oneOf(b.status, ['actif', 'blessé', 'suspendu', 'inactif'], 'actif'),
     notes: text(b.notes, 1000),
