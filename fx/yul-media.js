@@ -156,7 +156,8 @@
     'player-12': 'players/aimen-messai.jpg',
     'player-17': 'players/leo-laith-albadri.jpg',
     'player-19': 'players/bilel-fekih.jpg',
-    'player-20': 'players/chris-frettier.jpg'
+    'player-20': 'players/chris-frettier.jpg',
+    'player-21': 'players/ayoub-meflah.jpg'
   };
   const bySlot = slot => items.find(i => i.slot === slot) || (STATIC[slot] ? { id: 'static-' + slot, slot, url: STATIC[slot], static: true } : undefined);
   const gallery = () => items.filter(i => i.slot === 'gallery');
