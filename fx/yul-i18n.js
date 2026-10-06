@@ -29,7 +29,7 @@
     ["L'EFFECTIF YUL FC", 'THE YUL FC SQUAD'], ['Accès joueurs', 'Player access'], ['Classement', 'Standings'],
     ['← PRÉCÉDENT', '← PREVIOUS'], ['SUIVANT →', 'NEXT →'], ['← RETOUR', '← BACK'], ['RETOUR →', 'BACK →'], ['ACCUEIL', 'HOME'],
     // Toasts
-    ['BUT', 'GOAL'], ['TAMPONNÉ', 'STAMPED'], ["J'Y ÉTAIS", 'I WAS THERE'], ['Partager', 'Share'], ['Fermer', 'Close'],
+    ['BUT', 'GOAL'], ['BUTS', 'GOALS'], ['PASSES', 'ASSISTS'], ['TAMPONNÉ', 'STAMPED'], ["J'Y ÉTAIS", 'I WAS THERE'], ['Partager', 'Share'], ['Fermer', 'Close'],
     ['BUT !', 'GOAL!'],
     // Match Center
     ['// ACTIF', '// ACTIVE'], ['Prochain match.', 'Next Up.'],

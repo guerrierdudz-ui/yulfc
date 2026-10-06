@@ -1,0 +1,117 @@
+/* ==========================================================================
+   YUL Cards · cartes joueurs format "matchday" (photo plein cadre)
+   Chargé en dernier : remplace le style d'origine des cartes de l'effectif.
+   ========================================================================== */
+
+.players-grid{ gap:1.6rem; grid-template-columns:repeat(auto-fill, minmax(230px,1fr)); }
+
+.player-card{
+  --pc-gold: var(--gold, #F0B429);
+  position:relative; aspect-ratio:3/4.25; border-radius:16px; overflow:hidden; isolation:isolate;
+  container-type:inline-size;
+  background:radial-gradient(120% 80% at 50% 0%, #1E3466 0%, #0C1730 55%, #070D1C 100%);
+  border:1px solid rgba(240,180,41,.18);
+  box-shadow:0 18px 40px -22px rgba(0,0,0,.85), inset 0 1px 0 rgba(255,255,255,.06);
+  transition:transform .45s cubic-bezier(.2,.8,.2,1), box-shadow .45s ease, border-color .45s ease;
+}
+.player-card:hover{
+  transform:translateY(-10px);
+  border-color:rgba(240,180,41,.55);
+  box-shadow:0 30px 60px -24px rgba(0,0,0,.9), 0 0 0 1px rgba(240,180,41,.25), 0 0 40px -10px rgba(240,180,41,.35);
+}
+
+/* Liseré doré animé au survol */
+.player-card::before{
+  content:''; position:absolute; inset:0; border-radius:inherit; padding:1.5px; z-index:4; pointer-events:none;
+  background:conic-gradient(from var(--pc-a, 0deg), transparent 0 60%, rgba(252,231,166,.9) 72%, var(--pc-gold) 78%, transparent 90%);
+  -webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite:xor; mask-composite:exclude;
+  opacity:0; transition:opacity .4s ease;
+}
+.player-card:hover::before{ opacity:1; animation:pc-spin 3.2s linear infinite; }
+@property --pc-a{ syntax:'<angle>'; inherits:false; initial-value:0deg; }
+@keyframes pc-spin{ to{ --pc-a:360deg; } }
+
+/* Photo plein cadre */
+.player-card .player-photo{
+  position:absolute; inset:0; aspect-ratio:auto !important; z-index:0;
+  background:transparent; display:flex; align-items:center; justify-content:center;
+  transition:transform .8s cubic-bezier(.2,.8,.2,1), filter .6s ease;
+}
+.player-card .player-photo.yul-has-photo{ background-size:cover; background-position:center 18%; filter:saturate(1.05) contrast(1.04); }
+.player-card:hover .player-photo.yul-has-photo{ transform:scale(1.06); }
+.player-card .player-photo::after{ display:none; }
+
+/* Sans photo : écusson en filigrane + grand numéro ajouré */
+.player-card .player-photo:not(.yul-has-photo)::before{
+  content:''; position:absolute; width:62%; aspect-ratio:1; top:16%; left:19%;
+  background:url('yul-crest.png') center/contain no-repeat; opacity:.08; filter:grayscale(1) brightness(2);
+}
+.player-card .player-num{
+  font-family:var(--ff-display); font-size:clamp(4rem, 42cqi, 7.5rem); line-height:1; margin-top:-18%;
+  color:transparent; -webkit-text-stroke:1.5px rgba(240,180,41,.35); opacity:1;
+}
+.player-card .player-photo.yul-has-photo .player-num{ opacity:0; }
+.player-card:hover .player-num{ opacity:1; transform:none; }
+
+/* Dégradé de lecture + grain lumineux */
+.pc-shade{
+  position:absolute; inset:0; z-index:1; pointer-events:none;
+  background:
+    linear-gradient(180deg, rgba(7,13,28,.55) 0%, rgba(7,13,28,0) 22%, rgba(7,13,28,0) 46%, rgba(7,13,28,.82) 72%, #070D1C 100%),
+    radial-gradient(90% 50% at 50% 100%, rgba(240,180,41,.14), transparent 70%);
+}
+
+/* En-tête : numéro + écusson */
+.pc-top{
+  position:absolute; top:0; left:0; right:0; z-index:2; display:flex; justify-content:space-between; align-items:flex-start;
+  padding:.85rem .9rem 0;
+}
+.pc-num{
+  font-family:var(--ff-display); font-size:clamp(1.6rem, 17cqi, 2.6rem); line-height:.9; letter-spacing:.01em;
+  background:linear-gradient(180deg, #FCE7A6 0%, #F0B429 55%, #C99A2E 100%);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+  filter:drop-shadow(0 2px 6px rgba(0,0,0,.6));
+}
+.pc-num small{ font-size:.42em; vertical-align:top; margin-right:.08em; }
+.pc-crest{ width:clamp(26px, 15cqi, 38px); height:auto; filter:drop-shadow(0 2px 6px rgba(0,0,0,.6)); }
+
+/* Bas de carte : nom, poste, stats */
+.player-card .player-info{
+  position:absolute; left:0; right:0; bottom:0; z-index:2; padding:0 .95rem .9rem;
+}
+.player-card .player-name{ font-size:inherit; letter-spacing:0; line-height:1; text-shadow:0 2px 10px rgba(0,0,0,.6); }
+.pc-first{
+  display:block; font-family:var(--ff-body); font-weight:500; font-size:clamp(.66rem, 5.4cqi, .82rem);
+  letter-spacing:.14em; text-transform:uppercase; color:rgba(244,245,242,.72); margin-bottom:.25rem;
+}
+.pc-last{
+  display:block; font-family:var(--ff-display); font-size:clamp(1.05rem, 11.5cqi, 1.75rem);
+  text-transform:uppercase; letter-spacing:.015em; color:#F4F5F2; overflow-wrap:anywhere;
+}
+.player-card .player-pos{ margin-top:.45rem; font-size:.62rem; }
+.pc-rule{ height:1px; margin:.7rem 0 .6rem; background:linear-gradient(90deg, var(--pc-gold), rgba(240,180,41,.15) 60%, transparent); }
+.pc-stats{ display:grid; grid-template-columns:repeat(3,1fr); }
+.pc-stats div{ display:flex; flex-direction:column; gap:.15rem; }
+.pc-stats div + div{ padding-left:.55rem; border-left:1px solid rgba(244,245,242,.12); }
+.pc-stats b{ font-family:var(--ff-display); font-weight:400; font-size:clamp(1rem, 9cqi, 1.35rem); line-height:1; color:#F4F5F2; }
+.pc-stats span{ font-family:var(--ff-mono); font-size:clamp(.5rem, 3.8cqi, .6rem); letter-spacing:.12em; color:var(--gold-dim, #C99A2E); }
+
+/* Badge d'origine remplacé par l'en-tête */
+.player-card .player-badge{ display:none; }
+
+/* Mobile : 2 colonnes, même format */
+@media (max-width: 720px){
+  .players-grid{ gap:.75rem !important; }
+  .players-grid .player-photo{ aspect-ratio:auto !important; }
+  .player-card{ border-radius:12px; }
+  .pc-top{ padding:.6rem .65rem 0; }
+  .player-card .player-info{ padding:0 .65rem .65rem; }
+  .pc-rule{ margin:.5rem 0 .45rem; }
+  .player-card .player-pos{ display:none; }
+}
+
+@media (prefers-reduced-motion: reduce){
+  .player-card, .player-card .player-photo{ transition:none; }
+  .player-card:hover::before{ animation:none; }
+}

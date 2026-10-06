@@ -2074,6 +2074,7 @@ footer{ background:var(--void); border-top:1px solid var(--line); padding:3rem 6
 <link rel="stylesheet" href="fx/yul-media.css">
 <link rel="stylesheet" href="fx/yul-table.css">
 <link rel="stylesheet" href="fx/yul-partners.css">
+<link rel="stylesheet" href="fx/yul-cards.css">
 <script>/* YUL Router : choisit la page avant le premier affichage */(function(){var v=["histoire","pitch","match","season-hub","media","fanzone","scouting","partners","locker","coach-center"],h=location.hash.slice(1);document.documentElement.setAttribute("data-page",v.indexOf(h)>-1?h:"home");})();</script>
 </head>
 <body>
@@ -4394,6 +4395,28 @@ const players = [
   {num:92, noNumber:true, name:'Wafik Ould-Brahem', pos:null, posCat:null, flag:'', country:'', appearances:5, goals:0, assists:0, yellow:0, red:0},
 ];
 
+/* Carte joueur format matchday (style : fx/yul-cards.css) */
+function playerCardHTML(p){
+  const parts = String(p.name).trim().split(/\s+/);
+  const last = parts.length > 1 ? parts.pop() : parts[0];
+  const first = parts.length && parts[0] !== last ? parts.join(' ') : '';
+  const num = p.noNumber ? '' : `<span class="pc-num"><small>#</small>${p.num}</span>`;
+  return `<div class="player-card" data-num="${p.num}" tabindex="0">
+      <div class="player-photo"><div class="player-num">${p.noNumber ? '' : p.num}</div></div>
+      <div class="pc-shade"></div>
+      <div class="pc-top">${num || '<span></span>'}<img class="pc-crest" src="fx/yul-crest.png" alt="" loading="lazy"></div>
+      <div class="player-info">
+        <div class="player-name">${first ? `<span class="pc-first">${first} </span>` : ''}<span class="pc-last">${last}</span></div>
+        ${p.pos ? `<span class="player-pos">${p.pos}</span>` : ''}
+        <div class="pc-rule"></div>
+        <div class="pc-stats">
+          <div><b>${p.appearances ?? 0}</b><span>MATCHS</span></div>
+          <div><b>${p.goals ?? 0}</b><span>BUTS</span></div>
+          <div><b>${p.assists ?? 0}</b><span>PASSES</span></div>
+        </div>
+      </div>
+    </div>`;
+}
 const grid = document.getElementById('playersGrid');
 function renderPlayersGrid(filter){
   filter = filter || 'all';
@@ -4403,15 +4426,7 @@ function renderPlayersGrid(filter){
     return;
   }
   grid.innerHTML = list.map(p=>`
-    <div class="player-card" data-num="${p.num}" tabindex="0">
-      <div class="player-badge">${p.noNumber ? '-' : '#'+p.num}</div>
-      <div class="player-photo"><div class="player-num">${p.noNumber ? '-' : p.num}</div></div>
-      <div class="player-info">
-        <div class="player-name">${p.name}</div>
-        ${p.pos ? `<span class="player-pos">${p.pos}</span>` : ''}
-        ${p.country ? `<div class="player-nat"><span class="flag">${p.flag}</span>${p.country}</div>` : ''}
-      </div>
-    </div>`).join('');
+    ${playerCardHTML(p)}`).join('');
 }
 renderPlayersGrid('all');
 
@@ -4421,15 +4436,7 @@ function renderHomeSquadPreview(){
   if(!el) return;
   const preview = players.slice(0, 4);
   el.innerHTML = preview.map(p=>`
-    <div class="player-card" data-num="${p.num}" tabindex="0">
-      <div class="player-badge">${p.noNumber ? '-' : '#'+p.num}</div>
-      <div class="player-photo"><div class="player-num">${p.noNumber ? '-' : p.num}</div></div>
-      <div class="player-info">
-        <div class="player-name">${p.name}</div>
-        ${p.pos ? `<span class="player-pos">${p.pos}</span>` : ''}
-        ${p.country ? `<div class="player-nat"><span class="flag">${p.flag}</span>${p.country}</div>` : ''}
-      </div>
-    </div>`).join('');
+    ${playerCardHTML(p)}`).join('');
   el.querySelectorAll('.player-card').forEach(card=>{
     card.addEventListener('click', ()=> openModal(parseInt(card.dataset.num)));
   });
