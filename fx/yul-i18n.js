@@ -24,7 +24,6 @@
     ['Qui sommes-nous', 'Who we are'], ['Saison 2026', '2026 Season'], ['NOUS REJOINDRE', 'JOIN US'],
     ['ESPACES MEMBRES', 'MEMBER AREAS'], ['Locker Room · connexion joueurs', 'Locker Room · player login'],
     ['Command Center · staff', 'Command Center · staff'], ['MTL / SAISON 01', 'MTL / SEASON 01'],
-    ['Football compétitif • Montréal', 'Competitive football • Montréal'],
     ['REJOINDRE YUL FC', 'JOIN YUL FC'], ["DÉCOUVRIR L'ÉQUIPE", 'MEET THE SQUAD'], ['DÉFILER', 'SCROLL'],
     ["L'EFFECTIF YUL FC", 'THE YUL FC SQUAD'], ['Accès joueurs', 'Player access'], ['Classement', 'Standings'],
     ['← PRÉCÉDENT', '← PREVIOUS'], ['SUIVANT →', 'NEXT →'], ['← RETOUR', '← BACK'], ['RETOUR →', 'BACK →'], ['ACCUEIL', 'HOME'],
