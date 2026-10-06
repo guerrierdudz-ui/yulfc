@@ -169,7 +169,8 @@
     'player-23': 'players/adel-mihoubi.jpg',
     'player-30': 'players/saad-mihoubi.jpg',
     'player-49': 'players/abdallah-eljamri.jpg',
-    'player-64': 'players/taha-saidi.jpg'
+    'player-64': 'players/taha-saidi.jpg',
+    'player-91': 'players/bladimir-marcos.jpg'
   };
   const bySlot = slot => items.find(i => i.slot === slot) || (STATIC[slot] ? { id: 'static-' + slot, slot, url: STATIC[slot], static: true } : undefined);
   const gallery = () => items.filter(i => i.slot === 'gallery');
