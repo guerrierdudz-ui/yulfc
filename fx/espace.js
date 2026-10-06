@@ -636,7 +636,23 @@ function ageOf(d){
   if(n.getMonth() < b.getMonth() || (n.getMonth() === b.getMonth() && n.getDate() < b.getDate())) a--;
   return a >= 0 && a < 120 ? a : null;
 }
-const playerMeta = p => [POS[p.pos || ''], ageOf(p.birthDate) != null ? ageOf(p.birthDate) + ' ans' : '', p.nationality || ''].filter(Boolean).join(' · ');
+const natsOf = p => Array.isArray(p.nationalities) && p.nationalities.length ? p.nationalities : (p.nationality ? [p.nationality] : []);
+const natChip = n => `<span class="tag gold nat-chip">${esc(n)}<button type="button" data-act="nat-del" data-n="${esc(n)}" aria-label="Retirer ${esc(n)}">✕</button></span>`;
+function natSync(list){
+  const f = $('#sheetBody form[data-form=player]'); if(!f) return;
+  f.elements.namedItem('nationalities').value = JSON.stringify(list);
+  $('#natChips').innerHTML = list.map(natChip).join('');
+}
+const natCurrent = () => { try{ return JSON.parse($('#sheetBody input[name=nationalities]').value) || []; }catch(e){ return []; } };
+function natAdd(){
+  const inp = $('#natInput'); const v = inp.value.trim().replace(/[<>]/g, '');
+  if(!v) return;
+  const list = natCurrent();
+  if(list.length >= 4) return toast('4 nationalités maximum', true);
+  if(!list.some(x => x.toLowerCase() === v.toLowerCase())) list.push(v.charAt(0).toUpperCase() + v.slice(1));
+  natSync(list); inp.value = ''; inp.focus();
+}
+const playerMeta = p => [POS[p.pos || ''], ageOf(p.birthDate) != null ? ageOf(p.birthDate) + ' ans' : '', natsOf(p).join(' / ')].filter(Boolean).join(' · ');
 function playerForm(p = {}){
   return `<form data-form="player">
     <input type="hidden" name="id" value="${esc(p.id || '')}">
@@ -649,10 +665,14 @@ function playerForm(p = {}){
       <div class="field"><label>Poste</label><select name="pos">${Object.entries(POS).map(([k, l]) => `<option value="${k}" ${p.pos === k || (!p.pos && k === '') ? 'selected' : ''}>${k ? l : '–'}</option>`).join('')}</select></div>
       <div class="field"><label>Statut</label><select name="status">${['actif', 'blessé', 'suspendu', 'inactif'].map(s => `<option ${p.status === s ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
     </div>
-    <div class="grid2">
+    <div class="grid-nat">
       <div class="field"><label>Date de naissance</label><input name="birthDate" type="date" max="${today()}" value="${esc(p.birthDate || '')}"><div class="hint" id="ageHint">${p.birthDate ? esc(ageOf(p.birthDate) + ' ans') : ''}</div></div>
-      <div class="field"><label>Nationalité</label><input name="nationality" list="natList" autocomplete="off" placeholder="ex. Canada" value="${esc(p.nationality || '')}">
-        <datalist id="natList">${NATIONS.map(n => `<option value="${esc(n)}">`).join('')}</datalist></div>
+      <div class="field"><label>Nationalités</label>
+        <div class="nat-chips" id="natChips">${natsOf(p).map(natChip).join('')}</div>
+        <div class="row" style="flex-wrap:nowrap;gap:6px"><input id="natInput" list="natList" autocomplete="off" placeholder="ex. Canada" style="flex:1;min-width:0"><button type="button" class="btn sm" data-act="nat-add">Ajouter</button></div>
+        <datalist id="natList">${NATIONS.map(n => `<option value="${esc(n)}">`).join('')}</datalist>
+        <input type="hidden" name="nationalities" value="${esc(JSON.stringify(natsOf(p)))}">
+        <div class="hint">Jusqu'à 4. Choisis dans la liste ou écris le pays, puis « Ajouter ».</div></div>
     </div>
     <div class="grid2">
       <div class="field"><label>Téléphone</label><input name="phone" type="tel" value="${esc(p.phone || '')}"></div>
@@ -1035,6 +1055,8 @@ const ACT = {
     await refresh(true);
   }),
   'squad-import': () => openSquadImport(),
+  'nat-add': () => natAdd(),
+  'nat-del': b => natSync(natCurrent().filter(x => x !== b.dataset.n)),
   'imp-all': () => { $$('#impList input').forEach(i => i.checked = true); impUpdate(); },
   'imp-none': () => { $$('#impList input').forEach(i => i.checked = false); impUpdate(); },
   'squad-import-go': b => busy(b, async () => {
@@ -1183,6 +1205,11 @@ const FORMS = {
   async player(f, btn){
     await busy(btn, async () => {
       const v = formData(f);
+      // un pays tapé mais pas encore « ajouté » est pris en compte
+      const pending = ($('#natInput') || {}).value;
+      let nats = []; try{ nats = JSON.parse(v.nationalities || '[]'); }catch(e){}
+      if(pending && pending.trim() && !nats.some(x => x.toLowerCase() === pending.trim().toLowerCase())) nats.push(pending.trim());
+      v.nationalities = nats;
       const p = await api('/api/club/players/save', v);
       toast(v.id ? 'Fiche enregistrée' : 'Joueur ajouté');
       await refresh(); openPlayer(p.id);
@@ -1279,6 +1306,9 @@ const FORMS = {
     });
   },
 };
+document.addEventListener('keydown', e => {
+  if(e.key === 'Enter' && e.target.id === 'natInput'){ e.preventDefault(); natAdd(); }
+});
 document.addEventListener('input', e => {
   if(e.target.name === 'birthDate' && $('#ageHint')){ const a = ageOf(e.target.value); $('#ageHint').textContent = a != null ? a + ' ans' : ''; }
 });

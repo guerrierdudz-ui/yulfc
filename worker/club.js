@@ -193,7 +193,8 @@ function cleanPlayer(b, old = {}){
     pos: oneOf(b.pos, POS, ''),
     phone: str(b.phone, 30),
     birthDate: (isoDate(b.birthDate) || '').slice(0, 10),
-    nationality: str(b.nationality, 60),
+    nationalities: (Array.isArray(b.nationalities) ? b.nationalities : String(b.nationalities || b.nationality || '').split(/\s*[,/;]\s*/))
+      .map(n => str(n, 40)).filter(Boolean).filter((n, i, a) => a.findIndex(x => x.toLowerCase() === n.toLowerCase()) === i).slice(0, 4),
     email: email(b.email) || '',
     status: oneOf(b.status, ['actif', 'blessé', 'suspendu', 'inactif'], 'actif'),
     notes: text(b.notes, 1000),

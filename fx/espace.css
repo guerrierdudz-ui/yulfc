@@ -247,3 +247,11 @@ tr.clickable:hover td{ background:rgba(255,255,255,.02); }
 .photo-grid img{ width:100%; aspect-ratio:1; object-fit:cover; }
 .photo-grid figcaption{ padding:8px; font-size:.72rem; color:var(--dim); display:flex; gap:6px; align-items:center; justify-content:space-between; }
 .photo-grid figcaption button{ background:none; border:0; color:var(--loss); cursor:pointer; font-size:.72rem; }
+
+.nat-chips{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px; }
+.nat-chips:empty{ display:none; }
+.nat-chip{ text-transform:none; letter-spacing:.02em; font-size:.74rem; padding:5px 6px 5px 10px; }
+.nat-chip button{ background:none; border:0; color:inherit; cursor:pointer; font-size:.7rem; padding:0 4px; opacity:.75; }
+.nat-chip button:hover{ opacity:1; }
+.grid-nat{ display:grid; grid-template-columns:1fr 1.4fr; gap:0 12px; }
+@media (max-width:560px){ .grid-nat{ grid-template-columns:1fr; } }
