@@ -153,6 +153,7 @@
      ================================================================== */
   /* Photos fixes livrées avec le site (utilisées si aucune photo n'a été envoyée depuis la zone staff) */
   const STATIC = {
+    'player-2': 'players/jawad-mesnaoui.jpg',
     'player-4': 'players/adnane-bari.jpg',
     'player-5': 'players/sagui-randiambalohery.jpg',
     'player-6': 'players/rayan-boumassi.jpg',
