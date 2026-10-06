@@ -2074,7 +2074,7 @@ footer{ background:var(--void); border-top:1px solid var(--line); padding:3rem 6
 <link rel="stylesheet" href="fx/yul-media.css">
 <link rel="stylesheet" href="fx/yul-table.css">
 <link rel="stylesheet" href="fx/yul-partners.css">
-<script>/* YUL Router : choisit la page avant le premier affichage */(function(){var v=["histoire","pitch","match","season-hub","data-center","media","fanzone","scouting","partners","locker","coach-center"],h=location.hash.slice(1);document.documentElement.setAttribute("data-page",v.indexOf(h)>-1?h:"home");})();</script>
+<script>/* YUL Router : choisit la page avant le premier affichage */(function(){var v=["histoire","pitch","match","season-hub","media","fanzone","scouting","partners","locker","coach-center"],h=location.hash.slice(1);document.documentElement.setAttribute("data-page",v.indexOf(h)>-1?h:"home");})();</script>
 </head>
 <body>
 
@@ -2098,7 +2098,6 @@ footer{ background:var(--void); border-top:1px solid var(--line); padding:3rem 6
   <nav class="desktop-nav" id="desktopNav">
     <a href="#pitch" data-section="pitch"><span class="conceptual">THE PITCH</span><span class="plain">Équipe</span></a>
     <a href="#match" data-section="match"><span class="conceptual">MATCH CENTER</span><span class="plain">Matchs</span></a>
-    <a href="#data-center" data-section="data-center"><span class="conceptual">DATA CENTER</span><span class="plain">Statistiques</span></a>
     <a href="#season-hub" data-section="season-hub"><span class="conceptual">SEASON HUB</span><span class="plain">2026</span></a>
     <a href="#media" data-section="media"><span class="conceptual">MEDIA CENTER</span><span class="plain">Actualités</span></a>
     <a href="#scouting" data-section="scouting"><span class="conceptual">SCOUTING ROOM</span><span class="plain">Recrutement</span></a>
@@ -2124,14 +2123,13 @@ footer{ background:var(--void); border-top:1px solid var(--line); padding:3rem 6
     <a href="#pitch" class="mobile-menu-item"><span class="mnum">02</span><span class="mt">THE PITCH</span><span class="msub">Équipe</span></a>
     <a href="#match" class="mobile-menu-item"><span class="mnum">03</span><span class="mt">MATCH CENTER</span><span class="msub">Matchs</span></a>
     <a href="#season-hub" class="mobile-menu-item"><span class="mnum">04</span><span class="mt">SEASON HUB</span><span class="msub">Saison 2026</span></a>
-    <a href="#data-center" class="mobile-menu-item"><span class="mnum">05</span><span class="mt">DATA CENTER</span><span class="msub">Statistiques</span></a>
-    <a href="#media" class="mobile-menu-item"><span class="mnum">06</span><span class="mt">MEDIA CENTER</span><span class="msub">Actualités</span></a>
-    <a href="#fanzone" class="mobile-menu-item"><span class="mnum">07</span><span class="mt">FAN ZONE</span><span class="msub">Prédictions</span></a>
+    <a href="#media" class="mobile-menu-item"><span class="mnum">05</span><span class="mt">MEDIA CENTER</span><span class="msub">Actualités</span></a>
+    <a href="#fanzone" class="mobile-menu-item"><span class="mnum">06</span><span class="mt">FAN ZONE</span><span class="msub">Prédictions</span></a>
   </div>
   <div class="mm-group">
     <div class="mobile-menu-head">NOUS REJOINDRE</div>
-    <a href="#scouting" class="mobile-menu-item"><span class="mnum">08</span><span class="mt">SCOUTING ROOM</span><span class="msub">Recrutement</span></a>
-    <a href="#partners" class="mobile-menu-item"><span class="mnum">09</span><span class="mt">PARTNERS LOUNGE</span><span class="msub">Partenaires</span></a>
+    <a href="#scouting" class="mobile-menu-item"><span class="mnum">07</span><span class="mt">SCOUTING ROOM</span><span class="msub">Recrutement</span></a>
+    <a href="#partners" class="mobile-menu-item"><span class="mnum">08</span><span class="mt">PARTNERS LOUNGE</span><span class="msub">Partenaires</span></a>
   </div>
   <div class="mm-group">
     <div class="mobile-menu-head">ESPACES MEMBRES</div>
@@ -2351,35 +2349,6 @@ footer{ background:var(--void); border-top:1px solid var(--line); padding:3rem 6
 </section>
 
 <!-- DATA CENTER -->
-<section class="stats-band" id="data-center" data-view="data-center">
-  <div class="section-pad" style="padding-top:5rem; padding-bottom:5rem;">
-    <div class="section-head reveal">
-      <div>
-        <div class="micro-tag">DATA CENTER</div>
-        <h2 class="section-title">The Numbers Behind The Game.</h2>
-      </div>
-      <p class="section-note">Saison 2026 · LSAQ 11v11 · saison régulière.</p>
-    </div>
-    <div class="stats-grid reveal">
-      <div class="stat-cell"><div class="big" data-count="4">0</div><div class="cap">Victoires</div></div>
-      <div class="stat-cell"><div class="big" data-count="2">0</div><div class="cap">Nuls</div></div>
-      <div class="stat-cell"><div class="big" data-count="5">0</div><div class="cap">Défaites</div></div>
-      <div class="stat-cell"><div class="big" data-count="31">0</div><div class="cap">Buts marqués</div></div>
-    </div>
-    <div class="bar-viz reveal">
-      <div class="bar-row"><div class="lab">Taux de victoire</div><div class="bar-track"><div class="bar-fill" data-pct="36"></div></div><div class="pct">36%</div></div>
-      <div class="bar-row"><div class="lab">Matchs sans défaite</div><div class="bar-track"><div class="bar-fill" data-pct="55"></div></div><div class="pct">55%</div></div>
-    </div>
-    <div class="table-note reveal" id="table">
-      <div>
-        <div class="tn-title">THE TABLE</div>
-        <div class="tn-copy">Classement final 2026 : 7e sur 11, qualifié pour les séries.</div>
-      </div>
-      <a href="#season-hub" class="soon">VOIR LE CLASSEMENT</a>
-    </div>
-  </div>
-</section>
-
 <!-- SEASON JOURNEY -->
 <section class="section-pad" id="saison" data-view="season-hub">
   <div class="section-head reveal">
@@ -2706,12 +2675,11 @@ footer{ background:var(--void); border-top:1px solid var(--line); padding:3rem 6
     <a href="#pitch" class="map-tile"><div class="mt-num">02</div><div class="mt-title">THE PITCH</div><div class="mt-sub">Équipe</div></a>
     <a href="#match" class="map-tile"><div class="mt-num">03</div><div class="mt-title">MATCH CENTER</div><div class="mt-sub">Matchs</div></a>
     <a href="#season-hub" class="map-tile"><div class="mt-num">04</div><div class="mt-title">SEASON HUB</div><div class="mt-sub">Saison 2026</div></a>
-    <a href="#data-center" class="map-tile"><div class="mt-num">05</div><div class="mt-title">DATA CENTER</div><div class="mt-sub">Statistiques</div></a>
-    <a href="#media" class="map-tile"><div class="mt-num">06</div><div class="mt-title">MEDIA CENTER</div><div class="mt-sub">Actualités</div></a>
-    <a href="#fanzone" class="map-tile"><div class="mt-num">07</div><div class="mt-title">FAN ZONE</div><div class="mt-sub">Prédictions</div></a>
-    <a href="#scouting" class="map-tile"><div class="mt-num">08</div><div class="mt-title">SCOUTING ROOM</div><div class="mt-sub">Recrutement</div></a>
-    <a href="#partners" class="map-tile"><div class="mt-num">09</div><div class="mt-title">PARTNERS LOUNGE</div><div class="mt-sub">Partenaires</div></a>
-    <a href="#locker" class="map-tile"><div class="mt-num">10</div><div class="mt-title">LOCKER ROOM</div><div class="mt-sub">Accès joueurs</div></a>
+    <a href="#media" class="map-tile"><div class="mt-num">05</div><div class="mt-title">MEDIA CENTER</div><div class="mt-sub">Actualités</div></a>
+    <a href="#fanzone" class="map-tile"><div class="mt-num">06</div><div class="mt-title">FAN ZONE</div><div class="mt-sub">Prédictions</div></a>
+    <a href="#scouting" class="map-tile"><div class="mt-num">07</div><div class="mt-title">SCOUTING ROOM</div><div class="mt-sub">Recrutement</div></a>
+    <a href="#partners" class="map-tile"><div class="mt-num">08</div><div class="mt-title">PARTNERS LOUNGE</div><div class="mt-sub">Partenaires</div></a>
+    <a href="#locker" class="map-tile"><div class="mt-num">09</div><div class="mt-title">LOCKER ROOM</div><div class="mt-sub">Accès joueurs</div></a>
   </div>
 </section>
 
@@ -8554,7 +8522,7 @@ window.addEventListener('keydown', e=>{
 
 /* ---------------- NAV SCROLL-SPY ---------------- */
 const navLinks = document.querySelectorAll('#desktopNav a[data-section]');
-const spySections = ['pitch','match','data-center','season-hub','media','scouting','partners']
+const spySections = ['pitch','match','season-hub','media','scouting','partners']
   .map(id=> document.getElementById(id)).filter(Boolean);
 const spyIO = new IntersectionObserver((entries)=>{
   entries.forEach(entry=>{

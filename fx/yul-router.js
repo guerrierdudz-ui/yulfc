@@ -13,7 +13,6 @@
     ['pitch',        'THE PITCH',       'Équipe'],
     ['match',        'MATCH CENTER',    'Matchs'],
     ['season-hub',   'SEASON HUB',      'Saison 2026'],
-    ['data-center',  'DATA CENTER',     'Statistiques'],
     ['media',        'MEDIA CENTER',    'Actualités'],
     ['fanzone',      'FAN ZONE',        'Prédictions'],
     ['scouting',     'SCOUTING ROOM',   'Recrutement'],

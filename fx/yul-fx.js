@@ -419,7 +419,7 @@
       ['top',        'ACCUEIL', '<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>'],
       ['pitch',      'ÉQUIPE',  '<circle cx="9" cy="8" r="3.2"/><path d="M3 20c.6-3.4 3-5.3 6-5.3s5.4 1.9 6 5.3"/><circle cx="17" cy="9" r="2.4"/><path d="M16 14.5c2.6.2 4.4 1.9 5 4.5"/>'],
       ['match',      'MATCHS',  '<circle cx="12" cy="12" r="9"/><path d="M12 7l4 3-1.5 4.5h-5L8 10z"/><path d="M12 3v4M21 10l-5 0M3 10h5M7 20l2.5-5.5M17 20l-2.5-5.5"/>'],
-      ['data-center','STATS',   '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>'],
+      ['season-hub','SAISON',   '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>'],
       ['fanzone',    'FAN ZONE','<path d="M12 21s-7-4.4-9.3-9C1.3 8.6 3.6 5 7 5c2 0 3.4 1 5 3 1.6-2 3-3 5-3 3.4 0 5.7 3.6 4.3 7-2.3 4.6-9.3 9-9.3 9z"/>']
     ].filter(([id]) => document.getElementById(id));
     if(items.length < 3) return;
