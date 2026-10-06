@@ -189,7 +189,7 @@ function cleanPlayer(b, old = {}){
     ...old,
     id: old.id || uid(),
     firstName: str(b.firstName, 60), lastName: str(b.lastName, 60),
-    num: int(b.num, 0, 99),
+    num: (b.num === '' || b.num == null) ? null : int(b.num, 0, 99),
     pos: oneOf(b.pos, POS, ''),
     phone: str(b.phone, 30),
     email: email(b.email) || '',

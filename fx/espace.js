@@ -491,7 +491,7 @@ const STAFF_VIEWS = {
     const ps = players();
     return `
       <div class="page-head"><div><h1 class="page-title">Effectif</h1><p class="page-sub">${ps.length} joueur${ps.length > 1 ? 's' : ''} · les accès joueurs se créent depuis chaque fiche.</p></div>
-        <div class="row"><button class="btn primary" data-act="player-new">+ Joueur</button></div></div>
+        <div class="row"><button class="btn ghost" data-act="squad-import">Importer l'effectif du site</button><button class="btn primary" data-act="player-new">+ Joueur</button></div></div>
       ${ps.length > 6 ? `<div class="field"><input id="squadSearch" type="search" placeholder="Rechercher un joueur…" aria-label="Rechercher"></div>` : ''}
       ${ps.length ? `<div class="list" id="squadList">${ps.map(p => {
         const acc = accountFor(p.id);
@@ -501,7 +501,7 @@ const STAFF_VIEWS = {
           <div class="main"><div class="t">${esc(pName(p))}</div><div class="s">${esc(POS[p.pos || ''])}${p.status !== 'actif' ? ' · ' + esc(p.status) : ''}</div></div>
           ${accTag}
         </div>`;
-      }).join('')}</div>` : '<div class="empty"><b>Aucun joueur</b>Ajoute le premier joueur de l\'effectif.<div class="mt"><button class="btn primary" data-act="player-new">+ Ajouter un joueur</button></div></div>'}
+      }).join('')}</div>` : '<div class="empty"><b>Aucun joueur</b>Récupère d\'un coup les joueurs affichés sur yulfc.com, ou ajoute-les un par un.<div class="row mt" style="justify-content:center"><button class="btn primary" data-act="squad-import">Importer l\'effectif du site</button><button class="btn" data-act="player-new">+ Ajouter un joueur</button></div></div>'}
     `;
   },
 
@@ -941,6 +941,36 @@ function resizeImage(file, max){
   });
 }
 
+/* ---------------- import de l'effectif du site public ---------------- */
+async function siteSquad(){
+  const r = await fetch('/', { cache: 'no-store' });
+  if(!r.ok) throw new Error('Impossible de lire le site.');
+  const html = await r.text();
+  const m = html.match(/const players = (\[[\s\S]*?\n\]);/);
+  if(!m) throw new Error('Effectif introuvable sur le site.');
+  let list;
+  try{ list = Function('"use strict";return (' + m[1] + ');')(); }catch(e){ throw new Error('Effectif du site illisible.'); }
+  return list.filter(p => p && p.name).map(p => {
+    const parts = String(p.name).trim().split(/\s+/);
+    const lastName = parts.length > 1 ? parts.pop() : '';
+    return { firstName: parts.join(' '), lastName, num: p.noNumber ? '' : p.num, captain: !!p.captain };
+  });
+}
+const sameName = (a, b) => pName(a).toLowerCase() === pName(b).toLowerCase();
+async function openSquadImport(){
+  openSheet('Importer l\'effectif', '<p class="muted">Lecture de l\'effectif publié sur yulfc.com…</p>');
+  let list;
+  try{ list = await siteSquad(); }catch(e){ $('#sheetBody').innerHTML = `<p class="red">${esc(e.message)}</p>`; return; }
+  const fresh = list.filter(x => !players().some(p => sameName(p, x)));
+  const already = list.length - fresh.length;
+  S.importList = fresh;
+  $('#sheetBody').innerHTML = `
+    <p>${list.length} joueurs sur le site. ${fresh.length ? `<b>${fresh.length}</b> seront ajoutés à l'espace staff` : 'Ils sont tous déjà dans l\'espace staff'}${already && fresh.length ? ` (${already} déjà présent${already > 1 ? 's' : ''}, ignoré${already > 1 ? 's' : ''})` : ''}.</p>
+    ${fresh.length ? `<div class="list mt">${fresh.map(x => `<div class="li"><div class="num">${x.num === '' ? '–' : esc(x.num)}</div><div class="main"><div class="t">${esc(pName(x))}</div>${x.captain ? '<div class="s">Capitaine</div>' : ''}</div></div>`).join('')}</div>
+      <p class="muted small mt">Le poste, le téléphone et l'email restent à compléter sur chaque fiche. Aucun accès n'est créé automatiquement.</p>
+      <button class="btn primary block mt2" data-act="squad-import-go">Ajouter ces ${fresh.length} joueurs</button>` : '<button class="btn block mt2" data-close>Fermer</button>'}`;
+}
+
 /* ==========================================================================
    ACTIONS (clics)
    ========================================================================== */
@@ -976,6 +1006,15 @@ const ACT = {
     const status = cur && cur.status === b.dataset.s ? '' : b.dataset.s;
     await api('/api/club/availability/set', { eventId: b.dataset.ev, playerId: b.dataset.p, status });
     await refresh(true);
+  }),
+  'squad-import': () => openSquadImport(),
+  'squad-import-go': b => busy(b, async () => {
+    const list = S.importList || []; let n = 0;
+    for(const x of list){
+      b.textContent = `${++n} / ${list.length}…`;
+      await api('/api/club/players/save', { firstName: x.firstName, lastName: x.lastName, num: x.num, pos: '', status: 'actif', notes: x.captain ? 'Capitaine' : '' });
+    }
+    S.importList = null; closeSheet(); toast(list.length + ' joueurs ajoutés'); await refresh();
   }),
   'player-new': () => { S.sheet = null; openSheet('Nouveau joueur', playerForm()); },
   'player-open': b => openPlayer(b.dataset.id),
