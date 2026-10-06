@@ -965,10 +965,21 @@ async function openSquadImport(){
   const already = list.length - fresh.length;
   S.importList = fresh;
   $('#sheetBody').innerHTML = `
-    <p>${list.length} joueurs sur le site. ${fresh.length ? `<b>${fresh.length}</b> seront ajoutés à l'espace staff` : 'Ils sont tous déjà dans l\'espace staff'}${already && fresh.length ? ` (${already} déjà présent${already > 1 ? 's' : ''}, ignoré${already > 1 ? 's' : ''})` : ''}.</p>
-    ${fresh.length ? `<div class="list mt">${fresh.map(x => `<div class="li"><div class="num">${x.num === '' ? '–' : esc(x.num)}</div><div class="main"><div class="t">${esc(pName(x))}</div>${x.captain ? '<div class="s">Capitaine</div>' : ''}</div></div>`).join('')}</div>
+    <p>${list.length} joueurs sur le site. ${fresh.length ? 'Coche ceux à ajouter à l\'espace staff' : 'Ils sont tous déjà dans l\'espace staff'}${already && fresh.length ? ` (${already} déjà présent${already > 1 ? 's' : ''}, non affiché${already > 1 ? 's' : ''})` : ''}.</p>
+    ${fresh.length ? `
+      <div class="row mt"><span class="lbl" style="margin:0">Sélection · <span id="impCount">0</span> / ${fresh.length}</span><span class="spacer"></span>
+        <button type="button" class="btn sm ghost" data-act="imp-all">Tout cocher</button><button type="button" class="btn sm ghost" data-act="imp-none">Tout décocher</button></div>
+      <div class="list mt" id="impList">${fresh.map((x, i) => `<label class="li" style="cursor:pointer"><input type="checkbox" value="${i}" style="width:20px;height:20px;accent-color:var(--gold)">
+        <div class="num">${x.num === '' ? '–' : esc(x.num)}</div><div class="main"><div class="t">${esc(pName(x))}</div>${x.captain ? '<div class="s">Capitaine</div>' : ''}</div></label>`).join('')}</div>
       <p class="muted small mt">Le poste, le téléphone et l'email restent à compléter sur chaque fiche. Aucun accès n'est créé automatiquement.</p>
-      <button class="btn primary block mt2" data-act="squad-import-go">Ajouter ces ${fresh.length} joueurs</button>` : '<button class="btn block mt2" data-close>Fermer</button>'}`;
+      <button class="btn primary block mt2" data-act="squad-import-go" id="impGo" disabled style="position:sticky;bottom:0;box-shadow:0 -12px 24px var(--void)">Choisis au moins un joueur</button>` : '<button class="btn block mt2" data-close>Fermer</button>'}`;
+  const box = $('#impList'); if(box) box.addEventListener('change', impUpdate);
+}
+function impUpdate(){
+  const n = $$('#impList input:checked').length, go = $('#impGo');
+  $('#impCount').textContent = n;
+  go.disabled = !n;
+  go.textContent = n ? `Ajouter ${n === 1 ? 'ce joueur' : 'ces ' + n + ' joueurs'}` : 'Choisis au moins un joueur';
 }
 
 /* ==========================================================================
@@ -1008,13 +1019,16 @@ const ACT = {
     await refresh(true);
   }),
   'squad-import': () => openSquadImport(),
+  'imp-all': () => { $$('#impList input').forEach(i => i.checked = true); impUpdate(); },
+  'imp-none': () => { $$('#impList input').forEach(i => i.checked = false); impUpdate(); },
   'squad-import-go': b => busy(b, async () => {
-    const list = S.importList || []; let n = 0;
+    const list = $$('#impList input:checked').map(i => (S.importList || [])[+i.value]).filter(Boolean); let n = 0;
+    if(!list.length) return;
     for(const x of list){
       b.textContent = `${++n} / ${list.length}…`;
       await api('/api/club/players/save', { firstName: x.firstName, lastName: x.lastName, num: x.num, pos: '', status: 'actif', notes: x.captain ? 'Capitaine' : '' });
     }
-    S.importList = null; closeSheet(); toast(list.length + ' joueurs ajoutés'); await refresh();
+    S.importList = null; closeSheet(); toast(list.length > 1 ? list.length + ' joueurs ajoutés' : '1 joueur ajouté'); await refresh();
   }),
   'player-new': () => { S.sheet = null; openSheet('Nouveau joueur', playerForm()); },
   'player-open': b => openPlayer(b.dataset.id),
