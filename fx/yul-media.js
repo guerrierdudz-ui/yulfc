@@ -157,6 +157,7 @@
     'player-4': 'players/adnane-bari.jpg',
     'player-5': 'players/sagui-randiambalohery.jpg',
     'player-6': 'players/rayan-boumassi.jpg',
+    'player-7': 'players/salim-bouchama.jpg',
     'player-8': 'players/fourkane-irki.jpg',
     'player-9': 'players/hamza-talate.jpg',
     'player-12': 'players/aimen-messai.jpg',
