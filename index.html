@@ -4402,7 +4402,7 @@ function playerCardHTML(p){
   const parts = String(p.name).trim().split(/\s+/);
   const last = parts.length > 1 ? parts.pop() : parts[0];
   const first = parts.length && parts[0] !== last ? parts.join(' ') : '';
-  const num = p.noNumber ? '' : `<span class="pc-num"><small>#</small>${p.num}</span>`;
+  const num = p.noNumber ? '' : `<span class="pc-num">${p.num}</span>`;
   const cap = p.captain ? `<span class="pc-cap" title="Capitaine" aria-label="Capitaine">C</span>` : '';
   return `<div class="player-card" data-num="${p.num}" tabindex="0">
       <div class="player-photo"><div class="player-num">${p.noNumber ? '' : p.num}</div></div>
@@ -4457,7 +4457,7 @@ const modal = document.getElementById('playerModal');
 function openModal(num){
   const p = players.find(x=> x.num===num);
   if(!p) return;
-  document.getElementById('modalNum').textContent = p.noNumber ? '-' : '#'+p.num;
+  document.getElementById('modalNum').textContent = p.noNumber ? '-' : String(p.num);
   document.getElementById('modalName').textContent = p.name;
   document.getElementById('modalPos').textContent = p.pos || 'Position à confirmer';
   document.getElementById('modalAge').textContent = p.age || '-';
