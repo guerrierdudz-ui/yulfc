@@ -75,6 +75,7 @@
     ['LE PARCOURS DE LA SAISON', 'SEASON JOURNEY'], ['Match par match.', 'Match by Match.'],
     ["Saison 2026, les 11 matchs officiels LSAQ, séries comprises. Cliquez sur un match pour l'ouvrir.", '2026 season, all 11 official LSAQ matches, playoffs included. Click a match to open it.'],
     ['Saison régulière', 'Regular season'],
+    ['MEILLEUR BUTEUR', 'TOP SCORER'], ['MEILLEUR PASSEUR', 'ASSIST LEADER'], ['PLUS DÉCISIF', 'MOST DECISIVE'], ['PLUS DÉCISIFS', 'MOST DECISIVE'], ['PASSES DÉCISIVES', 'ASSISTS'], ['BUTS + PASSES', 'GOALS + ASSISTS'], ['Toutes les stats', 'All stats'],
     ["Accès réservé aux joueurs de l'effectif. Ton email et ton code temporaire te sont envoyés par le staff.", 'Squad players only. Your email and temporary code are sent to you by the staff.'],
     ['Accès réservé au staff. Le rôle (admin, gérant, coach) est lié à ton compte.', 'Staff only. Your role (admin, manager, coach) is tied to your account.'],
     ["OUVRIR L'ESPACE JOUEUR →", 'OPEN THE PLAYER SPACE →'], ['Séries éliminatoires', 'Playoffs'], ['Quart de finale', 'Quarter-final'], ['Demi-finale', 'Semi-final'], ['Date à confirmer', 'Date TBC'],

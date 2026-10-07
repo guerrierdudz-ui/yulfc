@@ -1512,6 +1512,42 @@ nav.desktop-nav a.active::after{ width:100%; }
 .leader-card .lc-val{ font-family:var(--ff-mono); font-size:1.4rem; color:var(--gold); margin-top:.5rem; font-weight:700; position:relative; }
 .leader-card .lc-lab{ font-family:var(--ff-mono); font-size:.58rem; color:var(--dim); letter-spacing:.08em; margin-top:.2rem; position:relative; }
 
+/* ---- Meilleurs de la saison : cartes « trophée » avec photo ---- */
+.ldr-grid{ display:grid !important; grid-template-columns:repeat(3, 1fr); gap:1.1rem; }
+.ldr-card{ position:relative; isolation:isolate; overflow:hidden; border-radius:18px; min-height:330px; cursor:default;
+  background:radial-gradient(120% 90% at 85% 0%, #1E3466 0%, #0C1730 55%, #070D1C 100%);
+  border:1px solid rgba(240,180,41,.2); box-shadow:0 22px 50px -28px rgba(0,0,0,.9), inset 0 1px 0 rgba(255,255,255,.05);
+  transition:transform .45s cubic-bezier(.2,.8,.2,1), border-color .4s ease, box-shadow .4s ease; }
+.ldr-card[data-num]{ cursor:pointer; }
+.ldr-card:hover{ transform:translateY(-6px); border-color:rgba(240,180,41,.55); box-shadow:0 30px 60px -26px rgba(0,0,0,.95), 0 0 40px -14px rgba(240,180,41,.35); }
+.ldr-photos{ position:absolute; inset:0 0 0 30%; display:flex; z-index:0; -webkit-mask-image:linear-gradient(90deg, transparent 0, #000 30%); mask-image:linear-gradient(90deg, transparent 0, #000 30%); }
+.ldr-photo{ position:relative; flex:1; overflow:hidden; }
+.ldr-tie .ldr-photo + .ldr-photo{ border-left:1px solid rgba(240,180,41,.25); }
+.ldr-photo img{ width:100%; height:100%; object-fit:cover; object-position:center 15%; filter:saturate(1.05) contrast(1.05); transition:transform .8s cubic-bezier(.2,.8,.2,1); }
+.ldr-card:hover .ldr-photo img{ transform:scale(1.06); }
+.ldr-ph-num{ position:absolute; right:.7rem; bottom:.5rem; font-family:var(--ff-display); font-size:4.5rem; line-height:1; color:transparent; -webkit-text-stroke:1.2px rgba(240,180,41,.35); display:none; }
+.ldr-photo.ldr-nophoto .ldr-ph-num{ display:block; }
+.ldr-photo.ldr-nophoto::before{ content:''; position:absolute; inset:18% 15%; background:url('fx/yul-crest.png') center/contain no-repeat; opacity:.07; filter:grayscale(1) brightness(2); }
+.ldr-shade{ position:absolute; inset:0; z-index:1; pointer-events:none;
+  background:linear-gradient(90deg, #070D1C 0%, rgba(7,13,28,.92) 34%, rgba(7,13,28,.35) 62%, rgba(7,13,28,.05) 100%),
+             linear-gradient(0deg, rgba(7,13,28,.9) 0%, transparent 45%); }
+.ldr-body{ position:relative; z-index:2; height:100%; min-height:330px; display:flex; flex-direction:column; padding:1.4rem 1.3rem 1.3rem; }
+.ldr-tag{ display:flex; align-items:center; gap:.5rem; font-family:var(--ff-mono); font-size:.64rem; letter-spacing:.2em; color:var(--gold); }
+.ldr-ic{ width:30px; height:30px; border-radius:50%; display:grid; place-items:center; flex:none;
+  background:rgba(240,180,41,.12); border:1px solid rgba(240,180,41,.35); color:var(--gold); }
+.ldr-ic svg{ width:16px; height:16px; }
+.ldr-val{ margin-top:auto; font-family:var(--ff-display); font-size:clamp(4.6rem, 9vw, 6.2rem); line-height:.85;
+  background:linear-gradient(180deg, #FCE7A6 0%, #F0B429 55%, #C99A2E 100%); -webkit-background-clip:text; background-clip:text; color:transparent;
+  filter:drop-shadow(0 4px 14px rgba(240,180,41,.25)); }
+.ldr-unit{ font-family:var(--ff-mono); font-size:.62rem; letter-spacing:.2em; color:var(--dim); margin-top:.45rem; }
+.ldr-names{ margin-top:1rem; padding-top:.9rem; border-top:1px solid rgba(240,180,41,.22); display:grid; gap:.35rem; }
+.ldr-name{ font-family:var(--ff-display); font-size:1.55rem; line-height:1.02; letter-spacing:.01em; text-transform:uppercase; color:var(--ink); }
+.ldr-name span{ display:block; font-family:var(--ff-mono); font-size:.62rem; letter-spacing:.2em; color:var(--dim); text-transform:uppercase; margin-bottom:.15rem; }
+.ldr-tie .ldr-name{ font-size:1.2rem; }
+.ldr-more{ grid-column:1/-1; text-align:center; margin-top:.4rem; }
+@media (max-width:900px){ .ldr-grid{ grid-template-columns:1fr; } .ldr-card, .ldr-body{ min-height:240px; } .ldr-photos{ inset:0 0 0 34%; } }
+@media (prefers-reduced-motion: reduce){ .ldr-card, .ldr-photo img{ transition:none; } }
+
 /* ============================================================
    LEAGUE TABLE · Team Row Cards (broadcast-graphic style)
 ============================================================ */
@@ -4782,20 +4818,43 @@ function renderHome2026Leaders(){
   const goldenBoot = topByStat(players, p=>p.goals);
   const playmaker = topByStat(players, p=>p.assists);
   const attacking = topByStat(players, goalContrib);
+  const ICONS = {
+    goals:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 7.5l4 2.9-1.5 4.7h-5L8 10.4z"/><path d="M12 3v4.5M21 10.4l-5 0M3 10.4h5M7.2 19.5l2.3-4.4M16.8 19.5l-2.3-4.4"/></svg>',
+    assists:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 18c5-1 9-5 12-12"/><path d="M11 6h5v5"/><circle cx="5" cy="18.5" r="1.6"/></svg>',
+    ga:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3c.6 3.3 4.5 4.8 4.5 9.2A4.5 4.5 0 0 1 12 16.7a4.5 4.5 0 0 1-4.5-4.5c0-2 1-3.2 2-4 .2 1.4 1 2.3 2 2.6C11 8.4 11.3 5.4 12 3z"/><path d="M6 20h12"/></svg>',
+  };
+  const slug = n => String(n).normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+  const photoOf = p => {
+    try{ const it = (window.YULMedia && window.YULMedia.items || []).find(i => i.slot === 'player-'+p.num); if(it) return it.url; }catch(e){}
+    return 'players/' + slug(p.name) + '.jpg';
+  };
+  const firstLast = n => { const a = String(n).trim().split(/\s+/); const l = a.length>1 ? a.pop() : a[0]; return {f:a.length && a[0]!==l ? a.join(' ') : '', l}; };
   const cards = [
-    ['⚽ TOP SCORER', goldenBoot, 'Goals'],
-    ['🎯 ASSIST LEADER' + (playmaker.leaders.length>1?'S':''), playmaker, 'Assists'],
-    ['🔥 GOAL CONTRIBUTIONS', attacking, 'G+A'],
-  ];
-  el.innerHTML = cards.filter(([,r])=>r.leaders.length).map(([tag,r,lab])=>`
-    <div class="leader-card">
-      <div class="lc-tag">${tag}</div>
-      <div class="lc-name" style="font-size:1.1rem; margin-top:.4rem;">${r.leaders.map(p=>p.name).join(' · ')}</div>
-      <div class="lc-val">${r.value}</div>
-      <div class="lc-lab">${lab}</div>
-    </div>`).join('') || '';
-  if(el.innerHTML.trim()){
-    el.insertAdjacentHTML('beforeend', `<div style="grid-column:1/-1; text-align:center; margin-top:.4rem;"><a href="#season-hub" class="btn-ghost">View All Stats</a></div>`);
+    ['goals',  'MEILLEUR BUTEUR', 'MEILLEURS BUTEURS', goldenBoot, 'BUTS'],
+    ['assists','MEILLEUR PASSEUR', 'MEILLEURS PASSEURS', playmaker, 'PASSES DÉCISIVES'],
+    ['ga',     'PLUS DÉCISIF', 'PLUS DÉCISIFS', attacking, 'BUTS + PASSES'],
+  ].filter(c => c[3].leaders.length);
+  el.classList.add('ldr-grid');
+  el.innerHTML = cards.map(([k, one, many, r, unit]) => {
+    const ls = r.leaders.slice(0, 3);
+    return `<article class="ldr-card ldr-${k}${ls.length>1 ? ' ldr-tie' : ''}" ${ls.length===1 ? `data-num="${ls[0].num}" tabindex="0" role="button" aria-label="Voir la fiche de ${ls[0].name}"` : ''}>
+      <div class="ldr-photos">${ls.map(p => `<div class="ldr-photo"><img src="${photoOf(p)}" alt="" loading="lazy" onerror="this.parentNode.classList.add('ldr-nophoto');this.remove()"><span class="ldr-ph-num">${p.noNumber ? '' : p.num}</span></div>`).join('')}</div>
+      <div class="ldr-shade"></div>
+      <div class="ldr-body">
+        <div class="ldr-tag"><span class="ldr-ic">${ICONS[k]}</span>${ls.length>1 ? many : one}</div>
+        <div class="ldr-val">${r.value}</div>
+        <div class="ldr-unit">${unit}</div>
+        <div class="ldr-names">${ls.map(p => { const n = firstLast(p.name); return `<div class="ldr-name">${n.f ? `<span>${n.f}</span>` : ''}${n.l}</div>`; }).join('')}</div>
+      </div>
+    </article>`;
+  }).join('');
+  if(cards.length){
+    el.insertAdjacentHTML('beforeend', `<div class="ldr-more"><a href="#season-hub" class="btn-ghost">Toutes les stats</a></div>`);
+    el.querySelectorAll('.ldr-card[data-num]').forEach(c => {
+      const open = () => { if(typeof openModal === 'function') openModal(parseInt(c.dataset.num, 10)); };
+      c.addEventListener('click', open);
+      c.addEventListener('keydown', e => { if(e.key === 'Enter') open(); });
+    });
   }
 }
 
