@@ -400,7 +400,7 @@
     ['Ouvrir le menu', 'Open menu'], ['Précédent', 'Previous'], ['Suivant', 'Next'], ['Quitter', 'Exit'],
     ['Saison précédente', 'Previous season'], ['Saison suivante', 'Next season'], ['Détails du match', 'Match details'],
     ['Essayer la démo Player Hub', 'Try the Player Hub demo'], ['ex. Ligue provinciale, universitaire...', 'e.g. Provincial league, university...'],
-    ['ex. 178 cm', 'e.g. 178 cm'], ['toi@courriel.com', 'you@email.com'], ['prenom@yulfc.com', 'firstname@yulfc.com'],
+    ['ex. 178 cm', 'e.g. 178 cm'], ['toi@courriel.com', 'you@email.com'], ['ton.email@exemple.com', 'your.email@example.com'],
     ['ACCÈS REQUIS', 'ACCESS REQUIRED'],
     ["Aperçu de l'expérience, authentification réelle à connecter à Supabase Auth.", 'Experience preview, real authentication to be connected to Supabase Auth.'],
     ["Aperçu de l'expérience, rôles et permissions réels à vérifier côté serveur (voir is_staff() dans le schéma).", 'Experience preview, real roles and permissions to be checked server-side (see is_staff() in the schema).'], ["Aperçu de l'expérience", 'Experience preview'],
