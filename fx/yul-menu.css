@@ -46,9 +46,9 @@ html:has(.mobile-menu.open){ overflow:hidden; }
   padding-bottom:.6rem; margin-bottom:.2rem; border-bottom:1px solid var(--line); text-align:left;
 }
 
-/* Une ligne par zone : numéro · titre · sous-titre à droite */
+/* Une ligne par zone : titre · sous-titre à droite · flèche */
 .mobile-menu a.mobile-menu-item{
-  display:grid; grid-template-columns:2.2rem 1fr auto; align-items:center; gap:.4rem;
+  display:grid; grid-template-columns:1fr auto auto; align-items:center; gap:.9rem;
   text-align:left; padding:.85rem 0; border-bottom:1px solid rgba(38,53,95,.55);
   font-family:var(--ff-display); font-size:1.35rem; letter-spacing:.03em; color:var(--ink);
   -webkit-tap-highlight-color:transparent; transition:color .2s ease, padding .2s ease;
@@ -56,9 +56,12 @@ html:has(.mobile-menu.open){ overflow:hidden; }
 .mobile-menu a.mobile-menu-item .mnum{
   display:inline; margin:0; font-family:var(--ff-mono); font-size:.62rem; color:var(--dim-2); letter-spacing:.14em;
 }
-.mobile-menu a.mobile-menu-item .mt{ line-height:1.1; }
+.mobile-menu a.mobile-menu-item .mt{ line-height:1.1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.mobile-menu a.mobile-menu-item::after{ content:'›'; font-family:var(--ff-body); font-size:1.3rem; line-height:1; color:var(--dim-2); transition:color .2s ease, transform .2s ease; }
+.mobile-menu a.mobile-menu-item:active::after, .mobile-menu a.mobile-menu-item.fx-cur::after{ color:var(--gold); transform:translateX(3px); }
 .mobile-menu a.mobile-menu-item .msub{
   display:inline; margin:0; font-family:var(--ff-mono); font-size:.62rem; color:var(--dim); letter-spacing:.08em; text-transform:none;
+  text-align:right; white-space:nowrap;
 }
 .mobile-menu a.mobile-menu-item:active{ padding-left:.4rem; color:var(--gold); }
 .mobile-menu a.mobile-menu-item.fx-cur{ color:var(--gold); }
@@ -79,7 +82,7 @@ html:has(.mobile-menu.open){ overflow:hidden; }
 
 /* Petits écrans : sous-titres masqués pour garder une ligne */
 @media (max-width:360px){
-  .mobile-menu a.mobile-menu-item{ font-size:1.15rem; grid-template-columns:2rem 1fr; }
+  .mobile-menu a.mobile-menu-item{ font-size:1.15rem; grid-template-columns:1fr auto; }
   .mobile-menu a.mobile-menu-item .msub{ display:none; }
 }
 
