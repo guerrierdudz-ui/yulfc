@@ -6618,7 +6618,7 @@ function buildUnifiedMediaFeed(){
     items.push({
       id:'archive-'+am.id, type:'results', filterCat:'results',
       title:`YUL FC ${am.scoreYul}-${am.scoreOpp} ${am.opponent}`, desc:`${compText(am)}${am.venue?' · '+am.venue:''}`,
-      date: am.date, meta: am.result==='W'?'WIN':am.result==='D'?'DRAW':'LOSS', isVirtual:true, archiveMatch:am,
+      date: am.date, meta:'', isVirtual:true, archiveMatch:am,
     });
   });
   (mcState.content||[]).filter(c=>c.status==='published').forEach(c=>{
@@ -6654,7 +6654,7 @@ function mediaCardHtml(item){
     <div class="mc-body">
       <div class="mc-title">${item.title}</div>
       <div class="mc-desc">${item.desc||''}</div>
-      <div class="mc-meta">${new Date(item.date).toLocaleDateString('fr-CA')} · ${item.meta||''}</div>
+      <div class="mc-meta">${new Date(item.date).toLocaleDateString('fr-CA')}${item.meta ? ' · '+item.meta : ''}</div>
     </div>
   </div>`;
 }
