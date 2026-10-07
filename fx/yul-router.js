@@ -50,7 +50,7 @@
     const i = IDS.indexOf(page);
     if(i < 0){ crumb.innerHTML = ''; pager.innerHTML = ''; return; }
     const [, name, sub] = PAGES[i];
-    crumb.innerHTML = `<a href="#top">← Accueil</a><span class="fx-crumb-count"><b>${String(i+1).padStart(2,'0')}</b> / ${String(PAGES.length).padStart(2,'0')} · ${name}</span>`;
+    crumb.innerHTML = `<a href="#top">← Accueil</a><span class="fx-crumb-count">${name}</span>`;
     const prev = PAGES[i-1], next = PAGES[i+1];
     pager.innerHTML =
       (prev ? `<a href="#${prev[0]}" class="prev"><span class="lab">← PRÉCÉDENT</span><span class="ttl">${prev[1]}</span></a>`
