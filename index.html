@@ -6759,7 +6759,7 @@ function resultPosterHtml(m, big){
       <div class="rp-score">${played ? `<span class="${y>o?'win':''}">${y}</span><i></i><span class="${o>y?'win':''}">${o}</span>` : '<em>VS</em>'}</div>
       <div class="rp-team"><div class="rp-crest ${oppSrc?'':'no-logo'}">${opp}</div><b>${m.opponent||''}</b></div>
     </div>
-    <div class="rp-foot"><span class="rp-res">${resLbl}</span><span class="rp-date">${dateTxt}</span></div>
+    <div class="rp-foot">${res ? '' : `<span class="rp-res">${resLbl}</span>`}<span class="rp-date">${dateTxt}</span></div>
   </div></div>`;
 }
 function posterMatchOf(item){
