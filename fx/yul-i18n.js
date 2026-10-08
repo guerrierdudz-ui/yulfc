@@ -40,7 +40,7 @@
     ['MATCHS JOUÉS', 'MATCHES PLAYED'], ['VICTOIRES', 'WINS'], ['NULS', 'DRAWS'], ['DÉFAITES', 'LOSSES'],
     ['BUTS POUR', 'GOALS FOR'], ['BUTS CONTRE', 'GOALS AGAINST'], ['DIFFÉRENCE DE BUTS', 'GOAL DIFFERENCE'],
     ['BLANCHISSAGES', 'CLEAN SHEETS'], ['% DE VICTOIRES', 'WIN RATE'], ['TOUS', 'ALL'], ['LIGUE', 'LEAGUE'], ['COUPE', 'CUP'],
-    ['AMICAL', 'FRIENDLY'], ['VICTOIRE', 'WIN'], ['NUL', 'DRAW'], ['DÉFAITE', 'LOSS'], ['À VENIR', 'UPCOMING'],
+    ['AMICAL', 'FRIENDLY'], ['TERMINÉ', 'FULL TIME'], ['VICTOIRE', 'WIN'], ['NUL', 'DRAW'], ['DÉFAITE', 'LOSS'], ['À VENIR', 'UPCOMING'],
     ['YUL FC vs Adversaire', 'YUL FC vs Opponent'], ['SUITE DU CALENDRIER · BIENTÔT.', 'REST OF SCHEDULE · COMING SOON.'],
     ['Le calendrier complet de la saison sera publié par le staff dans Mission Control.', 'The full season schedule will be published by the staff in Mission Control.'],
     ['Le calendrier complet sera publié par le staff.', 'The full schedule will be published by the staff.'],

@@ -6739,9 +6739,38 @@ function buildUnifiedMediaFeed(){
   return items;
 }
 
+/* Affiche de score (Media Center) : écussons, score, résultat */
+function resultPosterHtml(m, big){
+  if(!m) return '';
+  const y = Number(m.scoreYul), o = Number(m.scoreOpp);
+  const played = Number.isFinite(y) && Number.isFinite(o) && (m.status==null || m.status==='full-time' || m.result);
+  const res = played ? (y>o ? 'W' : y<o ? 'L' : 'D') : null;
+  const resLbl = { W:'VICTOIRE', L:'DÉFAITE', D:'NUL' }[res] || 'JOUR DE MATCH';
+  const oppSrc = oppLogoSrc(m.opponent);
+  const opp = oppSrc ? `<img src="${oppSrc}" alt="">` : `<span class="rp-ini">${String(m.opponent||'?').split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase()}</span>`;
+  const d = m.date || m.kickoff;
+  const dateTxt = d ? new Date(d).toLocaleDateString('fr-CA', { day:'numeric', month:'short', year:'numeric' }).toUpperCase() : '';
+  const comp = (m.comp==='playoff' ? 'SÉRIES' : m.comp==='cup' ? 'COUPE' : m.comp==='friendly' ? 'AMICAL' : 'LSAQ') + (m.round ? ' · '+String(m.round).toUpperCase() : '');
+  return `<div class="rp ${big?'rp-big':''} ${res?'rp-'+res:'rp-up'}"><div class="rp-in">
+    <div class="rp-band"></div>
+    <div class="rp-top"><span class="rp-chip">${res ? 'TERMINÉ' : 'À VENIR'}</span><span class="rp-comp">${comp}</span></div>
+    <div class="rp-row">
+      <div class="rp-team"><div class="rp-crest"><img src="fx/yul-crest-hd.png" alt=""></div><b>YUL FC</b></div>
+      <div class="rp-score">${played ? `<span class="${y>o?'win':''}">${y}</span><i></i><span class="${o>y?'win':''}">${o}</span>` : '<em>VS</em>'}</div>
+      <div class="rp-team"><div class="rp-crest ${oppSrc?'':'no-logo'}">${opp}</div><b>${m.opponent||''}</b></div>
+    </div>
+    <div class="rp-foot"><span class="rp-res">${resLbl}</span><span class="rp-date">${dateTxt}</span></div>
+  </div></div>`;
+}
+function posterMatchOf(item){
+  if(item.archiveMatch) return item.archiveMatch;
+  if(item.matchRef) return Object.assign({}, item.matchRef, { date: item.matchRef.kickoff });
+  return null;
+}
 function mediaCardHtml(item){
-  return `<div class="media-card" data-id="${item.id}">
-    <div class="mc-cover">
+  const pm = (item.type==='results' || item.type==='matchday') ? posterMatchOf(item) : null;
+  return `<div class="media-card ${pm?'has-poster':''}" data-id="${item.id}">
+    <div class="mc-cover">${pm ? resultPosterHtml(pm) : ''}
       <div class="mc-type">${mediaTypeLabels[item.type] || item.type.toUpperCase()}</div>
       ${item.type==='gallery' ? `<div class="gallery-count-badge">${item.galleryRef.count} photos</div>` : ''}
       ${item.type==='video' ? `<div class="video-play-badge">▶</div>` : ''}
@@ -6779,7 +6808,9 @@ function renderMediaFeatured(){
     wrap.innerHTML = `<div class="empty-state"><div class="es-title">NO CONTENT YET.</div><p>Le Media Center se remplira à mesure que le staff publie du contenu et que les matchs se déroulent.</p></div>`;
     return;
   }
-  wrap.innerHTML = `<div class="media-hero-card" data-id="${top.id}">
+  const topPm = (top.type==='results' || top.type==='matchday') ? posterMatchOf(top) : null;
+  wrap.innerHTML = `<div class="media-hero-card ${topPm?'has-poster':''}" data-id="${top.id}">
+    ${topPm ? `<div class="mh-poster">${resultPosterHtml(topPm, true)}</div>` : ''}
     <div class="mh-inner">
       <div class="mh-tag">${mediaTypeLabels[top.type]||top.type.toUpperCase()}</div>
       <div class="mh-title">${top.title}</div>

@@ -108,3 +108,52 @@
 }
 .ysg-del:hover{ background:rgba(232,93,93,.1); }
 @media (max-width:560px){ .yul-staff-grid{ grid-template-columns:repeat(2, minmax(0,1fr)); } }
+
+/* ---------- Affiches de score (Media Center) ---------- */
+.media-card.has-poster .mc-cover::after{ display:none; }
+.media-card.has-poster .mc-type{ display:none; }
+.rp{
+  --acc:#F0B429; position:absolute; inset:0; container-type:inline-size; overflow:hidden; color:#F4F5F2;
+  background:
+    radial-gradient(70% 90% at 50% 45%, rgba(240,180,41,.14), transparent 70%),
+    repeating-linear-gradient(115deg, rgba(255,255,255,.025) 0 2px, transparent 2px 22px),
+    linear-gradient(160deg, #18295A 0%, #0C1730 55%, #070D1C 100%);
+}
+.rp-in{ position:absolute; inset:0; display:flex; flex-direction:column; justify-content:space-between; padding:5cqi 6cqi 4.2cqi 8cqi; }
+.rp-W{ --acc:#3DDC84; } .rp-L{ --acc:#E85D5D; } .rp-D{ --acc:#F0B429; } .rp-up{ --acc:#F0B429; }
+.rp-band{ position:absolute; left:0; top:0; bottom:0; width:2.2cqi; background:var(--acc); box-shadow:0 0 30px var(--acc); }
+.rp::after{ content:''; position:absolute; right:-18cqi; bottom:-30cqi; width:70cqi; height:70cqi; border-radius:50%;
+  background:url('yul-crest-hd.png') center/45% no-repeat; opacity:.05; filter:grayscale(1) brightness(3); pointer-events:none; }
+.rp-top{ display:flex; align-items:center; justify-content:space-between; gap:3cqi; position:relative; z-index:1; }
+.rp-chip{ font-family:var(--ff-mono); font-size:3.3cqi; letter-spacing:.18em; font-weight:600; color:#070D1C; background:var(--acc); padding:1cqi 2.4cqi; border-radius:1cqi; }
+.rp-comp{ font-family:var(--ff-mono); font-size:3.1cqi; letter-spacing:.14em; color:rgba(244,245,242,.7); text-align:right; }
+.rp-row{ display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:3cqi; position:relative; z-index:1; }
+.rp-team{ display:flex; flex-direction:column; align-items:center; gap:1.6cqi; min-width:0; }
+.rp-team b{ font-family:var(--ff-display); font-weight:400; font-size:3.6cqi; letter-spacing:.03em; text-transform:uppercase; text-align:center; line-height:1.05;
+  max-width:100%; overflow-wrap:anywhere; }
+.rp-crest{ width:16cqi; height:16cqi; flex:none; display:flex; align-items:center; justify-content:center; overflow:hidden; filter:drop-shadow(0 1.5cqi 3cqi rgba(0,0,0,.55)); }
+.rp-crest img{ display:block; max-width:100%; max-height:100%; width:auto; height:auto; min-height:0; object-fit:contain; }
+.rp-crest.no-logo{ border-radius:50%; background:#142347; border:1px solid #26355F; }
+.rp-ini{ font-family:var(--ff-display); font-size:7cqi; color:#F0B429; }
+.rp-score{ display:flex; align-items:center; gap:2.4cqi; font-family:var(--ff-display); font-size:15cqi; line-height:.9; }
+.rp-score span{ color:rgba(244,245,242,.82); }
+.rp-score span.win{ color:#fff; text-shadow:0 0 4cqi rgba(255,255,255,.25); }
+.rp-W .rp-score span.win:first-child{ background:linear-gradient(180deg,#FCE7A6,#F0B429 60%,#C99A2E); -webkit-background-clip:text; background-clip:text; color:transparent; text-shadow:none; }
+.rp-score i{ display:block; width:4cqi; height:1.2cqi; border-radius:1cqi; background:rgba(244,245,242,.4); }
+.rp-score em{ font-style:normal; font-size:9cqi; color:rgba(244,245,242,.55); letter-spacing:.06em; }
+.rp-foot{ display:flex; align-items:baseline; justify-content:space-between; position:relative; z-index:1; border-top:1px solid rgba(244,245,242,.12); padding-top:2cqi; }
+.rp-res{ font-family:var(--ff-display); font-size:5.2cqi; letter-spacing:.04em; color:var(--acc); }
+.rp-date{ font-family:var(--ff-mono); font-size:3.1cqi; letter-spacing:.14em; color:rgba(244,245,242,.65); }
+
+/* Version « à la une » : l'affiche occupe la carte, le texte passe dessous */
+.media-hero-card.has-poster{ flex-direction:column; align-items:stretch; min-height:0; }
+.media-hero-card.has-poster::before{ display:none; }
+.media-hero-card .mh-poster{ position:relative; aspect-ratio:16/10; }
+@media (min-width:900px){
+  .media-hero-card.has-poster{ flex-direction:row; align-items:stretch; }
+  .media-hero-card.has-poster .mh-poster{ flex:0 0 58%; }
+  .media-hero-card.has-poster .mh-inner{ align-self:center; padding:2rem 2.2rem; }
+}
+.media-hero-card.has-poster .mh-inner{ padding:1.3rem 1.6rem 1.6rem; }
+.rp-big .rp-band{ width:1.6cqi; }
+.rp-big .rp-in{ padding:6cqi 7cqi 5cqi 9cqi; }
