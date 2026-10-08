@@ -162,7 +162,7 @@
     'player-9': 'players/hamza-talate.jpg',
     'player-12': 'players/aimen-messai.jpg',
     'player-16': 'players/augustin-stevenson.jpg',
-    'player-17': 'players/leo-laith-albadri.jpg',
+    'player-17': 'players/leo-laith-albadiri.jpg',
     'player-18': 'players/jose-salazar.jpg',
     'player-19': 'players/bilel-fekih.jpg',
     'player-20': 'players/chris-frettier.jpg',
