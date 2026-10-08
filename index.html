@@ -5816,18 +5816,10 @@ function openMatchPage(m){
 
   document.getElementById('matchPageBody').innerHTML = `
     <div class="mp-hero">
-      <span class="status-pill ${m.status}">${(m.status==='live')?'<span class="pulse" style="width:6px;height:6px;border-radius:50%;background:currentColor;display:inline-block;"></span>':''}${statusLabels[m.status]}</span>
-      <div class="mp-comp">${compText(m)}${m.matchday ? ' · '+m.matchday : ''}</div>
-      <div class="mp-comp" style="color:var(--gold-dim);">${matchFormatTag(m)}</div>
-      <div class="mp-teams">
-        <div class="mp-team"><div class="crest yul"><img src="fx/yul-crest-hd.png" alt=""></div><div class="nm">YUL FC</div></div>
-        <div>${scoreOrCountdownHtml}</div>
-        <div class="mp-team"><div class="crest${oppLogoSrc(m.opponent) ? ' has-logo' : ''}">${opponentInitials}</div><div class="nm">${m.opponent}</div></div>
-      </div>
-      <div class="mp-meta-row">
-        <div>DATE<b>${isNext ? fmtMatchDate(m.kickoff) : fmtShortDate(m.date)}</b></div>
-        ${m.venue ? `<div>VENUE<b>${m.venue}</b></div>` : ''}
-      </div>
+      ${m.status==='live' || m.status==='half-time' || m.status==='upcoming' ? `<span class="status-pill ${m.status}">${(m.status==='live')?'<span class="pulse" style="width:6px;height:6px;border-radius:50%;background:currentColor;display:inline-block;"></span>':''}${statusLabels[m.status]}</span>` : ''}
+      <div class="mp-poster">${resultPosterHtml(isNext ? Object.assign({}, m, { date: m.kickoff }) : m, true)}</div>
+      ${m.status==='upcoming' ? scoreOrCountdownHtml : ''}
+      <div class="mp-sub">${compText(m)}${m.matchday ? ' · '+m.matchday : ''} · ${matchFormatTag(m)}</div>
       ${m.venue ? `<a href="${directionsUrl}" target="_blank" rel="noopener" class="mp-directions">GET DIRECTIONS</a>` : ''}
       <div class="share-row" style="justify-content:center;">
         <button id="mpShareNative">Share</button>
@@ -5836,6 +5828,8 @@ function openMatchPage(m){
         <button id="mpShareCopy">Copy for Instagram</button>
       </div>
     </div>
+
+    ${matchVideoBlock(m)}
 
     <div class="modal-section-title">STARTING XI</div>
     ${xiHtml}
@@ -5850,6 +5844,10 @@ function openMatchPage(m){
     ${potmHtml ? `<div class="modal-section-title">PLAYER OF THE MATCH</div>${potmHtml}` : ''}
     ${ratingsHtml ? `<div class="modal-section-title">PLAYER RATINGS</div>${ratingsHtml}` : ''}
   `;
+
+  const vs = document.getElementById('mpVideoSave'), vd = document.getElementById('mpVideoDel');
+  if(vs) vs.addEventListener('click', ()=> saveMatchVideo(vs.dataset.key, document.getElementById('mpVideoInput').value.trim(), m));
+  if(vd) vd.addEventListener('click', ()=> { if(confirm('Retirer la vidéo de ce match ?')) saveMatchVideo(vd.dataset.key, '', m); });
 
   // Share buttons
   document.getElementById('mpShareNative').addEventListener('click', ()=>{
@@ -6830,23 +6828,75 @@ function resultPosterHtml(m, big){
   const y = Number(m.scoreYul), o = Number(m.scoreOpp);
   const played = Number.isFinite(y) && Number.isFinite(o) && (m.status==null || m.status==='full-time' || m.result);
   const res = played ? (y>o ? 'W' : y<o ? 'L' : 'D') : null;
-  const resLbl = { W:'VICTOIRE', L:'DÉFAITE', D:'NUL' }[res] || 'JOUR DE MATCH';
   const oppSrc = oppLogoSrc(m.opponent);
   const opp = oppSrc ? `<img src="${oppSrc}" alt="">` : `<span class="rp-ini">${String(m.opponent||'?').split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase()}</span>`;
   const d = m.date || m.kickoff;
-  const dateTxt = d ? new Date(d).toLocaleDateString('fr-CA', { day:'numeric', month:'short', year:'numeric' }).toUpperCase() : '';
+  const dateTxt = d ? new Date(d).toLocaleDateString('fr-CA', { day:'numeric', month:'long', year:'numeric' }).toUpperCase() : '';
   const comp = (m.comp==='playoff' ? 'SÉRIES' : m.comp==='cup' ? 'COUPE' : m.comp==='friendly' ? 'AMICAL' : 'LSAQ') + (m.round ? ' · '+String(m.round).toUpperCase() : '');
+  const vid = typeof matchVideoOf === 'function' && matchVideoOf(m);
   return `<div class="rp ${big?'rp-big':''} ${res?'rp-'+res:'rp-up'}"><div class="rp-in">
-    <div class="rp-band"></div>
-    <div class="rp-top">${res ? '' : '<span class="rp-chip">À VENIR</span>'}<span class="rp-comp">${comp}</span></div>
+    <div class="rp-slash"></div><div class="rp-glow"></div>
+    <div class="rp-top"><span class="rp-brand"><img src="fx/yul-crest-hd.png" alt="">YUL FC</span><span class="rp-comp">${comp}</span></div>
     <div class="rp-row">
       <div class="rp-team"><div class="rp-crest"><img src="fx/yul-crest-hd.png" alt=""></div><b>YUL FC</b></div>
-      <div class="rp-score">${played ? `<span class="${y>o?'win':''}">${y}</span><i></i><span class="${o>y?'win':''}">${o}</span>` : '<em>VS</em>'}</div>
+      <div class="rp-mid">
+        ${played ? `<div class="rp-score"><span class="${y>o?'win':''}">${y}</span><i></i><span class="${o>y?'win':''}">${o}</span></div>` : '<div class="rp-score"><em>VS</em></div>'}
+        ${played ? '' : '<div class="rp-ft">À VENIR</div>'}
+      </div>
       <div class="rp-team"><div class="rp-crest ${oppSrc?'':'no-logo'}">${opp}</div><b>${m.opponent||''}</b></div>
     </div>
-    <div class="rp-foot">${res ? '' : `<span class="rp-res">${resLbl}</span>`}<span class="rp-date">${dateTxt}</span></div>
+    <div class="rp-foot"><span class="rp-date">${dateTxt}</span>${m.venue ? `<span class="rp-venue">${m.venue}</span>` : ''}${vid ? '<span class="rp-play">▶ MATCH COMPLET</span>' : ''}</div>
   </div></div>`;
 }
+
+/* ---- Vidéos YouTube des matchs (ajoutées par le staff depuis la fiche du match) ---- */
+window.YUL_VIDEOS = window.YUL_VIDEOS || {};
+function matchKeyOf(m){
+  const d = String(m.date || m.kickoff || '').slice(0,10) || 'x';
+  return d + '-' + oppSlug(m.opponent);
+}
+function matchVideoOf(m){ return (window.YUL_VIDEOS || {})[matchKeyOf(m)] || ''; }
+function ytId(u){
+  const s = String(u||'').trim();
+  const m = s.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/))([A-Za-z0-9_-]{11})/);
+  return m ? m[1] : (/^[A-Za-z0-9_-]{11}$/.test(s) ? s : '');
+}
+function matchVideoBlock(m){
+  const key = matchKeyOf(m), url = matchVideoOf(m), id = ytId(url);
+  const staff = !!window.YUL_IS_STAFF;
+  let html = '';
+  if(id){
+    html += `<div class="mp-video"><iframe src="https://www.youtube-nocookie.com/embed/${id}?rel=0" title="Match complet" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe></div>
+      <a class="mp-video-link" href="https://www.youtube.com/watch?v=${id}" target="_blank" rel="noopener">Ouvrir sur YouTube ↗</a>`;
+  } else if(!staff){
+    return '';
+  }
+  if(staff){
+    html += `<div class="mp-video-edit">
+      <label>${id ? 'Remplacer le lien YouTube' : 'Ajouter le lien YouTube du match complet'} <small>(visible seulement par le staff)</small></label>
+      <div class="row"><input id="mpVideoInput" type="url" placeholder="https://youtu.be/..." value="${url ? String(url).replace(/"/g,'&quot;') : ''}">
+      <button id="mpVideoSave" data-key="${key}">Enregistrer</button>${id ? `<button id="mpVideoDel" data-key="${key}" class="ghost">Retirer</button>` : ''}</div>
+      <div id="mpVideoMsg"></div></div>`;
+  }
+  return `<div class="modal-section-title">MATCH COMPLET</div>${html}`;
+}
+async function saveMatchVideo(key, url, m){
+  const msg = document.getElementById('mpVideoMsg');
+  if(url && !ytId(url)){ if(msg) msg.textContent = 'Ce lien ne ressemble pas à une vidéo YouTube.'; return; }
+  try{
+    const r = await fetch('/api/club/videos/set', { method:'POST', credentials:'same-origin', headers:{'content-type':'application/json'}, body: JSON.stringify({ key, url }) });
+    if(!r.ok){ let d={}; try{ d=await r.json(); }catch(e){} throw new Error(d.error || 'Enregistrement impossible.'); }
+    if(url) window.YUL_VIDEOS[key] = url; else delete window.YUL_VIDEOS[key];
+    openMatchPage(m);
+    try{ renderMediaFeatured(); renderMediaLatestGrid(); }catch(e){}
+  }catch(e){ if(msg) msg.textContent = e.message; }
+}
+fetch('/api/public/videos').then(r => r.ok ? r.json() : null).then(d => {
+  if(d && d.videos){ window.YUL_VIDEOS = d.videos; try{ renderMediaFeatured(); renderMediaLatestGrid(); }catch(e){} }
+}).catch(()=>{});
+fetch('/api/auth/me', { credentials:'same-origin' }).then(r => r.ok ? r.json() : null).then(d => {
+  window.YUL_IS_STAFF = !!(d && d.user && d.user.role && d.user.role !== 'player');
+}).catch(()=>{});
 function posterMatchOf(item){
   if(item.archiveMatch) return item.archiveMatch;
   if(item.matchRef) return Object.assign({}, item.matchRef, { date: item.matchRef.kickoff });

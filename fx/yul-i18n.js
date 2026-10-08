@@ -238,7 +238,7 @@
     ['CONTENU SOCIAL', 'SOCIAL CONTENT'], ['DEVANT', 'FRONT'], ['DOS', 'BACK'], ['Ta marque avec YUL FC', 'See Your Brand With YUL FC'],
     ['Choisis un emplacement pour voir son statut.', 'Select a placement to see its status.'],
     ['Aperçu de ce que ça pourrait donner : logo fictif, aucun partenaire réel affiché.', 'A preview of what it could look like: mock logo, no real partner shown.'],
-    ['APERÇU', 'PREVIEW'], ['présenté par TA MARQUE', 'presented by YOUR BRAND'], ['FIN DU MATCH', 'FULL TIME'],
+    ['APERÇU', 'PREVIEW'], ['présenté par TA MARQUE', 'presented by YOUR BRAND'], ['FIN DU MATCH', 'FULL TIME'], ['MATCH COMPLET', 'FULL MATCH'], ['▶ MATCH COMPLET', '▶ FULL MATCH'], ['Ouvrir sur YouTube ↗', 'Open on YouTube ↗'],
     ['Nos partenaires', 'Our Partners'], ['NOS PARTENAIRES.', 'OUR PARTNERS.'], ['CONSTRUISONS', "LET'S BUILD"], ['QUELQUE CHOSE ENSEMBLE.', 'SOMETHING TOGETHER.'],
     ["Deviens l'une des premières marques partenaires du YUL FC.", 'Become one of the first brands to partner with YUL FC.'],
     ['Nom', 'Name'], ['Entreprise', 'Company'], ['Message (facultatif)', 'Message (optional)'], ['Téléphone (optionnel)', 'Phone (optional)'], ['Démarrer la conversation', 'Start a Conversation'],

@@ -503,6 +503,16 @@ async function route(path, request, env, body, u){
       return json(await D.put('monthly/' + month + '/' + playerId + '.json', cleanMonthly(body, month, playerId, u)));
     }
 
+    case 'videos/set': {
+      need(staff);
+      const key = vidKey(body.key); if(!key) return err('Match invalide.');
+      const url = str(body.url, 300);
+      if(url && !ytOk(url)) return err('Lien YouTube invalide.');
+      const all = (await D.get('videos.json')) || {};
+      if(url) all[key] = url; else delete all[key];
+      await D.put('videos.json', all);
+      return json({ ok: true, videos: all });
+    }
     case 'requests/update': {
       need(staff);
       const kind = body.kind === 'inquiry' ? 'inquiries/' : 'apps/';
@@ -719,6 +729,14 @@ async function publicPartner(request, env){
   return json({ ok: true });
 }
 
+/* ---------------- vidéos YouTube des matchs (clé : AAAA-MM-JJ-adversaire) ---------------- */
+const vidKey = v => /^\d{4}-\d{2}-\d{2}-[a-z0-9-]{1,60}$/.test(String(v || '')) ? String(v) : '';
+const ytOk = u => /^https:\/\/(www\.|m\.)?(youtube\.com|youtu\.be)\//i.test(String(u || ''));
+async function publicVideos(env){
+  const all = env.MEDIA ? ((await db(env).get('videos.json')) || {}) : {};
+  return new Response(JSON.stringify({ videos: all }), { headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'public, max-age=30' } });
+}
+
 /* ---------------- point d'entrée ---------------- */
 function sameOrigin(request){
   const o = request.headers.get('origin');
@@ -731,6 +749,7 @@ export async function handleClub(request, env){
   const p = url.pathname;
   if(p === '/api/public/matches' && request.method === 'GET') return publicMatches(env);
   if(p === '/api/public/squad' && request.method === 'GET') return publicSquad(env);
+  if(p === '/api/public/videos' && request.method === 'GET') return publicVideos(env);
   if(!env.MEDIA) return err('Stockage non configuré (binding R2 « MEDIA » manquant).', 503);
   if((p === '/api/public/apply' || p === '/api/public/partner') && request.method === 'POST'){
     if(!sameOrigin(request)) return err('Origine refusée.', 403);
