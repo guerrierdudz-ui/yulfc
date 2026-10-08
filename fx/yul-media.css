@@ -124,7 +124,8 @@
 .rp-band{ position:absolute; left:0; top:0; bottom:0; width:2.2cqi; background:var(--acc); box-shadow:0 0 30px var(--acc); }
 .rp::after{ content:''; position:absolute; right:-18cqi; bottom:-30cqi; width:70cqi; height:70cqi; border-radius:50%;
   background:url('yul-crest-hd.png') center/45% no-repeat; opacity:.05; filter:grayscale(1) brightness(3); pointer-events:none; }
-.rp-top{ display:flex; align-items:center; justify-content:space-between; gap:3cqi; position:relative; z-index:1; }
+.rp-top{ display:flex; align-items:center; justify-content:space-between; gap:3cqi; position:relative; z-index:1; min-height:5cqi; }
+.rp-top .rp-comp:only-child{ margin-left:auto; }
 .rp-chip{ font-family:var(--ff-mono); font-size:3.3cqi; letter-spacing:.18em; font-weight:600; color:#070D1C; background:var(--acc); padding:1cqi 2.4cqi; border-radius:1cqi; }
 .rp-comp{ font-family:var(--ff-mono); font-size:3.1cqi; letter-spacing:.14em; color:rgba(244,245,242,.7); text-align:right; }
 .rp-row{ display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:3cqi; position:relative; z-index:1; }

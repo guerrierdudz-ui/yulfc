@@ -6709,7 +6709,7 @@ function buildUnifiedMediaFeed(){
       date: m.kickoff, meta:'FULL TIME', isVirtual:true, matchRef:m,
     });
   }
-  matchDB.archive.slice().reverse().slice(0,5).forEach(am=>{
+  matchDB.archive.slice().reverse().forEach(am=>{
     items.push({
       id:'archive-'+am.id, type:'results', filterCat:'results',
       title:`YUL FC ${am.scoreYul}-${am.scoreOpp} ${am.opponent}`, desc:`${compText(am)}${am.venue?' · '+am.venue:''}`,
@@ -6753,7 +6753,7 @@ function resultPosterHtml(m, big){
   const comp = (m.comp==='playoff' ? 'SÉRIES' : m.comp==='cup' ? 'COUPE' : m.comp==='friendly' ? 'AMICAL' : 'LSAQ') + (m.round ? ' · '+String(m.round).toUpperCase() : '');
   return `<div class="rp ${big?'rp-big':''} ${res?'rp-'+res:'rp-up'}"><div class="rp-in">
     <div class="rp-band"></div>
-    <div class="rp-top"><span class="rp-chip">${res ? 'TERMINÉ' : 'À VENIR'}</span><span class="rp-comp">${comp}</span></div>
+    <div class="rp-top">${res ? '' : '<span class="rp-chip">À VENIR</span>'}<span class="rp-comp">${comp}</span></div>
     <div class="rp-row">
       <div class="rp-team"><div class="rp-crest"><img src="fx/yul-crest-hd.png" alt=""></div><b>YUL FC</b></div>
       <div class="rp-score">${played ? `<span class="${y>o?'win':''}">${y}</span><i></i><span class="${o>y?'win':''}">${o}</span>` : '<em>VS</em>'}</div>
