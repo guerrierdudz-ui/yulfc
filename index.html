@@ -2552,7 +2552,6 @@ footer{ background:var(--void); border-top:1px solid var(--line); padding:3rem 6
     <div class="player-stats-table-wrap"><table class="player-stats-table" id="shGkTable"></table></div>
 
     <div class="hub-section-title" style="margin-top:2rem;">DISCIPLINE</div>
-    <p class="section-note" style="margin-bottom:.8rem;">Informations statistiques uniquement.</p>
     <div class="player-stats-table-wrap"><table class="player-stats-table" id="shDisciplineTable"></table></div>
   </div>
 
@@ -2571,7 +2570,6 @@ footer{ background:var(--void); border-top:1px solid var(--line); padding:3rem 6
     <div id="ourSeasonsWrap"></div>
 
     <div class="hub-section-title" style="margin-top:2.4rem;">YUL FC · ALL TIME</div>
-    <p class="section-note" style="margin-bottom:.8rem;">Statistiques cumulées de saison régulière uniquement. Les playoffs ne sont pas inclus tant que leurs résultats complets ne sont pas fournis.</p>
     <div class="mc-kpi-grid" id="allTimeTotalsWrap"></div>
 
     <div class="hub-section-title" style="margin-top:2.4rem;">PLAYOFF HISTORY</div>
@@ -5627,7 +5625,7 @@ function renderAllTimeTotals(){
   const gpm = p ? (gf/p).toFixed(2) : '0.00';
   const gcpm = p ? (ga/p).toFixed(2) : '0.00';
   const el = document.getElementById('allTimeTotalsWrap');
-  el.innerHTML = `<p class="section-note" style="margin-bottom:1rem;">Toutes compétitions YUL FC confondues (Été 11v11 + Hiver 7v7). Jamais présenté comme une statistique LSAQ 11v11 seule.</p>` + [
+  el.innerHTML = `` + [
     ['CHAPTERS PLAYED', list.length], ['LEAGUE MATCHES', p], ['WINS', w], ['DRAWS', d], ['LOSSES', l],
     ['GOALS SCORED', gf], ['GOALS CONCEDED', ga], ['GOAL DIFFERENCE', (gf-ga>0?'+':'')+(gf-ga)],
     ['REGULAR-SEASON POINTS', pts], ['WIN RATE', winRate+'%'], ['GOALS / MATCH', gpm], ['CONCEDED / MATCH', gcpm],
@@ -5637,8 +5635,7 @@ function renderPlayoffHistory(){
   const list = allSegmentsWithData().filter(x=>x.seg.playoffRound);
   const el = document.getElementById('playoffHistoryWrap');
   if(!list.length){ el.innerHTML = '<div class="empty-state"><div class="es-title">NO PLAYOFF HISTORY YET.</div></div>'; return; }
-  el.innerHTML = list.map(({year,segKey,seg})=>`<div class="record-card"><div class="rc-lab">${year} ${segmentLabels[segKey]} · ${seg.format}</div><div class="rc-val">${seg.playoffRound} · ${seg.playoffResult}</div></div>`).join('')
-    + `<p class="section-note" style="margin-top:.8rem;">Le détail complet des matchs de playoffs (adversaires, scores, dates) sera ajouté dès qu'il sera fourni. Aucun résultat agrégé victoires/défaites n'est affiché tant que ces données sont incomplètes.</p>`;
+  el.innerHTML = list.map(({year,segKey,seg})=>`<div class="record-card"><div class="rc-lab">${year} ${segmentLabels[segKey]} · ${seg.format}</div><div class="rc-val">${seg.playoffRound} · ${seg.playoffResult}</div></div>`).join('');
 }
 function renderSeasonComparison(){
   ensureSeasons();
@@ -5666,7 +5663,6 @@ function renderSeasonComparison(){
     ['Playoffs', s25.playoffRound, s26.playoffRound],
   ];
   el.innerHTML = `
-    <p class="section-note" style="margin-bottom:1rem;">Comparaison Été 11v11 uniquement. Le Hiver 7v7 n'a pas encore de données à comparer.</p>
     <div class="season-vs-wrap">
       ${card('2025', s25, true)}
       <div class="season-vs-divider">VS</div>
