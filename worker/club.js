@@ -312,6 +312,9 @@ async function bootstrap(env, u){
     out.news = news;
     const users = await D.all('users/');
     out.accounts = users.map(publicUser);
+    const byNew = (a, b) => String(b.createdAt).localeCompare(String(a.createdAt));
+    out.applications = (await D.all('apps/')).sort(byNew);
+    out.inquiries = (await D.all('inquiries/')).sort(byNew);
     if(finance){
       out.contracts = await D.all('contracts/');
       out.payments = await D.all('payments/');
@@ -500,6 +503,24 @@ async function route(path, request, env, body, u){
       return json(await D.put('monthly/' + month + '/' + playerId + '.json', cleanMonthly(body, month, playerId, u)));
     }
 
+    case 'requests/update': {
+      need(staff);
+      const kind = body.kind === 'inquiry' ? 'inquiries/' : 'apps/';
+      const key = kind + safeId(body.id) + '.json';
+      const r = await D.get(key); if(!r) return err('Demande introuvable.', 404);
+      const ST = kind === 'apps/' ? ['nouveau', 'contacté', 'essai', 'accepté', 'refusé'] : ['nouveau', 'contacté', 'en discussion', 'partenaire', 'refusé'];
+      if(body.status !== undefined) r.status = oneOf(body.status, ST, r.status);
+      if(body.notes !== undefined) r.notes = text(body.notes, 2000);
+      r.updatedAt = now();
+      return json(await D.put(key, r));
+    }
+    case 'requests/delete': {
+      need(staff);
+      const kind = body.kind === 'inquiry' ? 'inquiries/' : 'apps/';
+      await D.del(kind + safeId(body.id) + '.json');
+      return json({ ok: true });
+    }
+
     /* ---- annonces ---- */
     case 'news/save': {
       need(staff);
@@ -655,6 +676,49 @@ async function publicMatches(env){
   return new Response(JSON.stringify({ matches }), { headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'public, max-age=60' } });
 }
 
+/* ---------------- formulaires publics : candidatures joueurs + demandes partenaires ----------------
+   Envoyés depuis le site public, stockés dans R2 (db/apps/, db/inquiries/), visibles dans l'Espace staff. */
+const shortTxt = (v, n) => str(v, n);
+async function rateOk(env, request, kind){
+  const ip = request.headers.get('cf-connecting-ip') || 'x';
+  const hour = new Date().toISOString().slice(0, 13);
+  const key = `rate/${kind}/${hour}/${(await sha256(ip)).slice(0, 16)}.json`;
+  const D = db(env); const r = (await D.get(key)) || { n: 0 };
+  if(r.n >= 8) return false;
+  r.n++; await D.put(key, r); return true;
+}
+async function publicApply(request, env){
+  let b = {}; try{ b = JSON.parse((await request.text()).slice(0, 60000)) || {}; }catch(e){ return err('JSON invalide.'); }
+  if(b.website) return json({ ok: true }); // pot de miel anti-robots
+  if(!await rateOk(env, request, 'apply')) return err('Trop d\'envois. Réessaie plus tard.', 429);
+  const first = shortTxt(b.firstName, 60), last = shortTxt(b.lastName, 60), mail = email(b.email);
+  if(!first || !mail) return err('Nom et courriel requis.');
+  const av = {}; if(b.availability && typeof b.availability === 'object') for(const [d, l] of Object.entries(b.availability)) if(Array.isArray(l)) av[shortTxt(d, 12)] = l.slice(0, 6).map(x => shortTxt(x, 20));
+  const a = {
+    id: uid(), ref: shortTxt(b.ref, 20), firstName: first, lastName: last, email: mail, phone: shortTxt(b.phone, 30),
+    dob: (isoDate(b.dob) || '').slice(0, 10), nationality: shortTxt(b.nationality, 40), city: shortTxt(b.city, 60),
+    formats: (Array.isArray(b.formats) ? b.formats : []).filter(f => ['summer', 'winter'].includes(f)),
+    pos1: shortTxt(b.pos1, 20), pos2: shortTxt(b.pos2, 20), role7v7: shortTxt(b.role7v7, 30), foot: shortTxt(b.foot, 10), height: shortTxt(b.height, 15),
+    currentTeam: shortTxt(b.currentTeam, 80), formerTeam: shortTxt(b.formerTeam, 80), level: shortTxt(b.level, 60), years: shortTxt(b.years, 5), league: shortTxt(b.league, 80),
+    desc: text(b.desc, 1500), sunday: shortTxt(b.sunday, 10), availability: av,
+    video: shortTxt(b.video, 300), instaFoot: shortTxt(b.instaFoot, 120), tiktok: shortTxt(b.tiktok, 120),
+    why: text(b.why, 1500), looking: text(b.looking, 1500),
+    status: 'nouveau', notes: '', createdAt: now(),
+  };
+  await db(env).put('apps/' + a.id + '.json', a);
+  return json({ ok: true, id: a.id });
+}
+async function publicPartner(request, env){
+  let b = {}; try{ b = JSON.parse((await request.text()).slice(0, 20000)) || {}; }catch(e){ return err('JSON invalide.'); }
+  if(b.website) return json({ ok: true });
+  if(!await rateOk(env, request, 'partner')) return err('Trop d\'envois. Réessaie plus tard.', 429);
+  const name = shortTxt(b.name, 80), mail = email(b.email);
+  if(!name || !mail) return err('Nom et courriel requis.');
+  const q = { id: uid(), name, company: shortTxt(b.company, 100), email: mail, phone: shortTxt(b.phone, 30), message: text(b.message, 3000), status: 'nouveau', notes: '', createdAt: now() };
+  await db(env).put('inquiries/' + q.id + '.json', q);
+  return json({ ok: true });
+}
+
 /* ---------------- point d'entrée ---------------- */
 function sameOrigin(request){
   const o = request.headers.get('origin');
@@ -668,6 +732,10 @@ export async function handleClub(request, env){
   if(p === '/api/public/matches' && request.method === 'GET') return publicMatches(env);
   if(p === '/api/public/squad' && request.method === 'GET') return publicSquad(env);
   if(!env.MEDIA) return err('Stockage non configuré (binding R2 « MEDIA » manquant).', 503);
+  if((p === '/api/public/apply' || p === '/api/public/partner') && request.method === 'POST'){
+    if(!sameOrigin(request)) return err('Origine refusée.', 403);
+    return p.endsWith('apply') ? publicApply(request, env) : publicPartner(request, env);
+  }
 
   if(request.method !== 'GET' && !sameOrigin(request)) return err('Origine refusée.', 403);
 

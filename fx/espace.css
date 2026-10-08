@@ -321,3 +321,12 @@ tr.clickable:hover td{ background:rgba(255,255,255,.02); }
 .team-switch button{ border:0; background:transparent; color:var(--dim); font-family:var(--ff-mono); font-size:.74rem; font-weight:600; letter-spacing:.1em; padding:7px 16px; border-radius:999px; cursor:pointer; }
 .team-switch button.on{ background:var(--gold); color:#14100A; }
 .ev-top .tag + .tag{ margin-left:6px; }
+
+/* ---------- Candidatures et partenaires ---------- */
+.req-dot{ display:inline-grid; place-items:center; min-width:18px; height:18px; padding:0 5px; margin-left:4px; border-radius:9px; background:var(--loss); color:#fff; font-size:.62rem; letter-spacing:0; }
+.req-row{ display:flex; justify-content:space-between; gap:14px; padding:7px 0; border-top:1px solid var(--line-2); font-size:.86rem; }
+.req-row:first-child{ border-top:0; }
+.req-row span{ color:var(--dim); flex:none; }
+.req-row b{ font-weight:500; text-align:right; overflow-wrap:anywhere; }
+.req-text{ white-space:pre-line; font-size:.9rem; line-height:1.55; }
+.req-notes{ width:100%; min-height:90px; background:var(--void); border:1px solid var(--line); border-radius:var(--r-sm); color:var(--ink); padding:10px 12px; font:inherit; }

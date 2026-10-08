@@ -161,7 +161,7 @@ function routes(){
     ['accueil', 'Accueil', 'home'], ['calendrier', 'Calendrier', 'cal'], ['dispos', 'Dispos', 'clock'], ['annonces', 'Annonces', 'news'],
     ['presences', 'Présences', 'check'], ['contrat', 'Contrat', 'doc'],
   ];
-  const r = [['tableau', 'Tableau de bord'], ['effectif', 'Effectif'], ['calendrier', 'Calendrier'], ['dispos', 'Dispos du mois'], ['annonces', 'Annonces']];
+  const r = [['tableau', 'Tableau de bord'], ['effectif', 'Effectif'], ['calendrier', 'Calendrier'], ['dispos', 'Dispos du mois'], ['demandes', 'Candidatures et partenaires'], ['annonces', 'Annonces']];
   if(finance()) r.push(['contrats', 'Contrats et paiements']);
   r.push(['photos', 'Photos du site']);
   if(admin()) r.push(['comptes', 'Comptes']);
@@ -174,6 +174,10 @@ function currentRoute(){
 }
 function badges(){
   const b = {};
+  if(staff()){
+    const n = (S.d.applications || []).filter(a => a.status === 'nouveau').length + (S.d.inquiries || []).filter(a => a.status === 'nouveau').length;
+    if(n) b.demandes = n;
+  }
   if(!staff()){
     const c = S.d.contract;
     if(c && c.status === 'à signer') b.contrat = 1;
@@ -533,6 +537,63 @@ function contractDoc(c, p){
   </div>`;
 }
 let presFilter = 'all';
+let reqTab = 'joueurs', reqFilter = 'all';
+const REQ_ST_APP = ['nouveau', 'contacté', 'essai', 'accepté', 'refusé'];
+const REQ_ST_INQ = ['nouveau', 'contacté', 'en discussion', 'partenaire', 'refusé'];
+const REQ_TAG = { 'nouveau': 'gold', 'contacté': 'blue', 'essai': 'blue', 'en discussion': 'blue', 'accepté': 'green', 'partenaire': 'green', 'refusé': 'red' };
+const POSL = k => ({ GK: 'Gardien', DEF: 'Défenseur', MID: 'Milieu', FWD: 'Attaquant' })[k] || k;
+function reqRow(l, v){ return v ? `<div class="req-row"><span>${esc(l)}</span><b>${v}</b></div>` : ''; }
+function openRequest(kind, id){
+  const list = kind === 'app' ? (S.d.applications || []) : (S.d.inquiries || []);
+  const x = list.find(r => r.id === id); if(!x) return closeSheet();
+  S.sheet = () => openRequest(kind, id);
+  const ST = kind === 'app' ? REQ_ST_APP : REQ_ST_INQ;
+  const tel = x.phone ? `<a href="tel:${esc(x.phone)}">${esc(x.phone)}</a>` : '';
+  const mail = `<a href="mailto:${esc(x.email)}">${esc(x.email)}</a>`;
+  const link = u => /^https?:\/\//i.test(u || '') ? `<a href="${esc(u)}" target="_blank" rel="noopener">${esc(u)}</a>` : esc(u || '');
+  let body;
+  if(kind === 'app'){
+    const age = x.dob ? Math.floor((Date.now() - new Date(x.dob + 'T12:00:00').getTime()) / 31557600000) : null;
+    const days = Object.entries(x.availability || {}).filter(([, l]) => l && l.length).map(([d, l]) => `${d} (${l.join(', ')})`).join(' · ');
+    body = `<div class="card flat">
+      ${reqRow('Courriel', mail)}${reqRow('Téléphone', tel)}${reqRow('Ville', esc(x.city))}
+      ${reqRow('Âge', age != null && age > 0 && age < 100 ? age + ' ans' : '')}${reqRow('Nationalité', esc(x.nationality))}
+    </div>
+    <div class="section-lbl">Profil football</div>
+    <div class="card flat">
+      ${reqRow('Format', esc((x.formats || []).map(f => f === 'winter' ? '7v7 (hiver)' : '11v11 (été)').join(' + ')))}
+      ${reqRow('Poste', esc([x.pos1 && POSL(x.pos1), x.pos2 && POSL(x.pos2)].filter(Boolean).join(' / ')))}${reqRow('Rôle en 7v7', esc(x.role7v7))}
+      ${reqRow('Pied fort', esc(x.foot))}${reqRow('Taille', esc(x.height))}
+      ${reqRow('Expérience', esc([x.years ? x.years + ' ans' : '', x.level].filter(Boolean).join(' · ')))}${reqRow('Ligue', esc(x.league))}
+      ${reqRow('Équipe actuelle', esc(x.currentTeam))}${reqRow('Ancienne équipe', esc(x.formerTeam))}
+      ${reqRow('Dispo le week-end', esc(x.sunday))}${reqRow("Jours d'entraînement", esc(days))}
+    </div>
+    ${x.desc ? `<div class="section-lbl">Description</div><div class="card flat req-text">${esc(x.desc)}</div>` : ''}
+    ${x.why ? `<div class="section-lbl">Pourquoi YUL FC</div><div class="card flat req-text">${esc(x.why)}</div>` : ''}
+    ${x.looking ? `<div class="section-lbl">Ce qu'il recherche</div><div class="card flat req-text">${esc(x.looking)}</div>` : ''}
+    ${x.video || x.instaFoot || x.tiktok ? `<div class="section-lbl">Vidéos et réseaux</div><div class="card flat">${reqRow('Vidéo', link(x.video))}${reqRow('Instagram', esc(x.instaFoot))}${reqRow('TikTok', esc(x.tiktok))}</div>` : ''}`;
+  } else {
+    body = `<div class="card flat">${reqRow('Contact', esc(x.name))}${reqRow('Entreprise', esc(x.company))}${reqRow('Courriel', mail)}${reqRow('Téléphone', tel)}</div>
+    ${x.message ? `<div class="section-lbl">Message</div><div class="card flat req-text">${esc(x.message)}</div>` : ''}`;
+  }
+  const title = kind === 'app' ? `${x.firstName} ${x.lastName}`.trim() : (x.company || x.name);
+  openSheet(title, `<p class="muted small">Reçu le ${esc(fmtShort(x.createdAt))}${x.ref ? ' · ' + esc(x.ref) : ''}</p>
+    <div class="row mt" style="gap:8px">
+      <a class="btn sm primary" href="mailto:${esc(x.email)}">Écrire</a>
+      ${x.phone ? `<a class="btn sm" href="tel:${esc(x.phone)}">Appeler</a><a class="btn sm" href="sms:${esc(x.phone)}">SMS</a>` : ''}
+    </div>
+    <div class="section-lbl">Statut</div>
+    <div class="subtabs" role="group">${ST.map(st => `<button class="${x.status === st ? 'on' : ''}" data-act="req-status" data-k="${kind}" data-id="${x.id}" data-s="${st}">${st.charAt(0).toUpperCase() + st.slice(1)}</button>`).join('')}</div>
+    ${body}
+    <div class="section-lbl">Notes du staff</div>
+    <textarea id="reqNotes" class="req-notes" placeholder="Visible uniquement par le staff">${esc(x.notes || '')}</textarea>
+    <button class="btn block mt" data-act="req-notes" data-k="${kind}" data-id="${x.id}">Enregistrer les notes</button>
+    <div class="row end mt2"><button class="btn sm danger" data-act="req-del" data-k="${kind}" data-id="${x.id}">Supprimer</button></div>`);
+}
+function reqLocal(kind, id, patch){
+  const key = kind === 'app' ? 'applications' : 'inquiries';
+  S.d[key] = (S.d[key] || []).map(r => r.id === id ? Object.assign({}, r, patch) : r).filter(r => !(patch && patch._del && r.id === id));
+}
 function mdCount(){
   const el = $('#mdCount'); if(!el || !mdDraft) return;
   const days = futureDays(mdDraft.month);
@@ -684,6 +745,32 @@ const STAFF_VIEWS = {
       </div>
       ${docs.some(x => x.note) ? `<div class="section-lbl">Commentaires</div><div class="list">${docs.filter(x => x.note).map(x => `<div class="li"><div class="main"><div class="t">${esc(pName(ap.find(p => p.id === x.playerId)))}</div><div class="s">${esc(x.note)}</div></div></div>`).join('')}</div>` : ''}`
       : `<div class="empty mt2"><b>Pas encore de réponses pour ${esc(monthName(m))}</b>Les joueurs remplissent leurs dispos depuis leur espace, onglet « Dispos ».</div>`}`;
+  },
+  demandes(){
+    const apps = S.d.applications || [], inqs = S.d.inquiries || [];
+    const tab = reqTab === 'partenaires' ? 'partenaires' : 'joueurs';
+    const nA = apps.filter(a => a.status === 'nouveau').length, nI = inqs.filter(a => a.status === 'nouveau').length;
+    const list = tab === 'joueurs' ? apps : inqs;
+    const kind = tab === 'joueurs' ? 'app' : 'inquiry';
+    const ST = tab === 'joueurs' ? REQ_ST_APP : REQ_ST_INQ;
+    const shown = reqFilter === 'all' ? list : list.filter(x => x.status === reqFilter);
+    return `<div class="page-head"><div><h1 class="page-title">Candidatures et partenaires</h1><p class="page-sub">Les formulaires remplis sur yulfc.com : « Nous rejoindre » et « Partenaires ».</p></div></div>
+      <div class="team-switch" role="tablist">
+        <button role="tab" class="${tab === 'joueurs' ? 'on' : ''}" data-act="req-tab" data-t="joueurs">Joueurs ${nA ? `<span class="req-dot">${nA}</span>` : ''}</button>
+        <button role="tab" class="${tab === 'partenaires' ? 'on' : ''}" data-act="req-tab" data-t="partenaires">Partenaires ${nI ? `<span class="req-dot">${nI}</span>` : ''}</button>
+      </div>
+      <div class="subtabs" role="tablist">${[['all', 'Toutes']].concat(ST.map(x => [x, x.charAt(0).toUpperCase() + x.slice(1)])).map(([k, l]) => `<button role="tab" class="${reqFilter === k ? 'on' : ''}" data-act="req-filter" data-f="${k}">${l} <span class="att-count">${k === 'all' ? list.length : list.filter(x => x.status === k).length}</span></button>`).join('')}</div>
+      ${shown.length ? `<div class="list">${shown.map(x => {
+        const title = kind === 'app' ? `${x.firstName} ${x.lastName}`.trim() : (x.company ? `${x.company}` : x.name);
+        const sub = kind === 'app'
+          ? [x.pos1 && POSL(x.pos1), (x.formats || []).map(f => f === 'winter' ? '7v7' : '11v11').join(' + '), x.city].filter(Boolean).join(' · ')
+          : [x.company ? x.name : '', x.email].filter(Boolean).join(' · ');
+        return `<div class="li clickable" data-act="req-open" data-k="${kind}" data-id="${x.id}">
+          <div class="main"><div class="t">${esc(title)}</div><div class="s">${esc(sub)}${sub ? ' · ' : ''}${esc(fmtShort(x.createdAt))}</div></div>
+          <span class="tag ${REQ_TAG[x.status] || ''}">${esc(x.status)}</span>
+        </div>`;
+      }).join('')}</div>`
+      : `<div class="empty"><b>${tab === 'joueurs' ? 'Aucune candidature' : 'Aucune demande de partenariat'}${reqFilter === 'all' ? '' : ' avec ce statut'}</b>${reqFilter === 'all' ? (tab === 'joueurs' ? 'Elles arriveront ici dès qu\'un joueur remplira « Nous rejoindre » sur le site.' : 'Elles arriveront ici dès qu\'une entreprise remplira le formulaire Partenaires.') : ''}</div>`}`;
   },
   calendrier(){
     const evs = evList(calTeam === 'all' ? null : calTeam);
@@ -1260,6 +1347,23 @@ const ACT = {
       ${yes.length ? `<div class="list">${yes.map(p => `<div class="li"><div class="main"><div class="t">${esc(pName(p))}</div><div class="s">${p.num != null ? '#' + esc(p.num) + ' · ' : ''}${esc(POS[p.pos || ''])}</div></div><span class="tag green">dispo</span></div>`).join('')}</div>` : '<div class="empty">Personne.</div>'}
       ${no.length ? `<div class="section-lbl">Pas dispos</div><p class="muted small">${no.map(p => esc(pName(p))).join(', ')}</p>` : ''}`);
   },
+  'req-tab': b => { reqTab = b.dataset.t; reqFilter = 'all'; renderView(); },
+  'req-filter': b => { reqFilter = b.dataset.f; renderView(); },
+  'req-open': b => openRequest(b.dataset.k, b.dataset.id),
+  'req-status': b => busy(null, async () => {
+    const r = await api('/api/club/requests/update', { kind: b.dataset.k === 'app' ? 'app' : 'inquiry', id: b.dataset.id, status: b.dataset.s });
+    reqLocal(b.dataset.k, b.dataset.id, { status: r.status }); renderShell(); openRequest(b.dataset.k, b.dataset.id); toast('Statut : ' + r.status);
+  }),
+  'req-notes': b => busy(b, async () => {
+    const notes = ($('#reqNotes') || {}).value || '';
+    await api('/api/club/requests/update', { kind: b.dataset.k === 'app' ? 'app' : 'inquiry', id: b.dataset.id, notes });
+    reqLocal(b.dataset.k, b.dataset.id, { notes }); toast('Notes enregistrées');
+  }),
+  'req-del': b => busy(b, async () => {
+    if(!confirm('Supprimer cette demande ?')) return;
+    await api('/api/club/requests/delete', { kind: b.dataset.k === 'app' ? 'app' : 'inquiry', id: b.dataset.id });
+    reqLocal(b.dataset.k, b.dataset.id, { _del: true }); closeSheet(); renderShell(); toast('Demande supprimée');
+  }),
   'pres-filter': b => { presFilter = b.dataset.f || 'all'; renderView(); },
   'auth-mode': b => { S.authMode = b.dataset.mode; renderLogin(); },
   async logout(){ try{ await api('/api/auth/logout', {}); }catch(e){} S.user = null; S.d = null; closeSheet(); S.authMode = 'login'; renderLogin(); },

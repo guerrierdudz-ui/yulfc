@@ -241,7 +241,7 @@
     ['APERÇU', 'PREVIEW'], ['présenté par TA MARQUE', 'presented by YOUR BRAND'], ['FIN DU MATCH', 'FULL TIME'],
     ['Nos partenaires', 'Our Partners'], ['NOS PARTENAIRES.', 'OUR PARTNERS.'], ['CONSTRUISONS', "LET'S BUILD"], ['QUELQUE CHOSE ENSEMBLE.', 'SOMETHING TOGETHER.'],
     ["Deviens l'une des premières marques partenaires du YUL FC.", 'Become one of the first brands to partner with YUL FC.'],
-    ['Nom', 'Name'], ['Entreprise', 'Company'], ['Message (facultatif)', 'Message (optional)'], ['Démarrer la conversation', 'Start a Conversation'],
+    ['Nom', 'Name'], ['Entreprise', 'Company'], ['Message (facultatif)', 'Message (optional)'], ['Téléphone (optionnel)', 'Phone (optional)'], ['Démarrer la conversation', 'Start a Conversation'],
     ['Merci ! Le staff du YUL FC te contactera.', 'Thanks! YUL FC staff will be in touch.'], ['EMBARQUE TÔT.', 'GET IN EARLY.'], ['GRANDIS AVEC YUL FC.', 'GROW WITH YUL FC.'],
     // Fan Zone
     ["C'est ton", 'This Is Your'], ['côté du club.', 'Side Of The Club.'], ['Prédis. Vote. Joue. Suis le YUL FC.', 'Predict. Vote. Play. Follow YUL FC.'],

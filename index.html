@@ -3261,6 +3261,8 @@ footer{ background:var(--void); border-top:1px solid var(--line); padding:3rem 6
       <div class="login-field"><label>Name</label><input id="inqName"></div>
       <div class="login-field"><label>Company</label><input id="inqCompany"></div>
       <div class="login-field"><label>Email</label><input type="email" id="inqEmail"></div>
+      <div class="login-field"><label>Téléphone (optionnel)</label><input type="tel" id="inqPhone"></div>
+      <input id="inqWebsite" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
       <div class="login-field"><label>Message (optional)</label>
         <textarea id="inqMessage" rows="3" style="width:100%; background:var(--raised); border:1px solid var(--line); border-radius:4px; color:var(--ink); padding:.7rem .8rem; font-family:var(--ff-body); font-size:.88rem;"></textarea>
       </div>
@@ -6166,7 +6168,7 @@ function nextApplicationId(){
   const n = apps.length + 1;
   return 'YUL-27-' + String(n).padStart(4,'0');
 }
-function submitApplication(){
+async function submitApplication(){
   const id = nextApplicationId();
   const natOpt = document.getElementById('s1Nat');
   const natSel = demoNats.find(n=> n.country === natOpt.value);
@@ -6207,6 +6209,14 @@ function submitApplication(){
     tryoutResponse: null,
     submittedAt: new Date().toISOString(),
   };
+  const nb = document.getElementById('scoutNextBtn');
+  if(nb) nb.disabled = true;
+  try{
+    const r = await fetch('/api/public/apply', { method:'POST', headers:{ 'content-type':'application/json' },
+      body: JSON.stringify(Object.assign({}, app, { ref: id, website: '' })) });
+    if(!r.ok){ let d={}; try{ d=await r.json(); }catch(e){} throw new Error(d.error || 'Envoi impossible.'); }
+  }catch(e){ if(nb) nb.disabled = false; alert(e.message + ' Réessaie dans un instant.'); return; }
+  if(nb) nb.disabled = false;
   const apps = loadApps();
   apps.unshift(app);
   saveApps(apps);
@@ -6703,18 +6713,27 @@ document.getElementById('notifyEmailBtn').addEventListener('click', ()=>{
 /* ---------------- PARTNERSHIPS · public sponsorship functions ---------------- */
 function loadInquiries(){ try{ return JSON.parse(localStorage.getItem('yulfc_partner_inquiries_demo')) || []; }catch(e){ return []; } }
 function saveInquiries(list){ localStorage.setItem('yulfc_partner_inquiries_demo', JSON.stringify(list)); }
-document.getElementById('startConversationBtn').addEventListener('click', ()=>{
+document.getElementById('startConversationBtn').addEventListener('click', async ()=>{
+  const btn = document.getElementById('startConversationBtn');
   const name = document.getElementById('inqName').value.trim();
   const company = document.getElementById('inqCompany').value.trim();
   const email = document.getElementById('inqEmail').value.trim();
-  if(!name || !email){ alert('Please provide your name and email.'); return; }
+  const phone = (document.getElementById('inqPhone')||{}).value || '';
+  const message = document.getElementById('inqMessage').value.trim();
+  if(!name || !email){ alert('Merci d\'indiquer ton nom et ton courriel.'); return; }
+  btn.disabled = true;
+  try{
+    const r = await fetch('/api/public/partner', { method:'POST', headers:{ 'content-type':'application/json' },
+      body: JSON.stringify({ name, company, email, phone: phone.trim(), message, website: (document.getElementById('inqWebsite')||{}).value || '' }) });
+    if(!r.ok){ let d={}; try{ d=await r.json(); }catch(e){} throw new Error(d.error || 'Envoi impossible.'); }
+  }catch(e){ btn.disabled = false; alert(e.message + ' Réessaie dans un instant.'); return; }
+  btn.disabled = false;
   const list = loadInquiries();
-  list.unshift({name, company, email, message: document.getElementById('inqMessage').value.trim(), date: new Date().toISOString()});
+  list.unshift({name, company, email, message, date: new Date().toISOString()});
   saveInquiries(list);
-  document.getElementById('inqName').value=''; document.getElementById('inqCompany').value='';
-  document.getElementById('inqEmail').value=''; document.getElementById('inqMessage').value='';
+  ['inqName','inqCompany','inqEmail','inqMessage','inqPhone'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
   document.getElementById('inquirySentMsg').style.display = 'block';
-  setTimeout(()=> document.getElementById('inquirySentMsg').style.display = 'none', 4000);
+  setTimeout(()=> document.getElementById('inquirySentMsg').style.display = 'none', 5000);
 });
 
 const sponsorSlots = [
