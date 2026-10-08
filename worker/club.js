@@ -241,6 +241,30 @@ function cleanContract(b, old = {}){
 }
 
 /* ---------------- lecture groupée ---------------- */
+/* Assiduité de l'équipe (agrégée, sans noms) : moyenne et rang du joueur par type */
+function teamAttendance(players, events, me){
+  const active = new Set(players.filter(p => p.status !== 'inactif').map(p => p.id));
+  const out = {};
+  for(const type of ['entrainement', 'match', 'all']){
+    const per = {};
+    for(const e of events){
+      if(type !== 'all' && e.type !== type) continue;
+      for(const [pid, v] of Object.entries(e.attendance || {})){
+        if(!active.has(pid)) continue;
+        const r = per[pid] || (per[pid] = { n: 0, ok: 0 });
+        r.n++; if(v === 'présent' || v === 'retard') r.ok++;
+      }
+    }
+    const rates = Object.entries(per).map(([pid, r]) => ({ pid, rate: r.ok / r.n }));
+    if(!rates.length){ out[type] = null; continue; }
+    const avg = Math.round(rates.reduce((s, r) => s + r.rate, 0) / rates.length * 100);
+    const mine = me && rates.find(r => r.pid === me.id);
+    const rank = mine ? 1 + rates.filter(r => r.rate > mine.rate + 1e-9).length : null;
+    out[type] = { avg, rank, of: rates.length };
+  }
+  return out;
+}
+
 async function bootstrap(env, u){
   const D = db(env);
   const staff = isStaff(u), finance = FINANCE.includes(u.role);
@@ -276,6 +300,7 @@ async function bootstrap(env, u){
     myStats: me && e.result && Array.isArray(e.result.scorers) ? e.result.scorers.find(s => s.playerId === me.id) || null : null,
   }));
   out.news = news.filter(n => n.audience !== 'staff');
+  out.teamAttendance = teamAttendance(players, eventsAll.filter(e => e.published), me);
   if(me){
     const myKeys = (await D.keys('avail/')).filter(k => k.endsWith('/' + me.id + '.json'));
     out.availability = (await Promise.all(myKeys.map(k => D.get(k)))).filter(Boolean);

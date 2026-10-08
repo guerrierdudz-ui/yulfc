@@ -344,21 +344,68 @@ const PLAYER_VIEWS = {
       ${n.length ? n.map(newsCard).join('') : '<div class="empty"><b>Aucune annonce</b>Les messages du staff apparaîtront ici.</div>'}`;
   },
   presences(){
-    const ev = (S.d.events || []).filter(e => e.myAttendance).reverse();
-    const c = { 'présent': 0, 'retard': 0, 'absent': 0, 'excusé': 0 };
-    ev.forEach(e => c[e.myAttendance]++);
-    const rate = ev.length ? Math.round((c['présent'] + c['retard']) / ev.length * 100) : null;
-    return `<div class="page-head"><div><h1 class="page-title">Mes présences</h1><p class="page-sub">Historique noté par le staff, matchs et entraînements.</p></div></div>
-      <div class="kpis">
-        <div class="kpi"><div class="n gold">${rate == null ? '–' : rate + '%'}</div><div class="l">Taux de présence</div></div>
-        <div class="kpi"><div class="n green">${c['présent']}</div><div class="l">Présent</div></div>
-        <div class="kpi"><div class="n">${c['retard']}</div><div class="l">Retard</div></div>
-        <div class="kpi"><div class="n red">${c['absent']}</div><div class="l">Absent${c['excusé'] ? ` · ${c['excusé']} excusé${c['excusé'] > 1 ? 's' : ''}` : ''}</div></div>
+    const all = (S.d.events || []).filter(e => e.myAttendance).reverse();
+    const T = S.d.teamAttendance || {};
+    const ok = e => e.myAttendance === 'présent' || e.myAttendance === 'retard';
+    const sum = list => {
+      const c = { 'présent': 0, 'retard': 0, 'absent': 0, 'excusé': 0 };
+      list.forEach(e => c[e.myAttendance]++);
+      return { c, n: list.length, came: c['présent'] + c['retard'], rate: list.length ? Math.round((c['présent'] + c['retard']) / list.length * 100) : null };
+    };
+    const tr = sum(all.filter(e => e.type === 'entrainement')), ma = sum(all.filter(e => e.type === 'match')), to = sum(all);
+    let streak = 0; for(const e of all){ if(ok(e)) streak++; else break; }
+    const lastMiss = all.find(e => e.myAttendance === 'absent');
+    const rk = r => r ? `${r}<sup>${r === 1 ? 'er' : 'e'}</sup>` : '–';
+    const typeCard = (label, st, t, icon) => `
+      <div class="att-card">
+        <div class="att-head"><span class="att-ic">${icon}</span><span>${label}</span></div>
+        <div class="att-ring" style="--p:${st.rate ?? 0}"><b>${st.rate == null ? '–' : st.rate + '%'}</b></div>
+        <div class="att-big">${st.came}<small> / ${st.n}</small></div>
+        <div class="att-sub">${st.n ? `venu${st.came > 1 ? 's' : ''} sur ${st.n} noté${st.n > 1 ? 's' : ''}` : 'aucun noté pour l\'instant'}</div>
+        ${t ? `<div class="att-team"><span>Équipe <b>${t.avg}%</b></span><span>Rang <b>${rk(t.rank)}</b>${t.rank ? ` / ${t.of}` : ''}</span></div>` : ''}
+      </div>`;
+    const f = presFilter;
+    const list = f === 'all' ? all : all.filter(e => e.type === f);
+    const groups = [];
+    list.forEach(e => {
+      const k = D(e.date).toLocaleDateString('fr-CA', { month: 'long', year: 'numeric', timeZone: TZ });
+      const g = groups[groups.length - 1];
+      if(g && g.k === k) g.items.push(e); else groups.push({ k, items: [e] });
+    });
+    const statLine = e => {
+      if(e.type !== 'match') return '';
+      const bits = [];
+      if(e.result) bits.push(`<span class="score ${e.result.yul > e.result.opp ? 'green' : e.result.yul < e.result.opp ? 'red' : 'gold'}">${e.result.yul}-${e.result.opp}</span>`);
+      const g = e.myStats && e.myStats.goals, a = e.myStats && e.myStats.assists;
+      if(g) bits.push(`<span class="tag gold">${g} but${g > 1 ? 's' : ''}</span>`);
+      if(a) bits.push(`<span class="tag">${a} passe${a > 1 ? 's' : ''}</span>`);
+      return bits.length ? `<div class="att-extra">${bits.join('')}</div>` : '';
+    };
+    const row = e => `<div class="li">
+      <span class="att-dot ${ATT_TAG[e.myAttendance]}" aria-hidden="true"></span>
+      <div class="main"><div class="t">${esc(evName(e))}</div><div class="s">${esc(fmtDay(e.date))} · ${e.type === 'match' ? 'Match' : e.type === 'entrainement' ? 'Entraînement' : 'Événement'}</div>${statLine(e)}</div>
+      <span class="tag ${ATT_TAG[e.myAttendance]}">${esc(e.myAttendance)}</span>
+    </div>`;
+    const counts = { all: all.length, entrainement: tr.n, match: ma.n };
+    return `<div class="page-head"><div><h1 class="page-title">Mes présences</h1><p class="page-sub">Tes entraînements et tes matchs, notés par le staff.</p></div></div>
+      ${all.length ? `
+      <div class="att-split">
+        ${typeCard('Entraînements', tr, T.entrainement, '🏃')}
+        ${typeCard('Matchs', ma, T.match, '⚽')}
       </div>
-      ${ev.length ? `<div class="bar" aria-hidden="true">${ATT.map(k => c[k] ? `<i style="width:${c[k] / ev.length * 100}%;background:var(--${k === 'présent' ? 'win' : k === 'retard' ? 'gold' : k === 'absent' ? 'loss' : 'info'})"></i>` : '').join('')}</div>` : ''}
+      <div class="kpis mt2">
+        <div class="kpi"><div class="n gold">${to.rate == null ? '–' : to.rate + '%'}</div><div class="l">Présence globale</div></div>
+        <div class="kpi"><div class="n green">${streak}</div><div class="l">Série en cours</div></div>
+        <div class="kpi"><div class="n">${to.c['retard']}</div><div class="l">Retard${to.c['retard'] > 1 ? 's' : ''}</div></div>
+        <div class="kpi"><div class="n red">${to.c['absent']}</div><div class="l">Absence${to.c['absent'] > 1 ? 's' : ''}${to.c['excusé'] ? ` · ${to.c['excusé']} excusée${to.c['excusé'] > 1 ? 's' : ''}` : ''}</div></div>
+      </div>
+      <div class="bar" aria-hidden="true">${ATT.map(k => to.c[k] ? `<i style="width:${to.c[k] / to.n * 100}%;background:var(--${k === 'présent' ? 'win' : k === 'retard' ? 'gold' : k === 'absent' ? 'loss' : 'info'})"></i>` : '').join('')}</div>
+      <p class="muted small mt">${streak ? `🔥 ${streak} présence${streak > 1 ? 's' : ''} d'affilée.` : 'Ta prochaine présence lance une nouvelle série.'}${lastMiss ? ` Dernière absence : ${esc(fmtShort(lastMiss.date))}.` : ' Aucune absence non excusée.'}</p>
       <div class="section-lbl">Historique</div>
-      ${ev.length ? `<div class="list">${ev.map(e => `<div class="li"><div class="main"><div class="t">${esc(evName(e))}</div><div class="s">${esc(fmtShort(e.date))} · ${e.type === 'match' ? 'Match' : e.type === 'entrainement' ? 'Entraînement' : 'Événement'}</div></div><span class="tag ${ATT_TAG[e.myAttendance]}">${esc(e.myAttendance)}</span></div>`).join('')}</div>`
-        : '<div class="empty"><b>Pas encore d\'historique</b>Tes présences apparaîtront ici dès que le staff les aura notées.</div>'}`;
+      <div class="subtabs" role="tablist">${[['all', 'Tout'], ['entrainement', 'Entraînements'], ['match', 'Matchs']].map(([k, l]) => `<button role="tab" class="${f === k ? 'on' : ''}" data-act="pres-filter" data-f="${k}">${l} <span class="att-count">${counts[k]}</span></button>`).join('')}</div>
+      ${groups.length ? groups.map(g => `<div class="att-month">${esc(g.k)}</div><div class="list">${g.items.map(row).join('')}</div>`).join('')
+        : `<div class="empty">Aucun ${f === 'match' ? 'match' : 'entraînement'} noté pour l'instant.</div>`}`
+      : '<div class="empty"><b>Pas encore d\'historique</b>Tes entraînements et tes matchs apparaîtront ici dès que le staff aura noté les présences.</div>'}`;
   },
   contrat(){
     const c = S.d.contract;
@@ -405,6 +452,7 @@ function contractDoc(c, p){
     ${c.signedAt ? `<div class="sig">Signé électroniquement par <b>${esc(c.signedName)}</b><br><span style="color:#6B7280">le ${esc(fmtShort(c.signedAt))} à ${esc(fmtTime(c.signedAt))}</span></div>` : ''}
   </div>`;
 }
+let presFilter = 'all';
 const PLAYER_AFTER = {};
 
 /* ==========================================================================
@@ -1022,6 +1070,7 @@ function impUpdate(){
    ACTIONS (clics)
    ========================================================================== */
 const ACT = {
+  'pres-filter': b => { presFilter = b.dataset.f || 'all'; renderView(); },
   'auth-mode': b => { S.authMode = b.dataset.mode; renderLogin(); },
   async logout(){ try{ await api('/api/auth/logout', {}); }catch(e){} S.user = null; S.d = null; closeSheet(); S.authMode = 'login'; renderLogin(); },
   profile(){

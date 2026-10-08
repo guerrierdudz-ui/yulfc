@@ -255,3 +255,27 @@ tr.clickable:hover td{ background:rgba(255,255,255,.02); }
 .nat-chip button:hover{ opacity:1; }
 .grid-nat{ display:grid; grid-template-columns:1fr 1.4fr; gap:0 12px; }
 @media (max-width:560px){ .grid-nat{ grid-template-columns:1fr; } }
+
+/* ---------- Mes présences (joueur) ---------- */
+.att-split{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.att-card{ background:linear-gradient(170deg, var(--raised), var(--surface)); border:1px solid var(--line); border-radius:var(--r); padding:16px 14px; display:flex; flex-direction:column; align-items:center; text-align:center; }
+.att-head{ align-self:stretch; display:flex; align-items:center; gap:8px; font-family:var(--ff-mono); font-size:.64rem; letter-spacing:.16em; text-transform:uppercase; color:var(--gold); }
+.att-ic{ font-size:.95rem; }
+.att-ring{ --p:0; width:104px; aspect-ratio:1; border-radius:50%; margin:14px 0 10px; display:grid; place-items:center;
+  background:radial-gradient(closest-side, var(--surface) 78%, transparent 79% 100%), conic-gradient(var(--gold) calc(var(--p) * 1%), var(--line-2) 0); }
+.att-ring b{ font-family:var(--ff-display); font-weight:400; font-size:1.7rem; line-height:1; }
+.att-big{ font-family:var(--ff-display); font-size:1.5rem; line-height:1; }
+.att-big small{ font-size:.62em; color:var(--dim); }
+.att-sub{ color:var(--dim); font-size:.76rem; margin-top:4px; }
+.att-team{ align-self:stretch; display:flex; flex-wrap:wrap; justify-content:space-between; gap:4px 10px; margin-top:12px; padding-top:10px; border-top:1px solid var(--line-2); font-size:.74rem; color:var(--dim); }
+.att-team span{ white-space:nowrap; }
+.att-team b{ color:var(--ink); }
+.att-extra{ display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin-top:6px; }
+.att-extra .score{ font-size:1.05rem; margin-right:2px; }
+.att-team sup{ font-size:.65em; }
+.att-month{ font-family:var(--ff-mono); font-size:.62rem; letter-spacing:.16em; text-transform:uppercase; color:var(--dim); margin:16px 2px 8px; }
+.att-dot{ flex:none; width:9px; height:9px; border-radius:50%; background:var(--dim-2); }
+.att-dot.green{ background:var(--win); } .att-dot.gold{ background:var(--gold); } .att-dot.red{ background:var(--loss); } .att-dot.blue{ background:var(--info); }
+.att-count{ opacity:.65; font-weight:500; margin-left:2px; }
+@media (max-width:420px){ .att-team{ justify-content:center; } }
+@media (max-width:380px){ .att-ring{ width:86px; } .att-ring b{ font-size:1.4rem; } }
