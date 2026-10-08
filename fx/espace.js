@@ -240,7 +240,8 @@ const dayNum = d => +d.slice(8);
 const openMonths = () => (S.d.months || []).slice(1);
 function defaultMonth(){ const ms = openMonths(); return (dayNum(todayStr()) >= 20 ? ms[1] : ms[0]) || ms[0]; }
 const myMonthly = m => (S.d.monthly || []).find(x => x.month === m && (!S.d.player || x.playerId === S.d.player.id));
-const futureDays = m => { const t = todayStr(); return daysOf(m).filter(d => d >= t); };
+const MD_START = '2026-10-14'; // premier jour proposé dans les dispos du mois
+const futureDays = m => { const t = todayStr(), from = t > MD_START ? t : MD_START; return daysOf(m).filter(d => d >= from); };
 const deDe = m => /^[aeiouéèh]/i.test(monthName(m)) ? "d'" + monthName(m) : 'de ' + monthName(m);
 let mdMonth = null, mdDraft = null, sdMonth = null;
 function mdEnsure(m){
