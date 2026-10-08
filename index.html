@@ -5934,9 +5934,11 @@ function openMatchPage(m){
     const t = matchDB.archive.find(x => x.id === b.dataset.mid);
     if(t && t.id !== m.id){ openMatchPage(t); const body = document.getElementById('matchPageBody'); if(body) body.scrollTop = 0; }
   }));
-  const vs = document.getElementById('mpVideoSave'), vd = document.getElementById('mpVideoDel');
-  if(vs) vs.addEventListener('click', ()=> saveMatchVideo(vs.dataset.key, document.getElementById('mpVideoInput').value.trim(), m));
-  if(vd) vd.addEventListener('click', ()=> { if(confirm('Retirer la vidéo de ce match ?')) saveMatchVideo(vd.dataset.key, '', m); });
+  document.querySelectorAll('#matchPageBody .mp-video-edit').forEach(box => {
+    const vs = box.querySelector('.mpVideoSave'), vd = box.querySelector('.mpVideoDel'), msg = box.querySelector('.mpVideoMsg');
+    if(vs) vs.addEventListener('click', ()=> saveMatchVideo(vs.dataset.key, box.querySelector('.mpVideoInput').value.trim(), m, msg));
+    if(vd) vd.addEventListener('click', ()=> { if(confirm('Retirer cette vidéo ?')) saveMatchVideo(vd.dataset.key, '', m, msg); });
+  });
 
   // Share buttons
   document.getElementById('mpShareNative').addEventListener('click', ()=>{
@@ -6922,7 +6924,6 @@ function resultPosterHtml(m, big){
   const d = m.date || m.kickoff;
   const dateTxt = d ? new Date(d).toLocaleDateString('fr-CA', { day:'numeric', month:'long', year:'numeric' }).toUpperCase() : '';
   const comp = (m.comp==='playoff' ? 'SÉRIES' : m.comp==='cup' ? 'COUPE' : m.comp==='friendly' ? 'AMICAL' : 'LSAQ') + (m.round ? ' · '+String(m.round).toUpperCase() : '');
-  const vid = typeof matchVideoOf === 'function' && matchVideoOf(m);
   return `<div class="rp ${big?'rp-big':''} ${res?'rp-'+res:'rp-up'}"><div class="rp-in">
     <div class="rp-slash"></div><div class="rp-glow"></div>
     <div class="rp-top"><span class="rp-brand"><img src="fx/yul-crest-hd.png" alt="">YUL FC</span><span class="rp-comp">${comp}</span></div>
@@ -6934,7 +6935,7 @@ function resultPosterHtml(m, big){
       </div>
       <div class="rp-team"><div class="rp-crest ${oppSrc?'':'no-logo'}">${opp}</div><b>${m.opponent||''}</b></div>
     </div>
-    <div class="rp-foot"><span class="rp-date">${dateTxt}</span>${m.venue ? `<span class="rp-venue">${m.venue}</span>` : ''}${vid ? '<span class="rp-play">▶ MATCH COMPLET</span>' : ''}</div>
+    <div class="rp-foot"><span class="rp-date">${dateTxt}</span>${m.venue ? `<span class="rp-venue">${m.venue}</span>` : ''}</div>
   </div></div>`;
 }
 
@@ -6944,33 +6945,31 @@ function matchKeyOf(m){
   const d = String(m.date || m.kickoff || '').slice(0,10) || 'x';
   return d + '-' + oppSlug(m.opponent);
 }
-function matchVideoOf(m){ return (window.YUL_VIDEOS || {})[matchKeyOf(m)] || ''; }
+function matchVideoOf(m, kind){ return (window.YUL_VIDEOS || {})[matchKeyOf(m) + (kind === 'hl' ? '-hl' : '')] || ''; }
 function ytId(u){
   const s = String(u||'').trim();
   const m = s.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/))([A-Za-z0-9_-]{11})/);
   return m ? m[1] : (/^[A-Za-z0-9_-]{11}$/.test(s) ? s : '');
 }
 function matchVideoBlock(m){
-  const key = matchKeyOf(m), url = matchVideoOf(m), id = ytId(url);
-  const staff = !!window.YUL_IS_STAFF;
+  const base = matchKeyOf(m), staff = !!window.YUL_IS_STAFF;
+  const kinds = [['hl', 'FAITS SAILLANTS', 'Faits saillants'], ['full', 'MATCH COMPLET', 'Match complet']];
   let html = '';
-  if(id){
-    html += `<div class="mp-video"><iframe src="https://www.youtube-nocookie.com/embed/${id}?rel=0" title="Match complet" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe></div>
+  kinds.forEach(([k, title, lbl]) => {
+    const key = base + (k === 'hl' ? '-hl' : ''), url = matchVideoOf(m, k), id = ytId(url);
+    if(!id && !staff) return;
+    html += `<div class="modal-section-title">${title}</div>`;
+    if(id) html += `<div class="mp-video"><iframe src="https://www.youtube-nocookie.com/embed/${id}?rel=0" title="${lbl}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe></div>
       <a class="mp-video-link" href="https://www.youtube.com/watch?v=${id}" target="_blank" rel="noopener">Ouvrir sur YouTube ↗</a>`;
-  } else if(!staff){
-    return '';
-  }
-  if(staff){
-    html += `<div class="mp-video-edit">
-      <label>${id ? 'Remplacer le lien YouTube' : 'Ajouter le lien YouTube du match complet'} <small>(visible seulement par le staff)</small></label>
-      <div class="row"><input id="mpVideoInput" type="url" placeholder="https://youtu.be/..." value="${url ? String(url).replace(/"/g,'&quot;') : ''}">
-      <button id="mpVideoSave" data-key="${key}">Enregistrer</button>${id ? `<button id="mpVideoDel" data-key="${key}" class="ghost">Retirer</button>` : ''}</div>
-      <div id="mpVideoMsg"></div></div>`;
-  }
-  return `<div class="modal-section-title">MATCH COMPLET</div>${html}`;
+    if(staff) html += `<div class="mp-video-edit">
+      <label>${id ? 'Remplacer le lien' : 'Ajouter le lien YouTube'} · ${lbl} <small>(visible seulement par le staff)</small></label>
+      <div class="row"><input class="mpVideoInput" type="url" placeholder="https://youtu.be/..." value="${url ? String(url).replace(/"/g,'&quot;') : ''}">
+      <button class="mpVideoSave" data-key="${key}">Enregistrer</button>${id ? `<button class="mpVideoDel ghost" data-key="${key}">Retirer</button>` : ''}</div>
+      <div class="mpVideoMsg"></div></div>`;
+  });
+  return html;
 }
-async function saveMatchVideo(key, url, m){
-  const msg = document.getElementById('mpVideoMsg');
+async function saveMatchVideo(key, url, m, msg){
   if(url && !ytId(url)){ if(msg) msg.textContent = 'Ce lien ne ressemble pas à une vidéo YouTube.'; return; }
   try{
     const r = await fetch('/api/club/videos/set', { method:'POST', credentials:'same-origin', headers:{'content-type':'application/json'}, body: JSON.stringify({ key, url }) });

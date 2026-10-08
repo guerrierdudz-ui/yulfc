@@ -187,11 +187,12 @@
 .mp-video{ position:relative; aspect-ratio:16/9; border-radius:12px; overflow:hidden; background:#000; box-shadow:0 0 0 1px var(--line); }
 .mp-video iframe{ position:absolute; inset:0; width:100%; height:100%; border:0; }
 .mp-video-link{ display:inline-block; margin-top:.6rem; font-family:var(--ff-mono); font-size:.7rem; letter-spacing:.08em; color:var(--gold); }
-.mp-video-edit{ margin-top:1rem; padding:1rem; border:1px dashed var(--gold-dim); border-radius:10px; background:rgba(240,180,41,.05); }
+.mp-video + .mp-video-link + .mp-video-edit{ margin-top:.8rem; }
+.mp-video-edit{ margin-top:0; padding:1rem; border:1px dashed var(--gold-dim); border-radius:10px; background:rgba(240,180,41,.05); }
 .mp-video-edit label{ display:block; font-family:var(--ff-mono); font-size:.68rem; letter-spacing:.08em; color:var(--gold); margin-bottom:.6rem; }
 .mp-video-edit label small{ color:var(--dim); letter-spacing:0; }
 .mp-video-edit .row{ display:flex; gap:.5rem; flex-wrap:wrap; }
 .mp-video-edit input{ flex:1; min-width:200px; background:var(--raised); border:1px solid var(--line); border-radius:6px; color:var(--ink); padding:.65rem .8rem; font:inherit; font-size:.88rem; }
 .mp-video-edit button{ background:var(--gold); color:#14100A; border:0; border-radius:6px; padding:.65rem 1rem; font-weight:700; cursor:pointer; }
 .mp-video-edit button.ghost{ background:transparent; color:var(--dim); border:1px solid var(--line); }
-#mpVideoMsg{ color:var(--loss); font-size:.8rem; margin-top:.5rem; }
+.mpVideoMsg{ color:var(--loss); font-size:.8rem; margin-top:.5rem; }
