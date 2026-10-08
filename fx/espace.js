@@ -152,15 +152,16 @@ const ICON = {
   cal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>',
   news: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5h13v14H6a2 2 0 0 1-2-2zM17 9h3v8a2 2 0 0 1-2 2"/><path d="M8 9h5M8 13h5"/></svg>',
   check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg>',
+  clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
   doc: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M9 13h6M9 17h6"/></svg>',
 };
 
 function routes(){
   if(!staff()) return [
-    ['accueil', 'Accueil', 'home'], ['calendrier', 'Calendrier', 'cal'], ['annonces', 'Annonces', 'news'],
+    ['accueil', 'Accueil', 'home'], ['calendrier', 'Calendrier', 'cal'], ['dispos', 'Dispos', 'clock'], ['annonces', 'Annonces', 'news'],
     ['presences', 'Présences', 'check'], ['contrat', 'Contrat', 'doc'],
   ];
-  const r = [['tableau', 'Tableau de bord'], ['effectif', 'Effectif'], ['calendrier', 'Calendrier'], ['annonces', 'Annonces']];
+  const r = [['tableau', 'Tableau de bord'], ['effectif', 'Effectif'], ['calendrier', 'Calendrier'], ['dispos', 'Dispos du mois'], ['annonces', 'Annonces']];
   if(finance()) r.push(['contrats', 'Contrats et paiements']);
   r.push(['photos', 'Photos du site']);
   if(admin()) r.push(['comptes', 'Comptes']);
@@ -178,6 +179,7 @@ function badges(){
     if(c && c.status === 'à signer') b.contrat = 1;
     const pending = upcomingFor().filter(e => !myAvail(e.id)).length;
     if(pending) b.calendrier = pending;
+    if(S.d.player && !myMonthly(defaultMonth())) b.dispos = 1;
   }
   return b;
 }
@@ -221,6 +223,32 @@ async function refresh(keepSheet){
   renderShell();
   window.scrollTo(0, y);
   if(keepSheet && S.sheet) S.sheet();
+}
+
+/* ==========================================================================
+   DISPOS DU MOIS (jours + plages horaires)
+   ========================================================================== */
+const SLOTS = [['matin', 'Matin', '8h-12h'], ['aprem', 'Après-midi', '12h-17h'], ['soir', 'Fin de journée', '17h-20h'], ['tard', 'Soirée', '20h-23h']];
+const WD = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+const WD_LONG = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'];
+const todayStr = () => new Date().toLocaleDateString('en-CA', { timeZone: TZ });
+const monthLabel = m => { const [y, mo] = m.split('-').map(Number); return new Date(y, mo - 1, 1).toLocaleDateString('fr-CA', { month: 'long', year: 'numeric' }); };
+const monthName = m => { const [y, mo] = m.split('-').map(Number); return new Date(y, mo - 1, 1).toLocaleDateString('fr-CA', { month: 'long' }); };
+const daysOf = m => { const [y, mo] = m.split('-').map(Number); const n = new Date(y, mo, 0).getDate(); return Array.from({ length: n }, (_, i) => `${m}-${String(i + 1).padStart(2, '0')}`); };
+const wdIdx = d => (new Date(d + 'T12:00:00').getDay() + 6) % 7;
+const dayNum = d => +d.slice(8);
+const openMonths = () => (S.d.months || []).slice(1);
+function defaultMonth(){ const ms = openMonths(); return (dayNum(todayStr()) >= 20 ? ms[1] : ms[0]) || ms[0]; }
+const myMonthly = m => (S.d.monthly || []).find(x => x.month === m && (!S.d.player || x.playerId === S.d.player.id));
+const futureDays = m => { const t = todayStr(); return daysOf(m).filter(d => d >= t); };
+const deDe = m => /^[aeiouéèh]/i.test(monthName(m)) ? "d'" + monthName(m) : 'de ' + monthName(m);
+let mdMonth = null, mdDraft = null, sdMonth = null;
+function mdEnsure(m){
+  if(!mdDraft || mdDraft.month !== m){
+    const x = myMonthly(m);
+    mdDraft = { month: m, days: JSON.parse(JSON.stringify(x ? x.days || {} : {})), note: x ? x.note || '' : '', week: WD.map(() => []), dirty: false };
+  }
+  return mdDraft;
 }
 
 /* ==========================================================================
@@ -300,6 +328,8 @@ const PLAYER_VIEWS = {
     const st = myStats();
     const c = S.d.contract, bal = balance(c, S.d.payments);
     const alerts = [];
+    const dm = defaultMonth();
+    if(dm && !myMonthly(dm)) alerts.push(`<a class="card hl clickable" href="#dispos" style="display:block;text-decoration:none;color:inherit;"><span class="tag gold">À faire</span><div class="ev-title">Indique tes dispos ${esc(deDe(dm))}</div><div class="ev-meta">Jours et plages horaires où tu peux venir. Ça aide le staff à fixer les entraînements →</div></a>`);
     if(c && c.status === 'à signer') alerts.push(`<a class="card hl clickable" href="#contrat" style="display:block;text-decoration:none;color:inherit;"><span class="tag gold">Action requise</span><div class="ev-title">Ton contrat ${esc(c.season || '')} est prêt à signer</div><div class="ev-meta">Lis-le et signe-le en ligne →</div></a>`);
     if(c && bal.due > 0) alerts.push(`<a class="card clickable" href="#contrat" style="display:block;text-decoration:none;color:inherit;"><span class="tag red">Cotisation</span><div class="ev-title">Reste à payer : ${esc(money(bal.due))}</div><div class="ev-meta">${c.dueDate ? 'Échéance : ' + esc(fmtDateOnly(c.dueDate)) : 'Voir le détail de ta cotisation →'}</div></a>`);
     const news = sortedNews().slice(0, 2);
@@ -337,6 +367,40 @@ const PLAYER_VIEWS = {
           ${e.myAttendance ? `<span class="tag ${ATT_TAG[e.myAttendance]}">${esc(e.myAttendance)}</span>` : ''}
         </div>`).join('')}</div>` : '<div class="empty">Aucun rendez-vous passé.</div>'}
     `;
+  },
+  dispos(){
+    if(!S.d.player) return `<div class="page-head"><div><h1 class="page-title">Mes dispos</h1></div></div><div class="empty"><b>Profil joueur non lié</b>Préviens le staff.</div>`;
+    const ms = openMonths();
+    if(!mdMonth || !ms.includes(mdMonth)) mdMonth = defaultMonth();
+    const m = mdMonth, dr = mdEnsure(m), saved = myMonthly(m);
+    const days = futureDays(m);
+    const nDays = days.filter(d => (dr.days[d] || []).length).length;
+    const nSlots = days.reduce((t, d) => t + (dr.days[d] || []).length, 0);
+    return `<div class="page-head"><div><h1 class="page-title">Mes dispos</h1><p class="page-sub">Une fois par mois, indique les jours et les plages horaires où tu peux venir. Le staff s'en sert pour fixer les entraînements.</p></div></div>
+      <div class="subtabs" role="tablist">${ms.map(x => `<button role="tab" class="${x === m ? 'on' : ''}" data-act="md-month" data-m="${x}">${esc(monthLabel(x))}${myMonthly(x) ? ' ✓' : ''}</button>`).join('')}</div>
+      <div class="md-status ${saved ? 'ok' : ''}">${saved ? `Envoyé le ${esc(fmtShort(saved.updatedAt))}. Tu peux modifier et renvoyer quand tu veux.` : `Pas encore envoyé pour ${esc(monthName(m))}.`}</div>
+
+      <div class="section-lbl">1. Ta semaine type</div>
+      <div class="card flat">
+        <p class="muted small" style="margin-bottom:10px">Coche tes plages habituelles, puis remplis le mois d'un coup. Tu ajustes ensuite jour par jour.</p>
+        <div class="md-week">
+          <div></div>${SLOTS.map(([k, l, h]) => `<div class="md-h"><b>${l}</b><span>${h}</span></div>`).join('')}
+          ${WD.map((w, i) => `<div class="md-wd">${w}</div>${SLOTS.map(([k]) => `<button type="button" class="md-c ${dr.week[i].includes(k) ? 'on' : ''}" data-act="md-week" data-w="${i}" data-s="${k}" aria-label="${WD_LONG[i]} ${k}"></button>`).join('')}`).join('')}
+        </div>
+        <button class="btn ghost block mt" data-act="md-apply">Remplir ${esc(monthName(m))} avec ma semaine type</button>
+      </div>
+
+      <div class="section-lbl">2. Jour par jour <span class="md-count" id="mdCount">${nDays} jour${nDays > 1 ? 's' : ''} · ${nSlots} plage${nSlots > 1 ? 's' : ''}</span></div>
+      <div class="md-legend">${SLOTS.map(([k, l, h]) => `<span><b>${l}</b> ${h}</span>`).join('')}</div>
+      ${days.length ? `<div class="md-days">${days.map(d => {
+        const on = dr.days[d] || [], w = wdIdx(d);
+        return `<div class="md-day ${w >= 5 ? 'we' : ''}" data-d="${d}">
+          <button type="button" class="md-date" data-act="md-dayall" data-d="${d}" title="Tout cocher ou décocher"><small>${WD[w]}</small><b>${dayNum(d)}</b></button>
+          <div class="md-slots">${SLOTS.map(([k, l]) => `<button type="button" class="md-s ${on.includes(k) ? 'on' : ''}" data-act="md-slot" data-d="${d}" data-s="${k}">${l}</button>`).join('')}</div>
+        </div>`;
+      }).join('')}</div>` : '<div class="empty">Ce mois est terminé.</div>'}
+      <div class="field mt2"><label>Commentaire pour le staff (facultatif)</label><input id="mdNote" maxlength="300" value="${esc(dr.note)}" placeholder="Ex. : je travaille de nuit la 2e semaine"></div>
+      <div class="md-save"><button class="btn primary block" data-act="md-save">${saved ? 'Mettre à jour mes dispos' : 'Envoyer mes dispos'}</button></div>`;
   },
   annonces(){
     const n = sortedNews();
@@ -453,6 +517,12 @@ function contractDoc(c, p){
   </div>`;
 }
 let presFilter = 'all';
+function mdCount(){
+  const el = $('#mdCount'); if(!el || !mdDraft) return;
+  const days = futureDays(mdDraft.month);
+  const nd = days.filter(d => (mdDraft.days[d] || []).length).length, ns = days.reduce((t, d) => t + (mdDraft.days[d] || []).length, 0);
+  el.textContent = `${nd} jour${nd > 1 ? 's' : ''} · ${ns} plage${ns > 1 ? 's' : ''}`;
+}
 const PLAYER_AFTER = {};
 
 /* ==========================================================================
@@ -553,6 +623,48 @@ const STAFF_VIEWS = {
     `;
   },
 
+  dispos(){
+    const ms = openMonths();
+    if(!sdMonth || !ms.includes(sdMonth)) sdMonth = defaultMonth();
+    const m = sdMonth, ap = activePlayers();
+    const docs = (S.d.monthly || []).filter(x => x.month === m && ap.some(p => p.id === x.playerId));
+    const missing = ap.filter(p => !docs.some(x => x.playerId === p.id));
+    const days = futureDays(m);
+    const cnt = (d, k) => docs.filter(x => (x.days[d] || []).includes(k)).length;
+    const max = Math.max(1, docs.length);
+    const cells = [];
+    days.forEach(d => SLOTS.forEach(([k]) => cells.push({ d, k, n: cnt(d, k) })));
+    const best = cells.filter(c => c.n).sort((a, b) => b.n - a.n || a.d.localeCompare(b.d)).slice(0, 5);
+    const reg = [];
+    WD.forEach((w, i) => SLOTS.forEach(([k]) => {
+      const ds = days.filter(d => wdIdx(d) === i); if(!ds.length) return;
+      reg.push({ i, k, avg: ds.reduce((t, d) => t + cnt(d, k), 0) / ds.length });
+    }));
+    reg.sort((a, b) => b.avg - a.avg);
+    const sl = k => SLOTS.find(x => x[0] === k);
+    const dLabel = d => `${WD_LONG[wdIdx(d)]} ${dayNum(d)}`;
+    return `<div class="page-head"><div><h1 class="page-title">Dispos du mois</h1><p class="page-sub">Jours et plages horaires où les joueurs sont libres, pour fixer les entraînements.</p></div></div>
+      <div class="subtabs" role="tablist">${ms.map(x => `<button role="tab" class="${x === m ? 'on' : ''}" data-act="sd-month" data-m="${x}">${esc(monthLabel(x))}</button>`).join('')}</div>
+      <div class="kpis">
+        <div class="kpi"><div class="n gold">${docs.length}<small style="font-size:.5em;color:var(--dim)"> / ${ap.length}</small></div><div class="l">Ont répondu</div></div>
+        <div class="kpi"><div class="n">${best[0] ? best[0].n : 0}</div><div class="l">Max sur un créneau</div></div>
+        <div class="kpi"><div class="n">${reg[0] && reg[0].avg ? WD[reg[0].i] + ' ' + esc(sl(reg[0].k)[2].split('-')[0]) : '–'}</div><div class="l">Meilleur créneau régulier</div></div>
+        <div class="kpi"><div class="n red">${missing.length}</div><div class="l">Sans réponse</div></div>
+      </div>
+      ${missing.length ? `<p class="muted small mt">Sans réponse : ${missing.map(p => esc(pName(p))).join(', ')}.</p>` : (ap.length ? '<p class="muted small mt">Tout le monde a répondu.</p>' : '')}
+      ${docs.length ? `
+      <div class="section-lbl">Meilleurs créneaux du mois</div>
+      <div class="list">${best.map(c => `<div class="li clickable" data-act="sd-cell" data-d="${c.d}" data-s="${c.k}"><div class="main"><div class="t" style="text-transform:capitalize">${esc(dLabel(c.d))}</div><div class="s">${esc(sl(c.k)[1])} · ${esc(sl(c.k)[2])}</div></div><span class="tag gold">${c.n} joueur${c.n > 1 ? 's' : ''}</span></div>`).join('')}</div>
+      <div class="section-lbl">Créneaux réguliers (moyenne par semaine)</div>
+      <div class="list">${reg.slice(0, 3).filter(r => r.avg).map(r => `<div class="li"><div class="main"><div class="t">Chaque ${WD_LONG[r.i]}</div><div class="s">${esc(sl(r.k)[1])} · ${esc(sl(r.k)[2])}</div></div><span class="tag">${(Math.round(r.avg * 10) / 10).toString().replace('.', ',')} en moyenne</span></div>`).join('')}</div>
+      <div class="section-lbl">Carte du mois <span class="md-count">touche une case pour voir les noms</span></div>
+      <div class="sd-grid">
+        <div></div>${SLOTS.map(([k, l, h]) => `<div class="md-h"><b>${l}</b><span>${h}</span></div>`).join('')}
+        ${days.map(d => `<div class="sd-d ${wdIdx(d) >= 5 ? 'we' : ''}"><small>${WD[wdIdx(d)]}</small> ${dayNum(d)}</div>${SLOTS.map(([k]) => { const n = cnt(d, k); return `<button type="button" class="sd-c" data-act="sd-cell" data-d="${d}" data-s="${k}" style="--a:${(n / max).toFixed(3)}" ${n ? '' : 'disabled'}>${n || ''}</button>`; }).join('')}`).join('')}
+      </div>
+      ${docs.some(x => x.note) ? `<div class="section-lbl">Commentaires</div><div class="list">${docs.filter(x => x.note).map(x => `<div class="li"><div class="main"><div class="t">${esc(pName(ap.find(p => p.id === x.playerId)))}</div><div class="s">${esc(x.note)}</div></div></div>`).join('')}</div>` : ''}`
+      : `<div class="empty mt2"><b>Pas encore de réponses pour ${esc(monthName(m))}</b>Les joueurs remplissent leurs dispos depuis leur espace, onglet « Dispos ».</div>`}`;
+  },
   calendrier(){
     const evs = S.d.events || [];
     const up = evs.filter(e => !isPast(e)), past = evs.filter(isPast).reverse();
@@ -1070,6 +1182,48 @@ function impUpdate(){
    ACTIONS (clics)
    ========================================================================== */
 const ACT = {
+  'md-month': b => { mdMonth = b.dataset.m; renderView(); },
+  'sd-month': b => { sdMonth = b.dataset.m; renderView(); },
+  'md-week': b => { const w = mdDraft.week[+b.dataset.w], k = b.dataset.s, i = w.indexOf(k); if(i < 0) w.push(k); else w.splice(i, 1); b.classList.toggle('on', i < 0); },
+  'md-apply': () => {
+    const dr = mdDraft;
+    if(!dr.week.some(w => w.length)){ toast('Coche d\'abord au moins une plage dans ta semaine type.', true); return; }
+    futureDays(dr.month).forEach(d => { const w = dr.week[wdIdx(d)]; if(w.length) dr.days[d] = SLOTS.map(x => x[0]).filter(k => w.includes(k)); else delete dr.days[d]; });
+    dr.dirty = true; const y = window.scrollY; renderView(); window.scrollTo(0, y); toast('Mois rempli. Ajuste si besoin, puis envoie.');
+  },
+  'md-slot': b => {
+    const dr = mdDraft, d = b.dataset.d, k = b.dataset.s, cur = dr.days[d] || [];
+    const on = !cur.includes(k);
+    dr.days[d] = on ? SLOTS.map(x => x[0]).filter(x => x === k || cur.includes(x)) : cur.filter(x => x !== k);
+    if(!dr.days[d].length) delete dr.days[d];
+    dr.dirty = true; b.classList.toggle('on', on); mdCount();
+  },
+  'md-dayall': b => {
+    const dr = mdDraft, d = b.dataset.d, full = (dr.days[d] || []).length === SLOTS.length;
+    if(full) delete dr.days[d]; else dr.days[d] = SLOTS.map(x => x[0]);
+    dr.dirty = true;
+    $$(`.md-s[data-d="${d}"]`).forEach(x => x.classList.toggle('on', !full)); mdCount();
+  },
+  'md-save': b => busy(b, async () => {
+    const dr = mdDraft; const n = $('#mdNote'); if(n) dr.note = n.value;
+    const days = {}; Object.entries(dr.days).forEach(([d, l]) => { if(l.length && d.slice(0, 7) === dr.month) days[d] = l; });
+    const saved = await api('/api/club/monthly/set', { month: dr.month, days, note: dr.note });
+    S.d.monthly = (S.d.monthly || []).filter(x => x.month !== dr.month).concat([saved]);
+    mdDraft = null; renderShell(); window.scrollTo(0, 0);
+    toast('Dispos ' + deDe(dr.month) + ' envoyées. Merci !');
+  }),
+  'sd-cell': b => {
+    const d = b.dataset.d, k = b.dataset.s, sl = SLOTS.find(x => x[0] === k);
+    const ap = activePlayers();
+    const docs = (S.d.monthly || []).filter(x => x.month === d.slice(0, 7));
+    const yes = ap.filter(p => docs.some(x => x.playerId === p.id && (x.days[d] || []).includes(k)));
+    const no = ap.filter(p => docs.some(x => x.playerId === p.id) && !yes.includes(p));
+    const title = `${WD_LONG[wdIdx(d)]} ${dayNum(d)} ${monthName(d.slice(0, 7))} · ${sl[1]}`;
+    openSheet(title.charAt(0).toUpperCase() + title.slice(1), `<p class="muted small">${esc(sl[2])} · ${yes.length} joueur${yes.length > 1 ? 's' : ''} dispo${yes.length > 1 ? 's' : ''}</p>
+      <div class="section-lbl">Disponibles</div>
+      ${yes.length ? `<div class="list">${yes.map(p => `<div class="li"><div class="main"><div class="t">${esc(pName(p))}</div><div class="s">${p.num != null ? '#' + esc(p.num) + ' · ' : ''}${esc(POS[p.pos || ''])}</div></div><span class="tag green">dispo</span></div>`).join('')}</div>` : '<div class="empty">Personne.</div>'}
+      ${no.length ? `<div class="section-lbl">Pas dispos</div><p class="muted small">${no.map(p => esc(pName(p))).join(', ')}</p>` : ''}`);
+  },
   'pres-filter': b => { presFilter = b.dataset.f || 'all'; renderView(); },
   'auth-mode': b => { S.authMode = b.dataset.mode; renderLogin(); },
   async logout(){ try{ await api('/api/auth/logout', {}); }catch(e){} S.user = null; S.d = null; closeSheet(); S.authMode = 'login'; renderLogin(); },

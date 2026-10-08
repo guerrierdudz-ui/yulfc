@@ -5,7 +5,7 @@
      - admin   : tout, y compris les comptes staff
      - manager : effectif, calendrier, convocations, annonces, photos, contrats et paiements
      - coach   : effectif, calendrier, convocations, présences, annonces, photos
-     - player  : son calendrier, ses dispos, ses convocations, les annonces, son contrat, ses présences
+     - player  : son calendrier, ses dispos (par événement et du mois), ses convocations, les annonces, son contrat, ses présences
    Premier compte admin : /espace.html → « Première configuration » avec la clé STAFF_UPLOAD_KEY.
    ========================================================================== */
 
@@ -241,6 +241,29 @@ function cleanContract(b, old = {}){
 }
 
 /* ---------------- lecture groupée ---------------- */
+/* Dispos du mois : jours et plages horaires où chaque joueur est libre */
+const SLOTS = ['matin', 'aprem', 'soir', 'tard'];
+const monthOk = v => /^\d{4}-(0[1-9]|1[0-2])$/.test(String(v || '')) ? String(v) : '';
+function monthsAround(){
+  const d = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Toronto' }));
+  const out = [];
+  for(let i = -1; i <= 2; i++){
+    const x = new Date(d.getFullYear(), d.getMonth() + i, 1);
+    out.push(x.getFullYear() + '-' + String(x.getMonth() + 1).padStart(2, '0'));
+  }
+  return out;
+}
+function cleanMonthly(b, month, playerId, u){
+  const days = {};
+  const src = b.days && typeof b.days === 'object' ? b.days : {};
+  for(const [d, list] of Object.entries(src)){
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(d) || d.slice(0, 7) !== month || !Array.isArray(list)) continue;
+    const sl = SLOTS.filter(x => list.includes(x));
+    if(sl.length) days[d] = sl;
+  }
+  return { month, playerId, days, note: str(b.note, 300), updatedAt: now(), by: u.id };
+}
+
 /* Assiduité de l'équipe (agrégée, sans noms) : moyenne et rang du joueur par type */
 function teamAttendance(players, events, me){
   const active = new Set(players.filter(p => p.status !== 'inactif').map(p => p.id));
@@ -278,6 +301,8 @@ async function bootstrap(env, u){
     out.events = eventsAll;
     const av = await D.all('avail/');
     out.availability = av; // [{eventId, playerId, status, note, at}]
+    out.months = monthsAround();
+    out.monthly = (await Promise.all(out.months.map(m => D.all('monthly/' + m + '/')))).flat();
     out.news = news;
     const users = await D.all('users/');
     out.accounts = users.map(publicUser);
@@ -301,6 +326,8 @@ async function bootstrap(env, u){
   }));
   out.news = news.filter(n => n.audience !== 'staff');
   out.teamAttendance = teamAttendance(players, eventsAll.filter(e => e.published), me);
+  out.months = monthsAround();
+  out.monthly = me ? (await Promise.all(out.months.map(m => D.get('monthly/' + m + '/' + me.id + '.json')))).filter(Boolean) : [];
   if(me){
     const myKeys = (await D.keys('avail/')).filter(k => k.endsWith('/' + me.id + '.json'));
     out.availability = (await Promise.all(myKeys.map(k => D.get(k)))).filter(Boolean);
@@ -451,6 +478,14 @@ async function route(path, request, env, body, u){
       const key = 'avail/' + eventId + '/' + playerId + '.json';
       if(!status){ await D.del(key); return json({ ok: true }); }
       return json(await D.put(key, { eventId, playerId, status, note: str(body.note, 200), at: now(), by: u.id }));
+    }
+
+    case 'monthly/set': {
+      const month = monthOk(body.month); if(!month) return err('Mois invalide.');
+      let playerId = u.playerId;
+      if(staff && body.playerId) playerId = safeId(body.playerId);
+      if(!playerId) return err('Aucun profil joueur lié à ce compte.');
+      return json(await D.put('monthly/' + month + '/' + playerId + '.json', cleanMonthly(body, month, playerId, u)));
     }
 
     /* ---- annonces ---- */
