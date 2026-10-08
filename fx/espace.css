@@ -313,3 +313,11 @@ tr.clickable:hover td{ background:rgba(255,255,255,.02); }
   background:rgba(240,180,41, calc(var(--a) * .9)); color:var(--ink); }
 .sd-c:disabled{ background:var(--void); cursor:default; }
 .sd-c:not(:disabled):hover{ border-color:var(--gold); }
+
+/* ---------- Équipes 11v11 / 7v7 ---------- */
+.tag.t11{ color:var(--info); border-color:rgba(110,168,255,.35); background:rgba(110,168,255,.08); }
+.tag.t7{ color:#C69CFF; border-color:rgba(198,156,255,.4); background:rgba(198,156,255,.1); }
+.team-switch{ display:inline-flex; gap:4px; padding:4px; margin:0 0 14px; background:var(--surface); border:1px solid var(--line); border-radius:999px; }
+.team-switch button{ border:0; background:transparent; color:var(--dim); font-family:var(--ff-mono); font-size:.74rem; font-weight:600; letter-spacing:.1em; padding:7px 16px; border-radius:999px; cursor:pointer; }
+.team-switch button.on{ background:var(--gold); color:#14100A; }
+.ev-top .tag + .tag{ margin-left:6px; }

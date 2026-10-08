@@ -3402,6 +3402,7 @@ footer{ background:var(--void); border-top:1px solid var(--line); padding:3rem 6
 
     <div class="modal-section-title">SEASON STATS</div>
     <div class="modal-stats" id="modalStatsGrid"></div>
+    <div id="modalStats7"></div>
 
     <div class="modal-section-title">LATEST MEDIA</div>
     <div id="modalLatestMedia"></div>
@@ -4510,6 +4511,14 @@ function openModal(num){
     ['GOAL CONTRIBUTIONS', goalContrib(p)], ['YELLOW CARDS', p.yellow], ['RED CARDS', p.red],
   ];
   statsGrid.innerHTML = baseStats.map(([l,v])=> `<div class="modal-stat"><div class="v">${v!=null?v:'-'}</div><div class="l">${l}</div></div>`).join('');
+  // Équipe 7v7 : stats séparées (calculées depuis les matchs 7v7 saisis dans l'Espace)
+  const s7box = document.getElementById('modalStats7');
+  if(s7box){
+    const s7 = p.s7;
+    s7box.innerHTML = s7 ? `<div class="modal-section-title" style="margin-top:1.2rem">7V7 SEASON</div><div class="modal-stats">${[
+      ['APPEARANCES', s7.apps], ['GOALS', s7.goals], ['ASSISTS', s7.assists], ['GOAL CONTRIBUTIONS', (s7.goals||0)+(s7.assists||0)],
+    ].map(([l,v])=> `<div class="modal-stat"><div class="v">${v!=null?v:'-'}</div><div class="l">${l}</div></div>`).join('')}</div>` : '';
+  }
 
   renderPlayerLatestMedia(num);
   modal.classList.add('open');

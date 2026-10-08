@@ -267,7 +267,7 @@
     ['Sois le premier fan YUL au classement.', 'Be the first YUL Fan on the leaderboard.'],
     // Fiche joueur
     ['Nom du joueur', 'Player name'], ['Poste', 'Position'], ['NATIONALITÉ', 'NATIONALITY'], ['ÂGE', 'AGE'], ['TAILLE', 'HEIGHT'],
-    ['PIED FORT', 'PREFERRED FOOT'], ['STATS DE LA SAISON', 'SEASON STATS'], ['DERNIERS MÉDIAS', 'LATEST MEDIA'],
+    ['PIED FORT', 'PREFERRED FOOT'], ['STATS DE LA SAISON', 'SEASON STATS'], ['SAISON 7V7', '7V7 SEASON'], ['DERNIERS MÉDIAS', 'LATEST MEDIA'],
     // Pied de page
     ["L'effectif", 'The Squad'], ['Notre histoire', 'Our story'], ["S'IMPLIQUER", 'GET INVOLVED'], ['Rejoindre YUL FC', 'Join YUL FC'],
     ['Partenariat', 'Partnership'], ['Accès joueurs', 'Player Access'], ['Accès staff', 'Staff Access'],

@@ -255,9 +255,21 @@ function mdEnsure(m){
 /* ==========================================================================
    VUES JOUEUR
    ========================================================================== */
+/* ---- équipes : tout l'effectif en 11v11, certains joueurs aussi en 7v7 ---- */
+const evTeam = e => e && e.team === '7v7' ? '7v7' : '11v11';
+const inTeamP = (p, t) => !!p && (t !== '7v7' || !!p.t7);
+const teamTag = e => evTeam(e) === '7v7' ? '<span class="tag t7">7v7</span>' : '<span class="tag t11">11v11</span>';
+let teamSel = '11v11', calTeam = 'all', sdTeam = 'all';
+const isT7 = () => !!(S.d && S.d.player && S.d.player.t7);
+const evList = t => (S.d.events || []).filter(e => !t || evTeam(e) === t);
+const myTeam = () => isT7() ? teamSel : '11v11';
+function teamSwitch(){
+  if(!isT7()) return '';
+  return `<div class="team-switch" role="tablist" aria-label="Équipe">${['11v11', '7v7'].map(t => `<button role="tab" class="${teamSel === t ? 'on' : ''}" data-act="team-sel" data-t="${t}">${t}</button>`).join('')}</div>`;
+}
 const myAvail = eid => (S.d.availability || []).find(a => a.eventId === eid);
-const upcomingFor = () => (S.d.events || []).filter(e => !isPast(e));
-const pastFor = () => (S.d.events || []).filter(e => isPast(e)).reverse();
+const upcomingFor = t => evList(t).filter(e => !isPast(e));
+const pastFor = t => evList(t).filter(e => isPast(e)).reverse();
 
 function evName(e){
   if(e.type === 'match') return e.isHome === false ? `${e.opponent} vs YUL FC` : `YUL FC vs ${e.opponent}`;
@@ -286,7 +298,7 @@ function callupBox(e){
 }
 function eventCard(e, hero){
   return `<div class="card ${hero ? 'hl next-hero' : ''}">
-    <div class="ev-top">${evTag(e)}${e.round ? `<span class="tag">${esc(e.round)}</span>` : ''}</div>
+    <div class="ev-top">${isT7() ? teamTag(e) : ''}${evTag(e)}${e.round ? `<span class="tag">${esc(e.round)}</span>` : ''}</div>
     <div class="ev-date mt">${esc(fmtDay(e.date))} · ${esc(fmtTime(e.date))}</div>
     <div class="ev-title">${esc(evName(e))}</div>
     <div class="ev-meta">${e.venue ? `📍 <b>${esc(e.venue)}</b>` : 'Lieu à confirmer'}${e.meet ? ` · RDV <b>${esc(e.meet)}</b>` : ''}</div>
@@ -295,9 +307,9 @@ function eventCard(e, hero){
     ${callupBox(e)}
   </div>`;
 }
-function myStats(){
+function myStats(t){
   let played = 0, goals = 0, assists = 0, marked = 0, present = 0;
-  (S.d.events || []).forEach(e => {
+  evList(t).forEach(e => {
     if(e.myAttendance){ marked++; if(e.myAttendance === 'présent' || e.myAttendance === 'retard'){ present++; if(e.type === 'match') played++; } }
     if(e.myStats){ goals += e.myStats.goals || 0; assists += e.myStats.assists || 0; }
   });
@@ -310,7 +322,7 @@ function balance(contract, payments){
 }
 function newsCard(n){
   return `<article class="card news">
-    <div class="row">${n.pinned ? '<span class="tag gold">Épinglé</span>' : ''}${staff() ? `<span class="tag">${n.audience === 'staff' ? 'Staff seulement' : n.audience === 'all' ? 'Tout le monde' : 'Joueurs'}</span>` : ''}</div>
+    <div class="row">${n.pinned ? '<span class="tag gold">Épinglé</span>' : ''}${n.team === '7v7' ? '<span class="tag t7">7v7</span>' : n.team === '11v11' ? '<span class="tag t11">11v11</span>' : ''}${staff() ? `<span class="tag">${n.audience === 'staff' ? 'Staff seulement' : n.audience === 'all' ? 'Tout le monde' : 'Joueurs'}</span>` : ''}</div>
     <h3 class="${n.pinned || staff() ? 'mt' : ''}">${esc(n.title)}</h3>
     <div class="meta">${esc(n.author || 'Staff')} · ${esc(fmtShort(n.createdAt))}</div>
     ${n.body ? `<p>${esc(n.body)}</p>` : ''}
@@ -326,7 +338,7 @@ const PLAYER_VIEWS = {
     if(!me) return `<div class="page-head"><div><h1 class="page-title">Salut ${esc(first)}</h1></div></div>
       <div class="empty"><b>Profil joueur non lié</b>Ton compte n'est relié à aucun joueur de l'effectif. Préviens le staff.</div>`;
     const up = upcomingFor();
-    const st = myStats();
+    const st = myStats(myTeam());
     const c = S.d.contract, bal = balance(c, S.d.payments);
     const alerts = [];
     const dm = defaultMonth();
@@ -343,7 +355,8 @@ const PLAYER_VIEWS = {
       <div class="section-lbl">Prochain rendez-vous</div>
       ${up.length ? eventCard(up[0], true) : '<div class="empty"><b>Rien de prévu</b>Le staff publiera le prochain match ou entraînement ici.</div>'}
       ${up.length > 1 ? `<a class="btn ghost block mt" href="#calendrier">Voir les ${up.length - 1} autre${up.length > 2 ? 's' : ''} rendez-vous</a>` : ''}
-      <div class="section-lbl">Ma saison</div>
+      <div class="section-lbl">Ma saison${isT7() ? ' · ' + myTeam() : ''}</div>
+      ${teamSwitch()}
       <div class="kpis">
         <div class="kpi"><div class="n">${st.played}</div><div class="l">Matchs joués</div></div>
         <div class="kpi"><div class="n gold">${st.goals}</div><div class="l">Buts</div></div>
@@ -355,9 +368,10 @@ const PLAYER_VIEWS = {
     `;
   },
   calendrier(){
-    const up = upcomingFor(), past = pastFor();
+    const up = upcomingFor(myTeam()), past = pastFor(myTeam());
     return `
-      <div class="page-head"><div><h1 class="page-title">Calendrier</h1><p class="page-sub">Indique ta dispo pour chaque rendez-vous.</p></div></div>
+      <div class="page-head"><div><h1 class="page-title">Calendrier${isT7() ? ' ' + myTeam() : ''}</h1><p class="page-sub">Indique ta dispo pour chaque rendez-vous.</p></div></div>
+      ${teamSwitch()}
       <div class="section-lbl">À venir</div>
       ${up.length ? `<div class="cards">${up.map(e => eventCard(e)).join('')}</div>` : '<div class="empty"><b>Rien de prévu</b>Aucun match ni entraînement publié pour l\'instant.</div>'}
       <div class="section-lbl">Passés</div>
@@ -409,8 +423,8 @@ const PLAYER_VIEWS = {
       ${n.length ? n.map(newsCard).join('') : '<div class="empty"><b>Aucune annonce</b>Les messages du staff apparaîtront ici.</div>'}`;
   },
   presences(){
-    const all = (S.d.events || []).filter(e => e.myAttendance).reverse();
-    const T = S.d.teamAttendance || {};
+    const all = evList(myTeam()).filter(e => e.myAttendance).reverse();
+    const T = (S.d.teamAttendance || {})[myTeam()] || {};
     const ok = e => e.myAttendance === 'présent' || e.myAttendance === 'retard';
     const sum = list => {
       const c = { 'présent': 0, 'retard': 0, 'absent': 0, 'excusé': 0 };
@@ -452,7 +466,8 @@ const PLAYER_VIEWS = {
       <span class="tag ${ATT_TAG[e.myAttendance]}">${esc(e.myAttendance)}</span>
     </div>`;
     const counts = { all: all.length, entrainement: tr.n, match: ma.n };
-    return `<div class="page-head"><div><h1 class="page-title">Mes présences</h1><p class="page-sub">Tes entraînements et tes matchs, notés par le staff.</p></div></div>
+    return `<div class="page-head"><div><h1 class="page-title">Mes présences${isT7() ? ' ' + myTeam() : ''}</h1><p class="page-sub">Tes entraînements et tes matchs, notés par le staff.</p></div></div>
+      ${teamSwitch()}
       ${all.length ? `
       <div class="att-split">
         ${typeCard('Entraînements', tr, T.entrainement, '🏃')}
@@ -537,9 +552,10 @@ const availFor = (eid, pid) => (S.d.availability || []).find(a => a.eventId === 
 const eventById = id => (S.d.events || []).find(e => e.id === id);
 const contractFor = pid => (S.d.contracts || []).find(c => c.playerId === pid);
 const paymentsFor = pid => (S.d.payments || []).filter(p => p.playerId === pid).sort((a, b) => String(a.date).localeCompare(String(b.date)));
+const teamPlayers = e => activePlayers().filter(p => inTeamP(p, evTeam(e)));
 function availSummary(e){
   const c = { oui: 0, 'peut-être': 0, non: 0, none: 0 };
-  activePlayers().forEach(p => { const a = availFor(e.id, p.id); c[a ? a.status : 'none']++; });
+  teamPlayers(e).forEach(p => { const a = availFor(e.id, p.id); c[a ? a.status : 'none']++; });
   return c;
 }
 function availBar(c){
@@ -554,6 +570,7 @@ function staffEventRow(e){
       <div class="t">${esc(evName(e))}</div>
       <div class="s">${esc(fmtShort(e.date))} · ${esc(fmtTime(e.date))}${e.venue ? ' · ' + esc(e.venue) : ''}</div>
     </div>
+    ${teamTag(e)}
     ${e.result ? `<span class="score">${e.result.yul}-${e.result.opp}</span>` : ''}
     ${!isPast(e) ? `<span class="tag green" title="Disponibles">${c.oui} ✓</span>` : ''}
     ${e.published ? (e.callup && e.callup.published ? '<span class="tag gold">Convoqués</span>' : '') : '<span class="tag">Brouillon</span>'}
@@ -609,7 +626,7 @@ const STAFF_VIEWS = {
   effectif(){
     const ps = players();
     return `
-      <div class="page-head"><div><h1 class="page-title">Effectif</h1><p class="page-sub">${ps.length} joueur${ps.length > 1 ? 's' : ''} · les accès joueurs se créent depuis chaque fiche.</p></div>
+      <div class="page-head"><div><h1 class="page-title">Effectif</h1><p class="page-sub">${ps.length} joueur${ps.length > 1 ? 's' : ''}${ps.some(p => p.t7) ? ` · ${ps.filter(p => p.t7).length} aussi en 7v7` : ''} · les accès joueurs se créent depuis chaque fiche.</p></div>
         <div class="row"><button class="btn ghost" data-act="squad-import">Importer l'effectif du site</button><button class="btn primary" data-act="player-new">+ Joueur</button></div></div>
       ${ps.length > 6 ? `<div class="field"><input id="squadSearch" type="search" placeholder="Rechercher un joueur…" aria-label="Rechercher"></div>` : ''}
       ${ps.length ? `<div class="list" id="squadList">${ps.map(p => {
@@ -618,6 +635,7 @@ const STAFF_VIEWS = {
         return `<div class="li clickable" data-act="player-open" data-id="${p.id}" data-search="${esc((pName(p) + ' ' + (p.num ?? '')).toLowerCase())}">
           <div class="num">${p.num ?? '–'}</div>
           <div class="main"><div class="t">${esc(pName(p))}</div><div class="s">${esc(playerMeta(p))}${p.status !== 'actif' ? ' · ' + esc(p.status) : ''}</div></div>
+          ${p.t7 ? '<span class="tag t7">7v7</span>' : ''}
           ${accTag}
         </div>`;
       }).join('')}</div>` : '<div class="empty"><b>Aucun joueur</b>Récupère d\'un coup les joueurs affichés sur yulfc.com, ou ajoute-les un par un.<div class="row mt" style="justify-content:center"><button class="btn primary" data-act="squad-import">Importer l\'effectif du site</button><button class="btn" data-act="player-new">+ Ajouter un joueur</button></div></div>'}
@@ -627,7 +645,7 @@ const STAFF_VIEWS = {
   dispos(){
     const ms = openMonths();
     if(!sdMonth || !ms.includes(sdMonth)) sdMonth = defaultMonth();
-    const m = sdMonth, ap = activePlayers();
+    const m = sdMonth, ap = activePlayers().filter(p => sdTeam !== '7v7' || p.t7);
     const docs = (S.d.monthly || []).filter(x => x.month === m && ap.some(p => p.id === x.playerId));
     const missing = ap.filter(p => !docs.some(x => x.playerId === p.id));
     const days = futureDays(m);
@@ -646,6 +664,7 @@ const STAFF_VIEWS = {
     const dLabel = d => `${WD_LONG[wdIdx(d)]} ${dayNum(d)}`;
     return `<div class="page-head"><div><h1 class="page-title">Dispos du mois</h1><p class="page-sub">Jours et plages horaires où les joueurs sont libres, pour fixer les entraînements.</p></div></div>
       <div class="subtabs" role="tablist">${ms.map(x => `<button role="tab" class="${x === m ? 'on' : ''}" data-act="sd-month" data-m="${x}">${esc(monthLabel(x))}</button>`).join('')}</div>
+      ${activePlayers().some(p => p.t7) ? `<div class="team-switch" role="tablist">${[['all', 'Tout l\'effectif'], ['7v7', 'Équipe 7v7']].map(([k, l]) => `<button role="tab" class="${sdTeam === k ? 'on' : ''}" data-act="sd-team" data-t="${k}">${l}</button>`).join('')}</div>` : ''}
       <div class="kpis">
         <div class="kpi"><div class="n gold">${docs.length}<small style="font-size:.5em;color:var(--dim)"> / ${ap.length}</small></div><div class="l">Ont répondu</div></div>
         <div class="kpi"><div class="n">${best[0] ? best[0].n : 0}</div><div class="l">Max sur un créneau</div></div>
@@ -667,16 +686,18 @@ const STAFF_VIEWS = {
       : `<div class="empty mt2"><b>Pas encore de réponses pour ${esc(monthName(m))}</b>Les joueurs remplissent leurs dispos depuis leur espace, onglet « Dispos ».</div>`}`;
   },
   calendrier(){
-    const evs = S.d.events || [];
+    const evs = evList(calTeam === 'all' ? null : calTeam);
     const up = evs.filter(e => !isPast(e)), past = evs.filter(isPast).reverse();
+    const n7 = (S.d.events || []).filter(e => evTeam(e) === '7v7').length;
     return `
       <div class="page-head"><div><h1 class="page-title">Calendrier</h1><p class="page-sub">Matchs, entraînements, dispos, convocations, présences et résultats.</p></div>
         <div class="row"><button class="btn primary" data-act="event-new">+ Événement</button></div></div>
+      <div class="subtabs" role="tablist">${[['all', 'Les deux équipes'], ['11v11', '11v11'], ['7v7', '7v7']].map(([k, l]) => `<button role="tab" class="${calTeam === k ? 'on' : ''}" data-act="cal-team" data-t="${k}">${l}${k === '7v7' ? ` <span class="att-count">${n7}</span>` : ''}</button>`).join('')}</div>
       <div class="section-lbl">À venir</div>
       ${up.length ? `<div class="list">${up.map(staffEventRow).join('')}</div>` : '<div class="empty">Aucun événement à venir.</div>'}
       <div class="section-lbl">Passés</div>
       ${past.length ? `<div class="list">${past.map(staffEventRow).join('')}</div>` : '<div class="empty">Aucun événement passé.</div>'}
-      <p class="muted small mt2">Les matchs publiés apparaissent aussi sur le site public (prochain match et résultats).</p>
+      <p class="muted small mt2">Les matchs 11v11 publiés apparaissent aussi sur le site public (prochain match et résultats). Les matchs 7v7 alimentent les stats 7v7 des joueurs sur le site.</p>
     `;
   },
 
@@ -839,6 +860,7 @@ function playerForm(p = {}){
       <div class="field"><label>Téléphone</label><input name="phone" type="tel" value="${esc(p.phone || '')}"></div>
       <div class="field"><label>Email</label><input name="email" type="email" value="${esc(p.email || '')}"></div>
     </div>
+    <label class="check"><input type="checkbox" name="t7" ${p.t7 ? 'checked' : ''}> Joue aussi dans l'équipe 7v7 <span class="muted small">(tout l'effectif est en 11v11)</span></label>
     <div class="field"><label>Notes internes (staff)</label><textarea name="notes" placeholder="Visible uniquement par le staff">${esc(p.notes || '')}</textarea></div>
     <button class="btn primary block">${p.id ? 'Enregistrer' : 'Ajouter le joueur'}</button>
   </form>`;
@@ -894,8 +916,12 @@ function showCode(acc, code){
 let evTab = 'infos';
 function eventForm(e = {}){
   const type = e.type || 'match';
+  const team = e.id ? evTeam(e) : (calTeam === '7v7' ? '7v7' : '11v11');
   return `<form data-form="event">
     <input type="hidden" name="id" value="${esc(e.id || '')}">
+    <div class="field"><label>Équipe</label>
+      <div class="seg" id="evTeamSeg" role="group">${[['11v11', '11v11'], ['7v7', '7v7']].map(([k, l]) => `<button type="button" data-team="${k}" class="${team === k ? 'on' : ''}">${l}</button>`).join('')}</div>
+      <input type="hidden" name="team" value="${team}"></div>
     <div class="field"><label>Type</label>
       <div class="seg" id="evTypeSeg" role="group">${[['match', 'Match'], ['entrainement', 'Entraînement'], ['autre', 'Autre']].map(([k, l]) => `<button type="button" data-type="${k}" class="${type === k ? 'on' : ''}">${l}</button>`).join('')}</div>
       <input type="hidden" name="type" value="${type}"></div>
@@ -917,6 +943,8 @@ function eventForm(e = {}){
   </form>`;
 }
 function bindEventForm(root){
+  const ts = $('#evTeamSeg', root);
+  if(ts) ts.addEventListener('click', e => { const b = e.target.closest('button'); if(!b) return; $('input[name=team]', root).value = b.dataset.team; $$('button', ts).forEach(x => x.classList.toggle('on', x === b)); });
   const seg = $('#evTypeSeg', root); if(!seg) return;
   const apply = t => {
     $('input[name=type]', root).value = t;
@@ -935,7 +963,7 @@ function openEvent(id, tab){
   const tabs = [['infos', 'Infos'], ['dispos', 'Dispos'], ['convocation', 'Convocation'], ['presences', 'Présences']];
   if(isMatch) tabs.push(['resultat', 'Résultat']);
   if(!tabs.some(t => t[0] === evTab)) evTab = 'infos';
-  const ap = activePlayers();
+  const ap = teamPlayers(e);
   let body = '';
 
   if(evTab === 'infos'){
@@ -1009,7 +1037,7 @@ function openEvent(id, tab){
 
   openSheet(evName(e), `
     <div class="ev-date">${esc(fmtDay(e.date))} · ${esc(fmtTime(e.date))}</div>
-    <div class="row mt" style="margin-bottom:14px">${evTag(e)}${e.published ? '<span class="tag green">Publié</span>' : '<span class="tag">Brouillon</span>'}</div>
+    <div class="row mt" style="margin-bottom:14px">${teamTag(e)}${evTag(e)}${e.published ? '<span class="tag green">Publié</span>' : '<span class="tag">Brouillon</span>'}</div>
     <div class="subtabs" role="tablist">${tabs.map(([k, l]) => `<button role="tab" class="${evTab === k ? 'on' : ''}" data-act="ev-tab" data-tab="${k}" data-id="${e.id}">${l}</button>`).join('')}</div>
     ${body}`, root => {
       bindEventForm(root);
@@ -1104,6 +1132,10 @@ function openNews(id){
       <div class="field"><label>Visible par</label><select name="audience">
         <option value="players" ${n.audience === 'players' || !n.audience ? 'selected' : ''}>Joueurs et staff</option>
         <option value="staff" ${n.audience === 'staff' ? 'selected' : ''}>Staff seulement</option></select></div>
+      <div class="field"><label>Équipe concernée</label><select name="team">
+        <option value="" ${!n.team ? 'selected' : ''}>Tout le club</option>
+        <option value="11v11" ${n.team === '11v11' ? 'selected' : ''}>11v11</option>
+        <option value="7v7" ${n.team === '7v7' ? 'selected' : ''}>7v7 seulement</option></select></div>
       <label class="check"><input type="checkbox" name="pinned" ${n.pinned ? 'checked' : ''}> Épingler en haut</label>
       <button class="btn primary block">${id ? 'Enregistrer' : 'Publier l\'annonce'}</button>
     </form>`);
@@ -1183,6 +1215,9 @@ function impUpdate(){
    ACTIONS (clics)
    ========================================================================== */
 const ACT = {
+  'team-sel': b => { teamSel = b.dataset.t === '7v7' ? '7v7' : '11v11'; presFilter = 'all'; const y = window.scrollY; renderView(); window.scrollTo(0, y); },
+  'cal-team': b => { calTeam = b.dataset.t; renderView(); },
+  'sd-team': b => { sdTeam = b.dataset.t; renderView(); },
   'md-month': b => { mdMonth = b.dataset.m; renderView(); },
   'sd-month': b => { sdMonth = b.dataset.m; renderView(); },
   'md-week': b => { const w = mdDraft.week[+b.dataset.w], k = b.dataset.s, i = w.indexOf(k); if(i < 0) w.push(k); else w.splice(i, 1); b.classList.toggle('on', i < 0); },
@@ -1215,7 +1250,7 @@ const ACT = {
   }),
   'sd-cell': b => {
     const d = b.dataset.d, k = b.dataset.s, sl = SLOTS.find(x => x[0] === k);
-    const ap = activePlayers();
+    const ap = activePlayers().filter(p => sdTeam !== '7v7' || p.t7);
     const docs = (S.d.monthly || []).filter(x => x.month === d.slice(0, 7));
     const yes = ap.filter(p => docs.some(x => x.playerId === p.id && (x.days[d] || []).includes(k)));
     const no = ap.filter(p => docs.some(x => x.playerId === p.id) && !yes.includes(p));
@@ -1414,6 +1449,7 @@ const FORMS = {
       let nats = []; try{ nats = JSON.parse(v.nationalities || '[]'); }catch(e){}
       if(pending && pending.trim() && !nats.some(x => x.toLowerCase() === pending.trim().toLowerCase())) nats.push(pending.trim());
       v.nationalities = nats;
+      v.t7 = !!v.t7;
       const p = await api('/api/club/players/save', v);
       toast(v.id ? 'Fiche enregistrée' : 'Joueur ajouté');
       await refresh(); openPlayer(p.id);

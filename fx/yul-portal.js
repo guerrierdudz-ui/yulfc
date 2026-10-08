@@ -99,7 +99,9 @@
      'renderMediaFeatured', 'renderMediaLatestGrid'].forEach(call);
   }
   fetch('/api/public/matches').then(r => r.ok ? r.json() : null).then(d => {
-    if(d && Array.isArray(d.matches) && d.matches.length) applyMatches(d.matches);
+    // les matchs 7v7 restent dans l'Espace pour l'instant : le site public affiche la saison 11v11
+    const m11 = d && Array.isArray(d.matches) ? d.matches.filter(m => m.team !== '7v7') : [];
+    if(m11.length) applyMatches(m11);
   }).catch(() => {});
 
   /* ---------------- 3. Poste, âge et nationalités dans la fiche joueur (au clic) ----------------
@@ -128,6 +130,7 @@
     try{
       if(typeof players !== 'undefined') players.forEach(p => {
         const i = SQUAD.get(norm(p.name)); if(!i) return;
+        p.s7 = i.t7 && i.s7 ? i.s7 : null;
         if(i.age != null) p.age = i.age + ' ans';
         if(i.pos){ p.posCat = i.pos; p.pos = POS_LABEL[i.pos]; }
         if(i.nationalities.length){ // drapeaux seulement (nom du pays au survol) ; nom écrit si le pays n'a pas de drapeau connu

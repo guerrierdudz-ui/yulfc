@@ -197,16 +197,22 @@ function cleanPlayer(b, old = {}){
       .map(n => str(n, 40)).filter(Boolean).filter((n, i, a) => a.findIndex(x => x.toLowerCase() === n.toLowerCase()) === i).slice(0, 4),
     email: email(b.email) || '',
     status: oneOf(b.status, ['actif', 'blessé', 'suspendu', 'inactif'], 'actif'),
+    t7: b.t7 === undefined ? !!old.t7 : (b.t7 === true || b.t7 === 'true' || b.t7 === 'on'),
     notes: text(b.notes, 1000),
     updatedAt: now(), createdAt: old.createdAt || now(),
   };
 }
 const EV_TYPES = ['match', 'entrainement', 'autre'];
+/* Deux équipes : tout l'effectif joue en 11v11 ; les joueurs cochés « t7 » jouent aussi en 7v7 */
+const TEAMS = ['11v11', '7v7'];
+const teamOf = e => e && e.team === '7v7' ? '7v7' : '11v11';
+const inTeam = (p, team) => !!p && (team !== '7v7' || !!p.t7);
 function cleanEvent(b, old = {}){
   return {
     ...old,
     id: old.id || uid(),
     type: oneOf(b.type, EV_TYPES, 'match'),
+    team: oneOf(b.team, TEAMS, old.team || '11v11'),
     title: str(b.title, 120),
     opponent: str(b.opponent, 80),
     date: isoDate(b.date),
@@ -316,16 +322,21 @@ async function bootstrap(env, u){
   // joueur
   const me = players.find(p => p.id === u.playerId) || null;
   out.player = me;
-  out.teammates = players.filter(p => p.status !== 'inactif').map(p => ({ id: p.id, firstName: p.firstName, lastName: p.lastName, num: p.num, pos: p.pos }));
-  out.events = eventsAll.filter(e => e.published).map(e => ({
-    id: e.id, type: e.type, title: e.title, opponent: e.opponent, date: e.date, meet: e.meet, venue: e.venue,
+  out.teammates = players.filter(p => p.status !== 'inactif').map(p => ({ id: p.id, firstName: p.firstName, lastName: p.lastName, num: p.num, pos: p.pos, t7: !!p.t7 }));
+  const visible = eventsAll.filter(e => e.published && (!me || inTeam(me, teamOf(e))));
+  out.events = visible.map(e => ({
+    id: e.id, type: e.type, team: teamOf(e), title: e.title, opponent: e.opponent, date: e.date, meet: e.meet, venue: e.venue,
     comp: e.comp, round: e.round, isHome: e.isHome, notes: e.notes, result: e.result ? { yul: e.result.yul, opp: e.result.opp } : null,
     callup: e.callup && e.callup.published ? { published: true, playerIds: e.callup.playerIds, message: e.callup.message, meet: e.callup.meet } : { published: false },
     myAttendance: me ? (e.attendance || {})[me.id] || null : null,
     myStats: me && e.result && Array.isArray(e.result.scorers) ? e.result.scorers.find(s => s.playerId === me.id) || null : null,
   }));
-  out.news = news.filter(n => n.audience !== 'staff');
-  out.teamAttendance = teamAttendance(players, eventsAll.filter(e => e.published), me);
+  out.news = news.filter(n => n.audience !== 'staff' && (!n.team || n.team === '11v11' || (me && me.t7)));
+  out.teamAttendance = {};
+  for(const t of TEAMS){
+    if(!me || !inTeam(me, t)) continue;
+    out.teamAttendance[t] = teamAttendance(players.filter(p => inTeam(p, t)), visible.filter(e => teamOf(e) === t), me);
+  }
   out.months = monthsAround();
   out.monthly = me ? (await Promise.all(out.months.map(m => D.get('monthly/' + m + '/' + me.id + '.json')))).filter(Boolean) : [];
   if(me){
@@ -471,6 +482,7 @@ async function route(path, request, env, body, u){
       const eventId = safeId(body.eventId);
       const e = eventId && await D.get('events/' + eventId + '.json');
       if(!e || (!staff && !e.published)) return err('Événement introuvable.', 404);
+      if(!staff && teamOf(e) === '7v7'){ const me = await D.get('players/' + u.playerId + '.json'); if(!inTeam(me, '7v7')) return err('Événement introuvable.', 404); }
       let playerId = u.playerId;
       if(staff && body.playerId) playerId = safeId(body.playerId);
       if(!playerId) return err('Aucun profil joueur lié à ce compte.');
@@ -497,6 +509,7 @@ async function route(path, request, env, body, u){
         ...(old || {}), id: old ? old.id : uid(),
         title: str(body.title, 120), body: text(body.body, 4000),
         audience: oneOf(body.audience, ['all', 'players', 'staff'], 'players'),
+        team: oneOf(body.team, TEAMS, ''),
         pinned: !!body.pinned, author: (old && old.author) || u.name,
         createdAt: (old && old.createdAt) || now(), updatedAt: now(),
       };
@@ -609,12 +622,26 @@ function ageFrom(d){
 }
 async function publicSquad(env){
   const list = env.MEDIA ? await db(env).all('players/') : [];
+  // stats 7v7 calculées à partir des matchs 7v7 publiés (présences + buteurs)
+  const evs7 = env.MEDIA ? (await db(env).all('events/')).filter(e => e.published && e.type === 'match' && teamOf(e) === '7v7') : [];
+  const s7 = p => {
+    if(!p.t7) return null;
+    let apps = 0, goals = 0, assists = 0;
+    for(const e of evs7){
+      const a = (e.attendance || {})[p.id];
+      const sc = e.result && Array.isArray(e.result.scorers) ? e.result.scorers.find(x => x.playerId === p.id) : null;
+      if(a === 'présent' || a === 'retard' || sc) apps++;
+      if(sc){ goals += sc.goals || 0; assists += sc.assists || 0; }
+    }
+    return { apps, goals, assists };
+  };
   const squad = list.filter(p => p.status !== 'inactif').map(p => ({
+    t7: !!p.t7, s7: s7(p),
     name: `${p.firstName || ''} ${p.lastName || ''}`.trim(), num: p.num ?? null,
     age: ageFrom(p.birthDate),
     pos: ['GK', 'DEF', 'MID', 'FWD'].includes(p.pos) ? p.pos : null,
     nationalities: Array.isArray(p.nationalities) && p.nationalities.length ? p.nationalities : (p.nationality ? [p.nationality] : []),
-  })).filter(p => p.name && (p.age != null || p.pos || p.nationalities.length));
+  })).filter(p => p.name && (p.age != null || p.pos || p.nationalities.length || p.t7));
   return new Response(JSON.stringify({ squad }), { headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'public, max-age=60' } });
 }
 
@@ -622,7 +649,7 @@ async function publicMatches(env){
   if(!env.MEDIA) return json({ matches: [] });
   const evs = await db(env).all('events/');
   const matches = evs.filter(e => e.type === 'match' && e.published).map(e => ({
-    id: e.id, date: e.date, opponent: e.opponent, venue: e.venue, comp: e.comp || 'league', round: e.round,
+    id: e.id, team: teamOf(e), date: e.date, opponent: e.opponent, venue: e.venue, comp: e.comp || 'league', round: e.round,
     isHome: e.isHome, result: e.result ? { yul: e.result.yul, opp: e.result.opp } : null,
   })).sort((a, b) => String(a.date).localeCompare(String(b.date)));
   return new Response(JSON.stringify({ matches }), { headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'public, max-age=60' } });
