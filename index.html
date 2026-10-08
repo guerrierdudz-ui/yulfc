@@ -1723,6 +1723,9 @@ nav.desktop-nav a.active::after{ width:100%; }
 .record-card{ background:var(--surface); border:1px solid var(--line); border-radius:8px; padding:1.2rem 1.4rem; margin-bottom:.7rem; display:flex; justify-content:space-between; align-items:center; gap:1rem; }
 .record-card .rc-lab{ font-family:var(--ff-mono); font-size:.7rem; color:var(--dim); letter-spacing:.04em; }
 .record-card .rc-val{ font-family:var(--ff-display); font-size:1.3rem; color:var(--gold); text-align:right; }
+.rb-season{ font-family:var(--ff-mono); font-size:.68rem; letter-spacing:.2em; color:var(--gold); margin:.4rem 0 .8rem; display:flex; align-items:center; gap:.8rem; }
+.rb-season::after{ content:''; flex:1; height:1px; background:linear-gradient(90deg, var(--line), transparent); }
+.record-card .rb-soon{ font-size:1rem; color:var(--dim); }
 .record-card .rc-sub{ font-family:var(--ff-mono); font-size:.62rem; color:var(--dim-2); display:block; margin-top:.2rem; }
 
 /* ============================================================
@@ -5235,6 +5238,41 @@ function computeStreaks(){
   return {maxWin, maxUnb};
 }
 function namesJoin(list){ return list.map(p=>p.name).join(' · '); }
+/* Stats individuelles par saison (source : site de la LSAQ).
+   2026 : tableau « players » ci-dessus. Les autres saisons s'ajoutent ici quand le club les fournit :
+   { name, num, appearances, goals, assists, cleanSheets, posCat } */
+const seasonPlayerStats = { '2025': [] };
+function playersForSeason(year){ return year === '2026' ? players : (seasonPlayerStats[year] || []); }
+function seasonMatches(year){ return matchDB.archive.filter(m => !year || m.year === year); }
+function streaksOf(list){
+  let curWin=0, maxWin=0, curUnb=0, maxUnb=0;
+  list.forEach(m=>{
+    if(m.result==='W'){ curWin++; curUnb++; } else if(m.result==='D'){ curWin=0; curUnb++; } else { curWin=0; curUnb=0; }
+    maxWin = Math.max(maxWin, curWin); maxUnb = Math.max(maxUnb, curUnb);
+  });
+  return {maxWin, maxUnb};
+}
+function teamRecords(list){
+  let biggest = null, heaviest = null, mostGoals = null;
+  list.forEach(m=>{
+    const gd = m.scoreYul - m.scoreOpp;
+    if(m.result==='W' && (!biggest || gd > biggest.gd)) biggest = {m, gd};
+    if(m.result==='L' && (!heaviest || gd < heaviest.gd)) heaviest = {m, gd};
+    if(!mostGoals || m.scoreYul > mostGoals.m.scoreYul) mostGoals = {m};
+  });
+  const {maxWin, maxUnb} = streaksOf(list);
+  const sc = m => `YUL FC ${m.scoreYul}-${m.scoreOpp} ${m.opponent}`;
+  return [
+    ['BIGGEST WIN', biggest ? sc(biggest.m) : null, biggest ? fmtShortDate(biggest.m.date) : ''],
+    ['MOST GOALS IN A MATCH', mostGoals && mostGoals.m.scoreYul > 0 ? `${mostGoals.m.scoreYul} · ${sc(mostGoals.m)}` : null, mostGoals ? fmtShortDate(mostGoals.m.date) : ''],
+    ['HEAVIEST DEFEAT', heaviest ? sc(heaviest.m) : null, heaviest ? fmtShortDate(heaviest.m.date) : ''],
+    ['LONGEST WINNING STREAK', maxWin > 0 ? `${maxWin} matches` : null, ''],
+    ['LONGEST UNBEATEN STREAK', maxUnb > 0 ? `${maxUnb} matches` : null, ''],
+  ];
+}
+function recordCards(rows){
+  return rows.filter(([,v])=>v).map(([lab,val,sub])=>`<div class="record-card"><div class="rc-lab">${lab}</div><div class="rc-val">${val}${sub && !/^Invalid/.test(sub) ? `<span class="rc-sub">${sub}</span>` : ''}</div></div>`).join('');
+}
 function renderShRecords(){
   const el = document.getElementById('shRecordBook');
   if(selectedSegment!=='summer'){
@@ -5242,30 +5280,34 @@ function renderShRecords(){
     document.getElementById('shAllTime').innerHTML = '';
     return;
   }
-  const goldenBoot = topByStat(players, p=>p.goals);
-  const playmaker = topByStat(players, p=>p.assists);
-  const apps = topByStat(players, p=>p.appearances);
-  const byCS = topByStat(players.filter(p=>p.posCat==='GK'), p=>p.cleanSheets);
-  let biggest = null;
-  matchDB.archive.forEach(m=>{ const gd=m.scoreYul-m.scoreOpp; if(m.result==='W' && (!biggest || gd>biggest.gd)) biggest={m,gd}; });
-  const {maxWin, maxUnb} = computeStreaks();
-  const records = [
+  const year = selectedSeasonYear;
+  const ps = playersForSeason(year);
+  const goldenBoot = topByStat(ps, p=>p.goals);
+  const playmaker = topByStat(ps, p=>p.assists);
+  const apps = topByStat(ps, p=>p.appearances);
+  const byCS = topByStat(ps.filter(p=>p.posCat==='GK'), p=>p.cleanSheets);
+  const playerRows = [
     ['MOST APPEARANCES', apps.leaders.length ? `${namesJoin(apps.leaders)} · ${apps.value}` : null],
-    ['ALL-TIME TOP SCORER', goldenBoot.leaders.length ? `${namesJoin(goldenBoot.leaders)} · ${goldenBoot.value} goals` : null],
+    ['TOP SCORER', goldenBoot.leaders.length ? `${namesJoin(goldenBoot.leaders)} · ${goldenBoot.value} goals` : null],
     ['MOST ASSISTS', playmaker.leaders.length ? `${namesJoin(playmaker.leaders)} · ${playmaker.value} assists` : null],
     ['MOST CLEAN SHEETS', byCS.leaders.length ? `${namesJoin(byCS.leaders)} · ${byCS.value}` : null],
-    ['BIGGEST WIN', biggest ? `YUL FC ${biggest.m.scoreYul}-${biggest.m.scoreOpp} ${biggest.m.opponent}` : null],
-    ['LONGEST WINNING STREAK', maxWin>0 ? `${maxWin} matches` : null],
-    ['LONGEST UNBEATEN STREAK', maxUnb>0 ? `${maxUnb} matches` : null],
-  ].filter(([,v])=>v);
-  el.innerHTML = records.length ? records.map(([lab,val])=>`<div class="record-card"><div class="rc-lab">${lab}</div><div class="rc-val">${val}</div></div>`).join('')
-    : '<div class="empty-state"><div class="es-title">NOT ENOUGH DATA YET.</div></div>';
+  ];
+  const seasonList = seasonMatches(year);
+  const playersHtml = recordCards(playerRows);
+  const seasonHtml = recordCards(teamRecords(seasonList));
+  const allHtml = recordCards(teamRecords(seasonMatches(null)));
+  el.innerHTML = `
+    <div class="rb-season">${year} SEASON</div>
+    ${playersHtml || `<div class="record-card rb-pending"><div class="rc-lab">INDIVIDUAL STATS</div><div class="rc-val rb-soon">Coming soon</div></div>`}
+    ${seasonHtml || '<div class="empty-state"><div class="es-title">NOT ENOUGH DATA YET.</div></div>'}
+    <div class="rb-season" style="margin-top:2rem">ALL-TIME · CLUB</div>
+    ${allHtml}`;
 
   document.getElementById('shAllTime').innerHTML = [
-    ['APPEARANCES', players.reduce((s,p)=>s+p.appearances,0)],
-    ['GOALS', players.reduce((s,p)=>s+(p.goals||0),0)],
-    ['ASSISTS', players.reduce((s,p)=>s+(p.assists||0),0)],
-    ['GOAL CONTRIBUTIONS', players.reduce((s,p)=>s+goalContrib(p),0)],
+    ['APPEARANCES', ps.reduce((s,p)=>s+(p.appearances||0),0)],
+    ['GOALS', ps.reduce((s,p)=>s+(p.goals||0),0)],
+    ['ASSISTS', ps.reduce((s,p)=>s+(p.assists||0),0)],
+    ['GOAL CONTRIBUTIONS', ps.reduce((s,p)=>s+goalContrib(p),0)],
   ].map(([l,v])=>`<div class="mc-kpi"><div class="n">${v}</div><div class="l">${l}</div></div>`).join('');
 }
 
