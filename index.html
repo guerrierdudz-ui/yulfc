@@ -5241,7 +5241,23 @@ function namesJoin(list){ return list.map(p=>p.name).join(' · '); }
 /* Stats individuelles par saison (source : site de la LSAQ).
    2026 : tableau « players » ci-dessus. Les autres saisons s'ajoutent ici quand le club les fournit :
    { name, num, appearances, goals, assists, cleanSheets, posCat } */
-const seasonPlayerStats = { '2025': [] };
+const seasonPlayerStats = {
+  // Été 2025 · LSAQ 11v11 (site de la LSAQ : PJ, B, A ; joueurs avec au moins 1 match)
+  '2025': [
+    { name:'Hamza Talate', num:10, appearances:10, goals:11, assists:2, posCat:'FWD' },
+    { name:'Rayan Boumassi', num:7, appearances:10, goals:1, assists:3 },
+    { name:'Leo Laith Albadiri', num:55, appearances:7, goals:2, assists:0 },
+    { name:'Taha Saidi', num:64, appearances:9, goals:2, assists:0 },
+    { name:'Sagui Randiambalohery', num:6, appearances:9, goals:1, assists:0 },
+    { name:'José Salazar', num:18, appearances:4, goals:0, assists:1 },
+    { name:'Adnane Bari', num:4, appearances:6, goals:0, assists:0 },
+    { name:'Marc-David Amisial', num:11, appearances:7, goals:0, assists:0 },
+    { name:'Bilel Fekih', num:19, appearances:5, goals:0, assists:0 },
+    { name:'Adel Mihoubi', num:23, appearances:9, goals:0, assists:0, posCat:'GK' },
+    { name:'Abdallah Eljamri', num:44, appearances:5, goals:0, assists:0 },
+    { name:'Fourkane Irki', num:90, appearances:4, goals:0, assists:0 },
+  ],
+};
 function playersForSeason(year){ return year === '2026' ? players : (seasonPlayerStats[year] || []); }
 function seasonMatches(year){ return matchDB.archive.filter(m => !year || m.year === year); }
 function streaksOf(list){
@@ -5295,7 +5311,19 @@ function renderShRecords(){
   const seasonList = seasonMatches(year);
   const playersHtml = recordCards(playerRows);
   const seasonHtml = recordCards(teamRecords(seasonList));
-  const allHtml = recordCards(teamRecords(seasonMatches(null)));
+  // tous les temps : stats individuelles additionnées sur toutes les saisons connues
+  const tot = new Map();
+  seasonYearsOrdered.forEach(y => playersForSeason(y).forEach(p => {
+    const t = tot.get(p.name) || { name:p.name, appearances:0, goals:0, assists:0 };
+    t.appearances += p.appearances||0; t.goals += p.goals||0; t.assists += p.assists||0; tot.set(p.name, t);
+  }));
+  const allP = [...tot.values()];
+  const aG = topByStat(allP, p=>p.goals), aA = topByStat(allP, p=>p.assists), aM = topByStat(allP, p=>p.appearances);
+  const allHtml = recordCards([
+    ['MOST APPEARANCES', aM.leaders.length ? `${namesJoin(aM.leaders)} · ${aM.value}` : null],
+    ['ALL-TIME TOP SCORER', aG.leaders.length ? `${namesJoin(aG.leaders)} · ${aG.value} goals` : null],
+    ['MOST ASSISTS', aA.leaders.length ? `${namesJoin(aA.leaders)} · ${aA.value} assists` : null],
+  ]) + recordCards(teamRecords(seasonMatches(null)));
   el.innerHTML = `
     <div class="rb-season">${year} SEASON</div>
     ${playersHtml || `<div class="record-card rb-pending"><div class="rc-lab">INDIVIDUAL STATS</div><div class="rc-val rb-soon">Coming soon</div></div>`}
