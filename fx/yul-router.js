@@ -100,10 +100,13 @@
       // la cible et son contenu s'affichent tout de suite (sinon l'animation d'apparition peut la laisser invisible)
       [target, ...target.querySelectorAll('.reveal')].forEach(el => el.classList && el.classList.add('in'));
       for(let a = target.parentElement; a && a !== document.body; a = a.parentElement) if(a.classList.contains('reveal')) a.classList.add('in');
-      nativeScroll.call(target, {block:'start'});
-      window.scrollBy(0, -90);
+      // défilement calculé (plus fiable que scrollIntoView sur iPhone)
+      void nativeScroll;
+      const y = target.getBoundingClientRect().top + (window.pageYOffset || document.documentElement.scrollTop) - 90;
+      window.scrollTo(0, Math.max(0, y));
+      setTimeout(() => { const y2 = target.getBoundingClientRect().top + window.pageYOffset - 90; if(Math.abs(y2 - window.pageYOffset) > 40) window.scrollTo(0, Math.max(0, y2)); }, 120);
       const field = target.querySelector('input:not([type=hidden]):not([tabindex="-1"]), textarea');
-      if(field && target.id === 'partner-inquiry-form') setTimeout(() => { try{ field.focus({ preventScroll: true }); }catch(e){} }, 350);
+      if(field && target.id === 'partner-inquiry-form' && !window.matchMedia('(pointer:coarse)').matches) setTimeout(() => { try{ field.focus({ preventScroll: true }); }catch(e){} }, 350);
     } else {
       window.scrollTo(0, 0);
     }
