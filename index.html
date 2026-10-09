@@ -2337,7 +2337,7 @@ footer{ background:var(--void); border-top:1px solid var(--line); padding:3rem 6
       <div id="matchPassportNoteWrap" style="text-align:center; position:relative; z-index:1;"></div>
     </div>
 
-    <div class="form-guide reveal">
+    <div class="form-guide form-guide-home reveal">
       <span class="fg-label">YUL FC · CURRENT FORM</span>
       <div class="pips" id="formGuideBottom"></div>
     </div>
@@ -4724,7 +4724,7 @@ function renderNextPoster(m, card){
   if(!on){ box.innerHTML=''; return; }
   const past = matchDB.archive.filter(x=>x.date && x.result).slice().sort((a,b)=>Date.parse(a.date)-Date.parse(b.date));
   const last = past[past.length-1];
-  const form = past.slice(-5);
+  const form = past.slice(-5).reverse();
   const lbl = {W:'V',D:'N',L:'D'};
   const lastHtml = last ? `<button class="np-last" data-mid="${last.id}">
       <span class="np-k">DERNIER MATCH</span>
@@ -4863,7 +4863,7 @@ function showGoalToast(playerName, minute){
 /* ---- Form guide (last 5 real results) ---- */
 function renderFormGuide(){
   const last5 = results.slice(-5);
-  const pipsHtml = last5.map(m=>`<div class="form-pip ${m.r}">${m.r==='W'?'V':m.r==='D'?'N':'D'}</div>`).join('');
+  const pipsHtml = last5.slice().reverse().map(m=>`<div class="form-pip ${m.r}">${m.r==='W'?'V':m.r==='D'?'N':'D'}</div>`).join('');
   document.getElementById('formGuideTop').innerHTML = pipsHtml;
   document.getElementById('formGuideBottom').innerHTML = pipsHtml;
 }
@@ -4984,7 +4984,7 @@ function renderHome2026Leaders(){
 
 function renderShFormGuide(){
   const last5 = results.slice(-5);
-  document.getElementById('shFormGuide').innerHTML = last5.map((m,i)=>`<div class="form-pip ${m.r}" data-idx="${i}">${m.r==='W'?'V':m.r==='D'?'N':'D'}</div>`).join('');
+  document.getElementById('shFormGuide').innerHTML = last5.map((m,i)=>`<div class="form-pip ${m.r}" data-idx="${i}">${m.r==='W'?'V':m.r==='D'?'N':'D'}</div>`).reverse().join('');
   let gs=0, gc=0, cs=0;
   last5.forEach(m=>{ const [y,o]=m.score.split('–').map(s=>parseInt(s.trim(),10)); gs+=y; gc+=o; if(o===0) cs++; });
   document.getElementById('shLast5Kpis').innerHTML = `

@@ -253,3 +253,7 @@
 /* Accueil : dernier match et forme visibles seulement dans Match Center */
 html[data-page="home"] .np-info{ display:none; }
 html:not([data-page="home"]) .np-info:empty{ display:none; }
+
+/* Match Center : pas de lien Instagram ni de bandeau forme répété */
+html[data-page="match"] .np-ig,
+html[data-page="match"] .form-guide-home{ display:none; }
