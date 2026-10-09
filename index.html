@@ -4750,11 +4750,15 @@ function renderNextPoster(m, card){
     <div class="np-head"><span class="np-dot"></span>${m.status==='tbd' ? 'PROCHAIN MATCH · À ANNONCER' : 'PROCHAIN MATCH · ' + fmtMatchDate(m.kickoff)}</div>
     <div class="np-poster">${poster}</div>
     <div class="np-side">
-    ${m.status==='upcoming' ? `<div class="np-cd"><div><b id="npDays">--</b><span>JOURS</span></div><div><b id="npHours">--</b><span>HEURES</span></div><div><b id="npMins">--</b><span>MIN</span></div></div>` : ''}
     <div class="np-info">${lastHtml}${formHtml}</div>
+    ${m.status==='upcoming' ? `<div class="np-cd"><div><b id="npDays">--</b><span>JOURS</span></div><div><b id="npHours">--</b><span>HEURES</span></div><div><b id="npMins">--</b><span>MIN</span></div></div>` : ''}
     <div class="np-cta">
       ${m.status==='upcoming' ? '<button class="btn-primary" id="npOpen">Voir le match</button>' : '<a class="btn-primary" href="#season-hub">Voir la saison</a>'}
-      <a class="np-ig" href="https://www.instagram.com/yul.fc/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="5"/><circle cx="12" cy="12" r="3.6"/><circle cx="17" cy="7" r=".8"/></svg>Suivre @yul.fc</a>
+      <a class="np-ig" href="https://www.instagram.com/yul.fc/" target="_blank" rel="noopener" aria-label="Instagram @yul.fc">
+        <span class="np-ig-ic"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/></svg></span>
+        <span class="np-ig-tx"><small>Annonces en premier sur</small><b>Instagram · @yul.fc</b></span>
+        <span class="np-ig-ar">↗</span>
+      </a>
     </div></div>`;
   box.querySelectorAll('[data-mid]').forEach(b=>b.addEventListener('click',()=>{ const t=matchDB.archive.find(x=>x.id===b.dataset.mid); if(t) openMatchPage(t); }));
   const op = document.getElementById('npOpen'); if(op) op.addEventListener('click', ()=> openMatchPage(m));
