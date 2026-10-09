@@ -5033,7 +5033,6 @@ function renderHome2026Leaders(){
     </article>`;
   }).join('');
   if(cards.length){
-    el.insertAdjacentHTML('beforeend', `<div class="ldr-more"><a href="#season-hub" class="btn-ghost">Toutes les stats</a></div>`);
     el.querySelectorAll('.ldr-card[data-num]').forEach(c => {
       const open = () => { if(typeof openModal === 'function') openModal(parseInt(c.dataset.num, 10)); };
       c.addEventListener('click', open);
