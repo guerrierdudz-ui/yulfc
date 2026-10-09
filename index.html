@@ -2301,6 +2301,7 @@ footer{ background:var(--void); border-top:1px solid var(--line); padding:3rem 6
   <!-- NEXT MATCH -->
   <div class="mc-public-view active" data-mctabpanel="next">
     <div class="match-card reveal">
+      <div class="np" id="nextMatchPoster" hidden></div>
       <div class="match-status" id="nextMatchStatusLine"><span class="pulse"></span> PROCHAIN MATCH · DIMANCHE 11:15</div>
       <div class="micro-tag" style="justify-content:center; margin-bottom:.6rem;" id="nextMatchFormatTag">LSAQ SUMMER · 11v11</div>
       <div class="match-teams">
@@ -4715,12 +4716,61 @@ function fmtShortDate(iso){
 }
 
 /* ---- Next match card (status-aware) ---- */
+/* Carte « Prochain match » en affiche (à annoncer ou à venir) */
+function renderNextPoster(m, card){
+  const box = document.getElementById('nextMatchPoster'); if(!box || !card) return;
+  const on = m.status==='tbd' || m.status==='upcoming';
+  card.classList.toggle('has-np', on); box.hidden = !on;
+  if(!on){ box.innerHTML=''; return; }
+  const past = matchDB.archive.filter(x=>x.date && x.result).slice().sort((a,b)=>Date.parse(a.date)-Date.parse(b.date));
+  const last = past[past.length-1];
+  const form = past.slice(-5);
+  const lbl = {W:'V',D:'N',L:'D'};
+  const lastHtml = last ? `<button class="np-last" data-mid="${last.id}">
+      <span class="np-k">DERNIER MATCH</span>
+      <span class="np-lrow"><img src="fx/yul-crest-hd.png" alt=""><b class="${last.result}">${last.scoreYul}-${last.scoreOpp}</b>${oppLogoSrc(last.opponent) ? `<img src="${oppLogoSrc(last.opponent)}" alt="">` : `<i>${oppCrestHtml(last.opponent)}</i>`}</span>
+      <span class="np-ld">${last.opponent} · ${fmtShortDate(last.date)}</span></button>` : '';
+  const formHtml = form.length ? `<div class="np-form"><span class="np-k">FORME</span><div>${form.map(x=>`<i class="${x.result}" title="${x.opponent} ${x.scoreYul}-${x.scoreOpp}">${lbl[x.result]}</i>`).join('')}</div></div>` : '';
+  let poster;
+  if(m.status==='tbd'){
+    poster = `<div class="rp rp-big rp-up np-tbd"><div class="rp-in">
+      <div class="rp-slash"></div><div class="rp-glow"></div>
+      <div class="rp-top"><span class="rp-brand"><img src="fx/yul-crest-hd.png" alt="">YUL FC</span><span class="rp-comp">LSAQ</span></div>
+      <div class="rp-row">
+        <div class="rp-team"><div class="rp-crest"><img src="fx/yul-crest-hd.png" alt=""></div><b>YUL FC</b></div>
+        <div class="rp-mid"><div class="rp-score"><em>VS</em></div><div class="rp-ft">À ANNONCER</div></div>
+        <div class="rp-team"><div class="rp-crest np-mystery"><span>?</span></div><b>ADVERSAIRE</b></div>
+      </div>
+      <div class="rp-foot"><span class="rp-date">PROCHAIN MATCH</span><span>DATE BIENTÔT ANNONCÉE</span></div>
+    </div></div>`;
+  } else {
+    poster = resultPosterHtml(Object.assign({}, m, { date: m.kickoff }), true);
+  }
+  box.innerHTML = `
+    <div class="np-head"><span class="np-dot"></span>${m.status==='tbd' ? 'PROCHAIN MATCH · À ANNONCER' : 'PROCHAIN MATCH · ' + fmtMatchDate(m.kickoff)}</div>
+    <div class="np-poster">${poster}</div>
+    <div class="np-side">
+    ${m.status==='upcoming' ? `<div class="np-cd"><div><b id="npDays">--</b><span>JOURS</span></div><div><b id="npHours">--</b><span>HEURES</span></div><div><b id="npMins">--</b><span>MIN</span></div></div>` : ''}
+    <div class="np-info">${lastHtml}${formHtml}</div>
+    <div class="np-cta">
+      ${m.status==='upcoming' ? '<button class="btn-primary" id="npOpen">Voir le match</button>' : '<a class="btn-primary" href="#season-hub">Voir la saison</a>'}
+      <a class="np-ig" href="https://www.instagram.com/yul.fc/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="5"/><circle cx="12" cy="12" r="3.6"/><circle cx="17" cy="7" r=".8"/></svg>Suivre @yul.fc</a>
+    </div></div>`;
+  box.querySelectorAll('[data-mid]').forEach(b=>b.addEventListener('click',()=>{ const t=matchDB.archive.find(x=>x.id===b.dataset.mid); if(t) openMatchPage(t); }));
+  const op = document.getElementById('npOpen'); if(op) op.addEventListener('click', ()=> openMatchPage(m));
+  if(m.status==='upcoming'){
+    const tick = ()=>{ const d=Math.max(0, new Date(m.kickoff)-new Date()); const e=id=>document.getElementById(id);
+      if(!e('npDays')) return; e('npDays').textContent=String(Math.floor(d/864e5)).padStart(2,'0'); e('npHours').textContent=String(Math.floor(d%864e5/36e5)).padStart(2,'0'); e('npMins').textContent=String(Math.floor(d%36e5/6e4)).padStart(2,'0'); };
+    tick(); clearInterval(window.__npT); window.__npT = setInterval(tick, 30000);
+  }
+}
 function renderNextMatchCard(){
   const m = currentMatch();
   const statusLine = document.getElementById('nextMatchStatusLine');
   const vsBlock = document.querySelector('#match .match-card .match-vs');
   const card = document.querySelector('#match .match-card');
   if(card) card.classList.toggle('is-tbd', m.status==='tbd');
+  renderNextPoster(m, card);
   if(m.status==='tbd'){
     statusLine.innerHTML = 'PROCHAIN MATCH · À ANNONCER';
     document.getElementById('nextOppName').textContent = 'À venir';
