@@ -2234,7 +2234,7 @@ footer{ background:var(--void); border-top:1px solid var(--line); padding:3rem 6
 <link rel="stylesheet" href="fx/yul-table.css">
 <link rel="stylesheet" href="fx/yul-partners.css">
 <link rel="stylesheet" href="fx/yul-cards.css">
-<script>/* YUL Router : choisit la page avant le premier affichage */(function(){var v=["histoire","pitch","match","season-hub","media","fanzone","scouting","partners","locker","coach-center"],h=location.hash.slice(1);document.documentElement.setAttribute("data-page",v.indexOf(h)>-1?h:"home");})();</script>
+<script>/* YUL Router : choisit la page avant le premier affichage */(function(){var v=["histoire","pitch","match","season-hub","media","fanzone","scouting","partners","locker","coach-center"],h=location.hash.slice(1),s={"histoire":"histoire","equipe":"pitch","matchs":"match","saison":"season-hub","medias":"media","fan-zone":"fanzone","recrutement":"scouting","partenaires":"partners"}[location.pathname.replace(/^\/+|\/+$/g,"")];document.documentElement.setAttribute("data-page",s||(v.indexOf(h)>-1?h:"home"));})();</script>
 </head>
 <body>
 
@@ -7241,7 +7241,7 @@ function openArticleView(item){
     else { navigator.clipboard.writeText(text).then(()=> alert('Copié.')); }
   });
   document.getElementById('artCopyBtn').addEventListener('click', (e)=>{
-    navigator.clipboard.writeText(location.href.split('#')[0] + '#media').then(()=>{
+    navigator.clipboard.writeText(location.origin + '/medias').then(()=>{
       const btn = e.target; const old = btn.textContent; btn.textContent='Copied ✓'; setTimeout(()=> btn.textContent=old, 1200);
     });
   });
@@ -10004,7 +10004,7 @@ renderPlayersGrid('all');
 renderHomeSquadPreview();
 renderSeasonHubAll();
 </script>
-<script src="fx/yul-router.js?v=20261009" defer></script>
+<script src="fx/yul-router.js?v=20261009b" defer></script>
 <script src="fx/yul-fx.js" defer></script>
 <script src="fx/yul-media.js" defer></script>
 <script src="fx/yul-i18n.js" defer></script>

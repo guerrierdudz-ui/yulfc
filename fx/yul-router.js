@@ -21,6 +21,22 @@
     ['coach-center', 'COMMAND CENTER',  'Staff']
   ];
   const IDS = PAGES.map(p => p[0]);
+  /* Vraies adresses (SEO) : yulfc.com/equipe, /matchs... (les liens #pitch continuent de marcher) */
+  const SLUGS = { 'histoire':'histoire', 'pitch':'equipe', 'match':'matchs', 'season-hub':'saison', 'media':'medias',
+                  'fanzone':'fan-zone', 'scouting':'recrutement', 'partners':'partenaires' };
+  const TITLES = {
+    'histoire':'Notre histoire | YUL FC, club de soccer de Montréal',
+    'pitch':'Effectif | YUL FC, soccer amateur à Montréal',
+    'match':'Calendrier et résultats | YUL FC',
+    'season-hub':'Saison, classement et stats | YUL FC',
+    'media':'Médias, photos et vidéos | YUL FC',
+    'fanzone':'Fan Zone | YUL FC',
+    'scouting':'Rejoindre une équipe de soccer à Montréal | YUL FC recrute',
+    'partners':'Devenir partenaire | YUL FC'
+  };
+  const BY_SLUG = Object.fromEntries(Object.entries(SLUGS).map(([k,v]) => [v,k]));
+  const pathFor = page => SLUGS[page] ? '/' + SLUGS[page] : (page === 'home' ? '/' : '/');
+  const pageFromPath = () => BY_SLUG[location.pathname.replace(/^\/+|\/+$/g, '')] || null;
   const BASE_TITLE = document.title;
   const RM = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const root = document.documentElement;
@@ -50,20 +66,20 @@
     const i = IDS.indexOf(page);
     if(i < 0){ crumb.innerHTML = ''; pager.innerHTML = ''; return; }
     const [, name, sub] = PAGES[i];
-    crumb.innerHTML = `<a href="#top">← Accueil</a><span class="fx-crumb-count">${name}</span>`;
+    crumb.innerHTML = `<a href="/">← Accueil</a><span class="fx-crumb-count">${name}</span>`;
     const prev = PAGES[i-1], next = PAGES[i+1];
     pager.innerHTML =
-      (prev ? `<a href="#${prev[0]}" class="prev"><span class="lab">← PRÉCÉDENT</span><span class="ttl">${prev[1]}</span></a>`
-            : `<a href="#top" class="prev"><span class="lab">← RETOUR</span><span class="ttl">ACCUEIL</span></a>`) +
-      (next ? `<a href="#${next[0]}" class="next"><span class="lab">SUIVANT →</span><span class="ttl">${next[1]}</span></a>`
-            : `<a href="#top" class="next"><span class="lab">RETOUR →</span><span class="ttl">ACCUEIL</span></a>`);
-    document.title = `${name} · YUL FC`;
+      (prev ? `<a href="${SLUGS[prev[0]] ? pathFor(prev[0]) : '#' + prev[0]}" class="prev"><span class="lab">← PRÉCÉDENT</span><span class="ttl">${prev[1]}</span></a>`
+            : `<a href="/" class="prev"><span class="lab">← RETOUR</span><span class="ttl">ACCUEIL</span></a>`) +
+      (next ? `<a href="${SLUGS[next[0]] ? pathFor(next[0]) : '#' + next[0]}" class="next"><span class="lab">SUIVANT →</span><span class="ttl">${next[1]}</span></a>`
+            : `<a href="/" class="next"><span class="lab">RETOUR →</span><span class="ttl">ACCUEIL</span></a>`);
+    document.title = TITLES[page] || `${name} · YUL FC`;
     void sub;
   }
 
   function markNav(page){
-    document.querySelectorAll('#desktopNav a[data-section], #mobileMenu a[href^="#"], footer a[href^="#"]').forEach(a => {
-      a.classList.toggle('fx-cur', a.getAttribute('href') === '#' + page);
+    document.querySelectorAll('#desktopNav a[data-section], #mobileMenu a[href^="#"], #mobileMenu a[href^="/"], footer a[href^="#"], footer a[href^="/"]').forEach(a => {
+      a.classList.toggle('fx-cur', a.getAttribute('href') === '#' + page || (SLUGS[page] && a.getAttribute('href') === pathFor(page)));
     });
   }
 
@@ -116,6 +132,14 @@
 
   /* Résout un hash (#pitch, #partner-inquiry-form, #top...) */
   function resolve(hash){
+    if(hash && hash[0] === '/'){
+      const [path, frag] = hash.split('#');
+      const pg = BY_SLUG[path.replace(/^\/+|\/+$/g, '')];
+      if(path === '/' || path === '') return frag ? resolve('#' + frag) : {page:'home', target:null};
+      if(!pg) return null;
+      const t = frag && document.getElementById(frag);
+      return {page:pg, target:t || null};
+    }
     const id = (hash || '').replace(/^#/, '');
     if(!id || id === 'top') return {page:'home', target:null};
     if(IDS.includes(id)) return {page:id, target:null};
@@ -128,25 +152,42 @@
   /* ---------- Clics sur les liens internes ---------- */
   document.addEventListener('click', e => {
     if(e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey) return;
-    const a = e.target.closest && e.target.closest('a[href^="#"]');
-    if(!a) return;
+    const a = e.target.closest && e.target.closest('a[href^="#"], a[href^="/"]');
+    if(!a || a.target === '_blank') return;
     const href = a.getAttribute('href');
-    if(href === '#' || href.length < 2) return; // liens-boutons gérés par le site
+    if(href === '#' || href.length < 1) return; // liens-boutons gérés par le site
+    if(href[0] === '/' && href !== '/' && !BY_SLUG[href.split('#')[0].replace(/^\/+|\/+$/g, '')]) return; // autre page du site
     const r = resolve(href);
     if(!r) return;
     e.preventDefault();
-    const hash = r.page === 'home' && !r.target ? location.pathname + location.search : href;
-    if(location.hash !== href) history.pushState({yul:r.page}, '', hash);
+    const url = urlFor(r, href);
+    if(location.pathname + location.hash !== url) history.pushState({yul:r.page}, '', url);
     go(r.page, r.target, true);
   });
 
+  /* Adresse affichée pour une destination : /equipe, /partenaires#partner-inquiry-form, /... */
+  function urlFor(r, href){
+    const base = pathFor(r.page);
+    if(r.target && r.target.id) return (SLUGS[r.page] || r.page === 'home' ? base : '') + '#' + r.target.id;
+    if(SLUGS[r.page] || r.page === 'home') return base;
+    return '#' + r.page; // pages privées (vestiaire, staff) : garde le #
+  }
+  function fromLocation(){
+    const pg = pageFromPath();
+    if(pg){
+      const t = location.hash.length > 1 && document.getElementById(location.hash.slice(1));
+      return {page:pg, target: t && pageOf(t) === pg ? t : null};
+    }
+    return resolve(location.hash);
+  }
+
   /* Boutons précédent / suivant du navigateur */
   window.addEventListener('popstate', () => {
-    const r = resolve(location.hash) || {page:'home', target:null};
+    const r = fromLocation() || {page:'home', target:null};
     go(r.page, r.target, true);
   });
   window.addEventListener('hashchange', () => {
-    const r = resolve(location.hash);
+    const r = fromLocation();
     if(r && (r.page !== current() || r.target)) go(r.page, r.target, false);
   });
 
@@ -157,6 +198,7 @@
     const p = pageOf(this);
     if(p && p !== current()){
       const isRoot = this.matches('body > [data-view]');
+      if(SLUGS[p] || p === 'home'){ const u = pathFor(p); if(location.pathname !== u) history.pushState({yul:p}, '', u); }
       go(p, isRoot ? null : this, true);
       return;
     }
@@ -164,7 +206,15 @@
   };
 
   /* ---------- Démarrage ---------- */
-  const start = resolve(location.hash) || {page:'home', target:null};
+  const start = fromLocation() || {page:'home', target:null};
+  // anciens liens yulfc.com/#pitch → yulfc.com/equipe
+  if(!pageFromPath() && SLUGS[start.page] && !start.target) history.replaceState(history.state, '', pathFor(start.page) + location.search);
+  /* Les liens #page deviennent de vraies adresses (lisibles par Google) */
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    const id = a.getAttribute('href').slice(1);
+    if(SLUGS[id]) a.setAttribute('href', pathFor(id));
+    else if(id === 'top') a.setAttribute('href', '/');
+  });
   apply(start.page, start.target);
-  window.YULRouter = { go: (page) => go(page, null, true), current };
+  window.YULRouter = { go: (page) => { if(SLUGS[page] || page === 'home'){ const u = pathFor(page); if(location.pathname !== u) history.pushState({yul:page}, '', u); } go(page, null, true); }, current, pathFor };
 })();

@@ -9,7 +9,7 @@
   "assets": {
     "directory": ".",
     "binding": "ASSETS",
-    "run_worker_first": ["/api/*", "/media/*"]
+    "run_worker_first": ["/api/*", "/media/*", "/histoire", "/histoire/", "/equipe", "/equipe/", "/matchs", "/matchs/", "/saison", "/saison/", "/medias", "/medias/", "/fan-zone", "/fan-zone/", "/recrutement", "/recrutement/", "/partenaires", "/partenaires/"]
   },
   "r2_buckets": [
     { "binding": "MEDIA", "bucket_name": "yulfc-media" }

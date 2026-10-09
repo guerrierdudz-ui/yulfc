@@ -124,10 +124,54 @@ async function serveMedia(pathname, env){
   return new Response(obj.body, { headers });
 }
 
+/* ---------- Pages du site avec leur propre adresse (SEO) ---------- */
+const SITE = 'https://yulfc.com';
+const PAGES = {
+  'histoire':    { t:'Notre histoire | YUL FC, club de soccer de Montréal',
+                   d:"Né à l'aéroport YUL en 2025, le YUL FC est un club de soccer amateur de Montréal qui joue en LSAQ. Son histoire, son parcours et ses saisons." },
+  'equipe':      { t:'Effectif | YUL FC, soccer amateur à Montréal',
+                   d:"L'effectif du YUL FC : joueurs, numéros, postes et statistiques de la saison en LSAQ." },
+  'matchs':      { t:'Calendrier et résultats | YUL FC',
+                   d:'Prochain match, calendrier, résultats, affiches et vidéos des matchs du YUL FC en LSAQ, à Montréal.' },
+  'saison':      { t:'Saison, classement et stats | YUL FC',
+                   d:'Classement LSAQ, bilan de la saison, buteurs, passeurs et records par saison du YUL FC.' },
+  'medias':      { t:'Médias, photos et vidéos | YUL FC',
+                   d:'Actualités, photos et vidéos du YUL FC, club de soccer amateur de Montréal.' },
+  'fan-zone':    { t:'Fan Zone | YUL FC',
+                   d:'Pronostics et jeux pour les partisans du YUL FC, club de soccer de Montréal.' },
+  'recrutement': { t:'Rejoindre une équipe de soccer à Montréal | YUL FC recrute',
+                   d:'Tu cherches une équipe de soccer à Montréal ? Le YUL FC recrute des joueurs pour la LSAQ, en 11 contre 11 et en 7 contre 7. Pose ta candidature en ligne.' },
+  'partenaires': { t:'Devenir partenaire | YUL FC',
+                   d:'Associez votre marque au YUL FC, club de soccer amateur de Montréal : maillot, réseaux sociaux et visibilité locale.' }
+};
+
+async function servePage(request, env, slug){
+  const page = PAGES[slug];
+  const res = await env.ASSETS.fetch(new Request(new URL('/', request.url), request));
+  if(!res.ok) return res;
+  const url = SITE + '/' + slug;
+  const setContent = v => ({ element(el){ el.setAttribute('content', v); } });
+  return new HTMLRewriter()
+    .on('title', { element(el){ el.setInnerContent(page.t); } })
+    .on('meta[name="description"]', setContent(page.d))
+    .on('link[rel="canonical"]', { element(el){ el.setAttribute('href', url); } })
+    .on('meta[property="og:url"]', setContent(url))
+    .on('meta[property="og:title"]', setContent(page.t))
+    .on('meta[property="og:description"]', setContent(page.d))
+    .on('meta[name="twitter:title"]', setContent(page.t))
+    .on('meta[name="twitter:description"]', setContent(page.d))
+    .transform(res);
+}
+
 export default {
   async fetch(request, env){
     const url = new URL(request.url);
     try{
+      const slug = url.pathname.replace(/^\/+|\/+$/g, '');
+      if(PAGES[slug] && (request.method === 'GET' || request.method === 'HEAD')){
+        if(url.pathname !== '/' + slug) return Response.redirect(url.origin + '/' + slug + url.search, 301);
+        return await servePage(request, env, slug);
+      }
       if(url.pathname.startsWith('/api/auth/') || url.pathname.startsWith('/api/club/') || url.pathname.startsWith('/api/public/')){
         return await handleClub(request, env);
       }
