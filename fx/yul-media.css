@@ -228,7 +228,7 @@
 .np-form i{ display:grid; place-items:center; width:24px; height:24px; border-radius:6px; font-style:normal; font-family:var(--ff-mono); font-size:.66rem; font-weight:700; color:#070D1C; }
 .np-form i.W{ background:var(--win); } .np-form i.D{ background:var(--draw); } .np-form i.L{ background:var(--loss); }
 .np-cta{ display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:.7rem; margin-top:1.3rem; }
-.np-ig{ display:inline-flex; align-items:center; gap:.8rem; padding:.55rem .9rem .55rem .55rem; border-radius:12px; border:1px solid var(--line);
+.np-ig{ display:inline-flex; align-items:center; justify-content:center; gap:.8rem; padding:.55rem 1.1rem .55rem .55rem; border-radius:12px; border:1px solid var(--line);
   background:linear-gradient(160deg, var(--raised), var(--surface)); color:var(--ink); text-decoration:none; transition:border-color .2s, transform .2s; }
 .np-ig:hover{ border-color:rgba(225,48,108,.6); transform:translateY(-1px); }
 .np-ig-ic{ display:grid; place-items:center; width:38px; height:38px; border-radius:10px; flex:none; color:#fff;
@@ -236,7 +236,7 @@
 .np-ig-ic svg{ width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1.8; }
 .np-ig-tx{ display:flex; flex-direction:column; line-height:1.2; text-align:left; }
 .np-ig-tx small{ font-family:var(--ff-mono); font-size:.58rem; letter-spacing:.14em; text-transform:uppercase; color:var(--dim); }
-.np-ig-tx b{ font-family:var(--ff-body); font-weight:600; font-size:.92rem; margin-top:.15rem; }
+.np-ig-tx b{ font-family:var(--ff-body); font-weight:600; font-size:.92rem; }
 .np-ig-ar{ margin-left:auto; padding-left:.6rem; color:var(--dim); font-size:1rem; transition:color .2s, transform .2s; }
 .np-ig:hover .np-ig-ar{ color:#fff; transform:translate(2px,-2px); }
 @media (max-width:420px){ .np-info{ grid-template-columns:1fr; } }
