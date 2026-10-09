@@ -81,8 +81,13 @@
     const nativeScroll = Element.prototype.__yulOrigScroll || Element.prototype.scrollIntoView;
     const html = root.style.scrollBehavior; root.style.scrollBehavior = 'auto';
     if(target && !(target.matches && target.matches('[data-view]')) && target.id !== 'top'){
+      // la cible et son contenu s'affichent tout de suite (sinon l'animation d'apparition peut la laisser invisible)
+      [target, ...target.querySelectorAll('.reveal')].forEach(el => el.classList && el.classList.add('in'));
+      for(let a = target.parentElement; a && a !== document.body; a = a.parentElement) if(a.classList.contains('reveal')) a.classList.add('in');
       nativeScroll.call(target, {block:'start'});
       window.scrollBy(0, -90);
+      const field = target.querySelector('input:not([type=hidden]):not([tabindex="-1"]), textarea');
+      if(field && target.id === 'partner-inquiry-form') setTimeout(() => { try{ field.focus({ preventScroll: true }); }catch(e){} }, 350);
     } else {
       window.scrollTo(0, 0);
     }
