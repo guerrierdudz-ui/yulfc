@@ -161,7 +161,7 @@
 }
 
 /* ---------- Audience Instagram ---------- */
-.yp-aud{ display:grid; grid-template-columns:1.3fr 1fr; gap:1rem; margin-top:1.6rem; }
+.yp-aud{ display:grid; grid-template-columns:1.3fr 1fr 1fr; gap:1rem; margin-top:1.6rem; }
 .yp-kpi{
   border:1px solid var(--line); border-radius:16px; padding:1.3rem 1.1rem; display:flex; flex-direction:column; justify-content:flex-end;
   background:linear-gradient(165deg, var(--raised), var(--surface));
