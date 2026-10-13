@@ -4582,7 +4582,8 @@ function playerCardHTML(p){
 const grid = document.getElementById('playersGrid');
 function renderPlayersGrid(filter){
   filter = filter || 'all';
-  const list = filter==='all' ? players : players.filter(p=>p.posCat===filter);
+  const list = (filter==='all' ? players.slice() : players.filter(p=>p.posCat===filter))
+    .sort((a,b)=> (parseInt(a.num,10)||999) - (parseInt(b.num,10)||999));
   if(!list.length){
     grid.innerHTML = `<div class="empty-state"><div class="es-title">POSITIONS NOT YET SET.</div><p>Le staff peut assigner les postes depuis le Command Center.</p></div>`;
     return;
