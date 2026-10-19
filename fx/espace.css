@@ -330,3 +330,17 @@ tr.clickable:hover td{ background:rgba(255,255,255,.02); }
 .req-row b{ font-weight:500; text-align:right; overflow-wrap:anywhere; }
 .req-text{ white-space:pre-line; font-size:.9rem; line-height:1.55; }
 .req-notes{ width:100%; min-height:90px; background:var(--void); border:1px solid var(--line); border-radius:var(--r-sm); color:var(--ink); padding:10px 12px; font:inherit; }
+
+/* ---------- Délai des dispos (48 h) et présences staff ---------- */
+.dispo-due{ margin-top:14px; padding:9px 12px; border-radius:10px; font-size:.82rem; color:var(--dim); background:var(--void); border:1px solid var(--line); }
+.dispo-due b{ color:var(--ink); font-weight:600; }
+.dispo-due.soon{ color:var(--gold); border-color:rgba(240,180,41,.35); background:var(--gold-soft); }
+.dispo-due.soon b{ color:var(--gold); }
+.dispo-due.over{ color:var(--loss); border-color:rgba(232,93,93,.4); background:rgba(232,93,93,.08); }
+.card.alert-over{ border-color:rgba(232,93,93,.55); box-shadow:0 0 0 1px rgba(232,93,93,.12) inset; }
+.miss-list{ display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+.miss{ font-size:.78rem; padding:4px 9px; border-radius:999px; background:var(--void); border:1px solid var(--line); color:var(--ink); }
+.ps-list .li{ align-items:center; }
+.ps-bar{ height:5px; margin-top:7px; max-width:260px; }
+.ps-side{ display:flex; flex-direction:column; align-items:flex-end; gap:5px; min-width:64px; }
+.ps-side b{ font-family:var(--ff-display, inherit); font-size:1.35rem; line-height:1; }

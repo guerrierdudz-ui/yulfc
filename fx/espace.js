@@ -24,6 +24,26 @@ const initials = n => String(n || '?').split(/\s+/).filter(Boolean).map(w => w[0
 const pName = p => p ? `${p.firstName || ''} ${p.lastName || ''}`.trim() : '';
 const SITE = location.origin;
 
+/* ---------------- délai des dispos : 48 h avant chaque rendez-vous ---------------- */
+const DISPO_H = 48;
+const dispoDeadline = e => D(e.date).getTime() - DISPO_H * 3600e3;
+const fmtLeft = ms => {
+  const h = Math.max(0, Math.round(ms / 3600e3));
+  if(h < 1) return 'moins d\'une heure';
+  if(h < 24) return h + ' h';
+  const d = Math.floor(h / 24), r = h % 24;
+  return d + ' j' + (r ? ' ' + r + ' h' : '');
+};
+const fmtDeadline = e => { const iso = new Date(dispoDeadline(e)).toISOString(); return fmtDay(iso) + ' à ' + fmtTime(iso); };
+/* Délai applicable ? (un rendez-vous créé moins de 48 h avant n'en a pas) */
+const hasDeadline = e => !e.createdAt || D(e.createdAt).getTime() <= dispoDeadline(e);
+/* Réponse d'un joueur par rapport au délai : 'ok' à temps, 'late' après, 'missing' pas répondu après le délai, 'open' encore le temps */
+function dispoState(e, a){
+  const dl = dispoDeadline(e);
+  if(a) return hasDeadline(e) && a.at && D(a.at).getTime() > dl ? 'late' : 'ok';
+  return Date.now() > dl ? 'missing' : 'open';
+}
+
 const COMP = { league: 'Saison régulière', playoff: 'Séries', cup: 'Coupe', friendly: 'Amical' };
 const ROLE = { admin: 'Admin', manager: 'Gérant', coach: 'Coach', player: 'Joueur' };
 const POS = { GK: 'Gardien', DEF: 'Défenseur', MID: 'Milieu', FWD: 'Attaquant', '': 'Poste ?' };
@@ -161,7 +181,7 @@ function routes(){
     ['accueil', 'Accueil', 'home'], ['calendrier', 'Calendrier', 'cal'], ['dispos', 'Dispos', 'clock'], ['annonces', 'Annonces', 'news'],
     ['presences', 'Présences', 'check'], ['contrat', 'Contrat', 'doc'],
   ];
-  const r = [['tableau', 'Tableau de bord'], ['effectif', 'Effectif'], ['calendrier', 'Calendrier'], ['dispos', 'Dispos du mois'], ['demandes', 'Candidatures et partenaires'], ['annonces', 'Annonces']];
+  const r = [['tableau', 'Tableau de bord'], ['effectif', 'Effectif'], ['calendrier', 'Calendrier'], ['dispos', 'Dispos du mois'], ['presences', 'Présences'], ['demandes', 'Candidatures et partenaires'], ['annonces', 'Annonces']];
   if(finance()) r.push(['contrats', 'Contrats et paiements']);
   r.push(['photos', 'Photos du site']);
   if(admin()) r.push(['comptes', 'Comptes']);
@@ -177,6 +197,8 @@ function badges(){
   if(staff()){
     const n = (S.d.applications || []).filter(a => a.status === 'nouveau').length + (S.d.inquiries || []).filter(a => a.status === 'nouveau').length;
     if(n) b.demandes = n;
+    const late = dispoAlerts().reduce((t, x) => t + (x.overdue ? x.missing.length : 0), 0);
+    if(late) b.presences = late;
   }
   if(!staff()){
     const c = S.d.contract;
@@ -286,7 +308,14 @@ function evTag(e){
 }
 function availPicker(e){
   const a = myAvail(e.id);
-  return `<div class="avail-q">Ta disponibilité</div>
+  const dl = dispoDeadline(e), left = dl - Date.now();
+  let due = '';
+  if(!a && !isPast(e)){
+    due = left > 0
+      ? `<div class="dispo-due ${left < 24 * 3600e3 ? 'soon' : ''}">⏱ Réponds avant ${esc(fmtDeadline(e))} <b>(dans ${esc(fmtLeft(left))})</b></div>`
+      : (hasDeadline(e) ? `<div class="dispo-due over">⚠ Délai de 48 h dépassé : donne ta dispo maintenant, le staff attend ta réponse.</div>` : `<div class="dispo-due soon">⏱ Donne ta dispo dès que possible.</div>`);
+  }
+  return `${due}<div class="avail-q">Ta disponibilité</div>
     <div class="avail" role="group" aria-label="Ta disponibilité">
       ${['oui', 'peut-être', 'non'].map(s => `<button class="${s}${a && a.status === s ? ' on' : ''}" data-act="avail" data-ev="${e.id}" data-s="${s}" aria-pressed="${a && a.status === s ? 'true' : 'false'}">${s === 'oui' ? 'Présent' : s === 'non' ? 'Absent' : 'Incertain'}</button>`).join('')}
     </div>`;
@@ -349,6 +378,10 @@ const PLAYER_VIEWS = {
     if(dm && !myMonthly(dm)) alerts.push(`<a class="card hl clickable" href="#dispos" style="display:block;text-decoration:none;color:inherit;"><span class="tag gold">À faire</span><div class="ev-title">Indique tes dispos ${esc(deDe(dm))}</div><div class="ev-meta">Jours et plages horaires où tu peux venir. Ça aide le staff à fixer les entraînements →</div></a>`);
     if(c && c.status === 'à signer') alerts.push(`<a class="card hl clickable" href="#contrat" style="display:block;text-decoration:none;color:inherit;"><span class="tag gold">Action requise</span><div class="ev-title">Ton contrat ${esc(c.season || '')} est prêt à signer</div><div class="ev-meta">Lis-le et signe-le en ligne →</div></a>`);
     if(c && bal.due > 0) alerts.push(`<a class="card clickable" href="#contrat" style="display:block;text-decoration:none;color:inherit;"><span class="tag red">Cotisation</span><div class="ev-title">Reste à payer : ${esc(money(bal.due))}</div><div class="ev-meta">${c.dueDate ? 'Échéance : ' + esc(fmtDateOnly(c.dueDate)) : 'Voir le détail de ta cotisation →'}</div></a>`);
+    upcomingFor().filter(e => !myAvail(e.id) && dispoDeadline(e) - Date.now() < 24 * 3600e3).reverse().forEach(e => {
+      const over = Date.now() > dispoDeadline(e);
+      alerts.unshift(`<a class="card hl clickable" href="#calendrier" style="display:block;text-decoration:none;color:inherit;"><span class="tag ${over ? 'red' : 'gold'}">${over ? 'En retard' : 'Urgent'}</span><div class="ev-title">Ta dispo pour ${esc(evName(e))}</div><div class="ev-meta">${esc(fmtDay(e.date))} · ${esc(fmtTime(e.date))} · ${over ? 'le délai de 48 h est passé, réponds maintenant →' : 'réponds avant ' + esc(fmtDeadline(e)) + ' →'}</div></a>`);
+    });
     const news = sortedNews().slice(0, 2);
     return `
       <div class="page-head"><div>
@@ -638,6 +671,70 @@ function staffEventRow(e){
   </div>`;
 }
 
+/* ---------------- présences et fiabilité des dispos (staff) ---------------- */
+let psTeam = '11v11', psType = 'all', psSort = 'rate';
+const pubEvents = () => (S.d.events || []).filter(e => e.published);
+/* Rendez-vous à venir dont le délai approche (moins de 24 h) ou est passé, avec les joueurs sans réponse */
+function dispoAlerts(team){
+  return pubEvents().filter(e => !isPast(e) && (!team || evTeam(e) === team) && dispoDeadline(e) - Date.now() < 24 * 3600e3)
+    .map(e => ({ e, overdue: Date.now() > dispoDeadline(e), missing: teamPlayers(e).filter(p => !availFor(e.id, p.id)) }))
+    .filter(x => x.missing.length);
+}
+function remindText(x){
+  const names = x.missing.slice().sort((a, b) => (a.num ?? 999) - (b.num ?? 999)).map(p => pName(p)).join(', ');
+  return `Rappel YUL FC : ${evName(x.e)}, ${fmtDay(x.e.date)} à ${fmtTime(x.e.date)}.\n`
+    + `Il manque encore la dispo de : ${names}.\n`
+    + `Merci de répondre dans votre espace joueur (${SITE}/espace.html), au plus tard 48 h avant chaque rendez-vous.`;
+}
+function alertCard(x){
+  const t = remindText(x);
+  return `<div class="card ${x.overdue ? 'alert-over' : 'hl'} mt">
+    <div class="ev-top">${teamTag(x.e)}${evTag(x.e)}<span class="tag ${x.overdue ? 'red' : 'gold'}">${x.overdue ? 'Délai dépassé' : 'Délai dans ' + esc(fmtLeft(dispoDeadline(x.e) - Date.now()))}</span></div>
+    <div class="ev-title mt">${esc(evName(x.e))}</div>
+    <div class="ev-meta">${esc(fmtDay(x.e.date))} · ${esc(fmtTime(x.e.date))} · ${x.missing.length} sans réponse</div>
+    <div class="miss-list">${x.missing.slice().sort((a, b) => (a.num ?? 999) - (b.num ?? 999)).map(p => `<span class="miss">${p.num != null ? '#' + esc(p.num) + ' ' : ''}${esc(pName(p))}</span>`).join('')}</div>
+    <div class="row mt"><button class="btn sm primary" data-act="copy" data-text="${esc(t)}">Copier le rappel</button><a class="btn sm" href="https://wa.me/?text=${encodeURIComponent(t)}" target="_blank" rel="noopener">Envoyer sur WhatsApp</a></div>
+  </div>`;
+}
+/* Statistiques d'un joueur sur les rendez-vous de l'équipe choisie */
+function playerPresence(p, team, type){
+  const evs = pubEvents().filter(e => evTeam(e) === team && inTeamP(p, team) && (type === 'all' || e.type === type));
+  const c = { 'présent': 0, 'retard': 0, 'absent': 0, 'excusé': 0 };
+  const marked = evs.filter(e => (e.attendance || {})[p.id]).sort((a, b) => String(b.date).localeCompare(String(a.date)));
+  marked.forEach(e => c[e.attendance[p.id]]++);
+  const came = c['présent'] + c['retard'];
+  let streak = 0; for(const e of marked){ if(['présent', 'retard'].includes(e.attendance[p.id])) streak++; else break; }
+  const dl = { ok: 0, late: 0, missing: 0 };
+  evs.filter(e => hasDeadline(e) && Date.now() > dispoDeadline(e)).forEach(e => dl[dispoState(e, availFor(e.id, p.id))]++);
+  const dn = dl.ok + dl.late + dl.missing;
+  return { c, n: marked.length, came, rate: marked.length ? Math.round(came / marked.length * 100) : null, streak, marked,
+    dl, dn, onTime: dn ? Math.round(dl.ok / dn * 100) : null, evs };
+}
+const rateColor = r => r == null ? 'var(--dim)' : r >= 80 ? 'var(--win)' : r >= 60 ? 'var(--gold)' : 'var(--loss)';
+function openPresence(pid){
+  const p = playerById(pid); if(!p) return;
+  const draw = () => {
+    const st = playerPresence(p, psTeam, 'all');
+    const by = t => playerPresence(p, psTeam, t);
+    const tr = by('entrainement'), ma = by('match');
+    const DL = { ok: ['green', 'Dispo à temps'], late: ['gold', 'Dispo en retard'], missing: ['red', 'Pas de dispo'], open: ['', 'En attente'] };
+    const hist = st.evs.slice().sort((a, b) => String(b.date).localeCompare(String(a.date))).filter(e => isPast(e) || (e.attendance || {})[p.id]);
+    openSheet(`${p.num != null ? '#' + p.num + ' ' : ''}${pName(p)}`, `
+      <div class="kpis">
+        <div class="kpi"><div class="n" style="color:${rateColor(st.rate)}">${st.rate == null ? '–' : st.rate + '%'}</div><div class="l">Présence ${psTeam}</div></div>
+        <div class="kpi"><div class="n">${tr.rate == null ? '–' : tr.rate + '%'}</div><div class="l">Entraînements · ${tr.came}/${tr.n}</div></div>
+        <div class="kpi"><div class="n">${ma.rate == null ? '–' : ma.rate + '%'}</div><div class="l">Matchs · ${ma.came}/${ma.n}</div></div>
+        <div class="kpi"><div class="n" style="color:${rateColor(st.onTime)}">${st.onTime == null ? '–' : st.onTime + '%'}</div><div class="l">Dispos à temps</div></div>
+      </div>
+      <div class="row small mt" style="gap:14px;flex-wrap:wrap"><span class="green">● ${st.c['présent']} présent</span><span class="gold">● ${st.c['retard']} retard</span><span class="red">● ${st.c['absent']} absent</span><span style="color:var(--info)">● ${st.c['excusé']} excusé</span><span class="muted">Série : ${st.streak}</span></div>
+      <p class="muted small mt">Dispos : ${st.dl.ok} à temps, ${st.dl.late} en retard, ${st.dl.missing} jamais données (délai de 48 h).</p>
+      <div class="section-lbl">Historique</div>
+      ${hist.length ? `<div class="list">${hist.map(e => { const m = (e.attendance || {})[p.id]; const ds = hasDeadline(e) ? dispoState(e, availFor(e.id, p.id)) : null; return `<div class="li"><div class="main"><div class="t">${esc(evName(e))}</div><div class="s">${esc(fmtShort(e.date))} · ${e.type === 'match' ? 'Match' : e.type === 'entrainement' ? 'Entraînement' : 'Événement'}</div></div>${ds && ds !== 'open' ? `<span class="tag ${DL[ds][0]}">${DL[ds][1]}</span>` : ''}${m ? `<span class="tag ${ATT_TAG[m]}">${esc(m)}</span>` : '<span class="tag">Non noté</span>'}</div>`; }).join('')}</div>` : '<div class="empty">Aucun rendez-vous passé pour l\'instant.</div>'}
+    `);
+  };
+  draw();
+}
+
 const STAFF_VIEWS = {
   tableau(){
     const evs = S.d.events || [];
@@ -662,6 +759,7 @@ const STAFF_VIEWS = {
         <div class="kpi"><div class="n">${noAccess}</div><div class="l">Sans accès${waiting ? ` · ${waiting} en attente` : ''}</div></div>
         ${fin || `<div class="kpi"><div class="n">${up.length}</div><div class="l">Rendez-vous à venir</div></div><div class="kpi"><div class="n">${(S.d.news || []).length}</div><div class="l">Annonces</div></div>`}
       </div>
+      ${(() => { const al = dispoAlerts(); return al.length ? `<div class="section-lbl">Dispos en retard ou bientôt dues</div>${al.map(alertCard).join('')}` : ''; })()}
       <div class="section-lbl">Prochain rendez-vous</div>
       ${next ? `<div class="card hl clickable" data-act="event-open" data-id="${next.id}">
           <div class="ev-top">${evTag(next)}${next.published ? '' : '<span class="tag">Brouillon, invisible des joueurs</span>'}</div>
@@ -745,6 +843,53 @@ const STAFF_VIEWS = {
       </div>
       ${docs.some(x => x.note) ? `<div class="section-lbl">Commentaires</div><div class="list">${docs.filter(x => x.note).map(x => `<div class="li"><div class="main"><div class="t">${esc(pName(ap.find(p => p.id === x.playerId)))}</div><div class="s">${esc(x.note)}</div></div></div>`).join('')}</div>` : ''}`
       : `<div class="empty mt2"><b>Pas encore de réponses pour ${esc(monthName(m))}</b>Les joueurs remplissent leurs dispos depuis leur espace, onglet « Dispos ».</div>`}`;
+  },
+  presences(){
+    const has7 = activePlayers().some(p => p.t7);
+    if(!has7) psTeam = '11v11';
+    const ap = activePlayers().filter(p => inTeamP(p, psTeam));
+    const rows = ap.map(p => ({ p, st: playerPresence(p, psTeam, psType) }));
+    const sorters = {
+      rate: (a, b) => (b.st.rate ?? -1) - (a.st.rate ?? -1) || (b.st.came - a.st.came),
+      num: (a, b) => (a.p.num ?? 999) - (b.p.num ?? 999),
+      dispo: (a, b) => (b.st.onTime ?? -1) - (a.st.onTime ?? -1),
+    };
+    rows.sort(sorters[psSort] || sorters.rate);
+    const rated = rows.filter(r => r.st.rate != null), dRated = rows.filter(r => r.st.onTime != null);
+    const avg = rated.length ? Math.round(rated.reduce((t, r) => t + r.st.rate, 0) / rated.length) : null;
+    const avgOn = dRated.length ? Math.round(dRated.reduce((t, r) => t + r.st.onTime, 0) / dRated.length) : null;
+    const nEv = pubEvents().filter(e => evTeam(e) === psTeam && (psType === 'all' || e.type === psType) && Object.keys(e.attendance || {}).length).length;
+    const low = rated.filter(r => r.st.rate < 60).length;
+    const al = dispoAlerts(psTeam);
+    return `<div class="page-head"><div><h1 class="page-title">Présences</h1><p class="page-sub">Assiduité de chaque joueur et respect du délai des dispos (au plus tard 48 h avant chaque rendez-vous).</p></div></div>
+      ${has7 ? `<div class="team-switch" role="tablist">${['11v11', '7v7'].map(t => `<button role="tab" class="${psTeam === t ? 'on' : ''}" data-act="ps-team" data-t="${t}">${t}</button>`).join('')}</div>` : ''}
+      ${al.length ? `<div class="section-lbl">Alertes dispos</div>${al.map(alertCard).join('')}` : `<div class="md-status ok">Aucune dispo en retard pour les rendez-vous à venir.</div>`}
+      <div class="section-lbl">Statistiques</div>
+      <div class="subtabs" role="tablist">${[['all', 'Tout'], ['entrainement', 'Entraînements'], ['match', 'Matchs']].map(([k, l]) => `<button role="tab" class="${psType === k ? 'on' : ''}" data-act="ps-type" data-t="${k}">${l}</button>`).join('')}</div>
+      <div class="kpis">
+        <div class="kpi"><div class="n" style="color:${rateColor(avg)}">${avg == null ? '–' : avg + '%'}</div><div class="l">Présence moyenne</div></div>
+        <div class="kpi"><div class="n">${nEv}</div><div class="l">Rendez-vous notés</div></div>
+        <div class="kpi"><div class="n" style="color:${rateColor(avgOn)}">${avgOn == null ? '–' : avgOn + '%'}</div><div class="l">Dispos données à temps</div></div>
+        <div class="kpi"><div class="n ${low ? 'red' : ''}">${low}</div><div class="l">Sous 60 % de présence</div></div>
+      </div>
+      <div class="row mt" style="justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+        <span class="muted small">Trier par</span>
+        <div class="subtabs" role="tablist" style="margin:0">${[['rate', 'Présence'], ['dispo', 'Dispos à temps'], ['num', 'Numéro']].map(([k, l]) => `<button role="tab" class="${psSort === k ? 'on' : ''}" data-act="ps-sort" data-s="${k}">${l}</button>`).join('')}</div>
+      </div>
+      ${rows.length ? `<div class="list mt ps-list">${rows.map(({ p, st }) => `
+        <div class="li clickable" data-act="ps-open" data-id="${p.id}">
+          <div class="num">${p.num ?? '–'}</div>
+          <div class="main">
+            <div class="t">${esc(pName(p))}</div>
+            <div class="s">${st.n ? `${st.came}/${st.n} · ${st.c['retard']} retard${st.c['retard'] > 1 ? 's' : ''} · ${st.c['absent']} abs.${st.c['excusé'] ? ' · ' + st.c['excusé'] + ' exc.' : ''}${st.streak > 1 ? ' · série ' + st.streak : ''}` : 'Aucune présence notée'}</div>
+            <div class="bar ps-bar">${st.n ? `<i style="width:${st.c['présent'] / st.n * 100}%;background:var(--win)"></i><i style="width:${st.c['retard'] / st.n * 100}%;background:var(--gold)"></i><i style="width:${st.c['excusé'] / st.n * 100}%;background:var(--info)"></i><i style="width:${st.c['absent'] / st.n * 100}%;background:var(--loss)"></i>` : ''}</div>
+          </div>
+          <div class="ps-side">
+            <b style="color:${rateColor(st.rate)}">${st.rate == null ? '–' : st.rate + '%'}</b>
+            ${st.dn ? `<span class="tag ${st.onTime >= 80 ? 'green' : st.onTime >= 60 ? 'gold' : 'red'}" title="Dispos données à temps">⏱ ${st.onTime}%</span>` : ''}
+          </div>
+        </div>`).join('')}</div>` : '<div class="empty">Aucun joueur dans cette équipe.</div>'}
+      <p class="muted small mt">Présence = présent ou en retard, sur les rendez-vous où le staff a noté les présences. ⏱ = part des dispos données au moins 48 h avant le rendez-vous.</p>`;
   },
   demandes(){
     const apps = S.d.applications || [], inqs = S.d.inquiries || [];
@@ -1305,6 +1450,10 @@ const ACT = {
   'team-sel': b => { teamSel = b.dataset.t === '7v7' ? '7v7' : '11v11'; presFilter = 'all'; const y = window.scrollY; renderView(); window.scrollTo(0, y); },
   'cal-team': b => { calTeam = b.dataset.t; renderView(); },
   'sd-team': b => { sdTeam = b.dataset.t; renderView(); },
+  'ps-team': b => { psTeam = b.dataset.t === '7v7' ? '7v7' : '11v11'; renderView(); },
+  'ps-type': b => { psType = b.dataset.t; const y = window.scrollY; renderView(); window.scrollTo(0, y); },
+  'ps-sort': b => { psSort = b.dataset.s; const y = window.scrollY; renderView(); window.scrollTo(0, y); },
+  'ps-open': b => openPresence(b.dataset.id),
   'md-month': b => { mdMonth = b.dataset.m; renderView(); },
   'sd-month': b => { sdMonth = b.dataset.m; renderView(); },
   'md-week': b => { const w = mdDraft.week[+b.dataset.w], k = b.dataset.s, i = w.indexOf(k); if(i < 0) w.push(k); else w.splice(i, 1); b.classList.toggle('on', i < 0); },
