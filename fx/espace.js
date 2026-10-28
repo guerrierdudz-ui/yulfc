@@ -202,7 +202,7 @@ function badges(){
   }
   if(!staff()){
     const c = S.d.contract;
-    if(c && c.status === 'à signer') b.contrat = 1;
+    if((c && c.status === 'à signer') || (S.d.hiver && !hvSignedCurrent())) b.contrat = 1;
     const pending = upcomingFor().filter(e => !myAvail(e.id)).length;
     if(pending) b.calendrier = pending;
     if(S.d.player && !myMonthly(defaultMonth())) b.dispos = 1;
@@ -376,6 +376,7 @@ const PLAYER_VIEWS = {
     const alerts = [];
     const dm = defaultMonth();
     if(dm && !myMonthly(dm)) alerts.push(`<a class="card hl clickable" href="#dispos" style="display:block;text-decoration:none;color:inherit;"><span class="tag gold">À faire</span><div class="ev-title">Indique tes dispos ${esc(deDe(dm))}</div><div class="ev-meta">Jours et plages horaires où tu peux venir. Ça aide le staff à fixer les entraînements →</div></a>`);
+    if(S.d.hiver && !hvSignedCurrent()) alerts.unshift(`<a class="card hl clickable" href="#contrat" style="display:block;text-decoration:none;color:inherit;"><span class="tag gold">Action requise</span><div class="ev-title">Ton contrat 7v7 Hiver 2027 est prêt à signer</div><div class="ev-meta">Lis les 10 articles et signe en ligne →</div></a>`);
     if(c && c.status === 'à signer') alerts.push(`<a class="card hl clickable" href="#contrat" style="display:block;text-decoration:none;color:inherit;"><span class="tag gold">Action requise</span><div class="ev-title">Ton contrat ${esc(c.season || '')} est prêt à signer</div><div class="ev-meta">Lis-le et signe-le en ligne →</div></a>`);
     if(c && bal.due > 0) alerts.push(`<a class="card clickable" href="#contrat" style="display:block;text-decoration:none;color:inherit;"><span class="tag red">Cotisation</span><div class="ev-title">Reste à payer : ${esc(money(bal.due))}</div><div class="ev-meta">${c.dueDate ? 'Échéance : ' + esc(fmtDateOnly(c.dueDate)) : 'Voir le détail de ta cotisation →'}</div></a>`);
     upcomingFor().filter(e => !myAvail(e.id) && dispoDeadline(e) - Date.now() < 24 * 3600e3).reverse().forEach(e => {
@@ -633,7 +634,213 @@ function mdCount(){
   const nd = days.filter(d => (mdDraft.days[d] || []).length).length, ns = days.reduce((t, d) => t + (mdDraft.days[d] || []).length, 0);
   el.textContent = `${nd} jour${nd > 1 ? 's' : ''} · ${ns} plage${ns > 1 ? 's' : ''}`;
 }
-const PLAYER_AFTER = {};
+
+/* ==========================================================================
+   CONTRAT 7v7 HIVER 2027 (joueurs sélectionnés + staff)
+   ========================================================================== */
+const HV_STATUS = { principal: 'Joueur principal', 'réserviste': 'Joueur réserviste' };
+const HV_CONSENT = 'J’ai lu et compris toutes les conditions de ce contrat et je les accepte.';
+function hvParse(src){
+  const arts = []; let a = null, list = null;
+  for(const raw of String(src).split('\n')){
+    const line = raw.trim();
+    const h = line.match(/^Article\s+(\d+)\s*[–—-]\s*(.+)$/);
+    if(h){ a = { n: +h[1], title: h[2].trim(), blocks: [] }; arts.push(a); list = null; continue; }
+    if(!a){ if(line){ a = { n: 0, title: '', blocks: [] }; arts.push(a); } else continue; }
+    if(!line){ list = null; continue; }
+    const ul = line.match(/^[*•-]\s+(.+)$/), ol = line.match(/^(\d+)\.\s+(.+)$/);
+    if(ul || ol){
+      const t = ul ? 'ul' : 'ol';
+      if(!list || list.t !== t){ list = { t, items: [] }; a.blocks.push(list); }
+      list.items.push(ul ? ul[1] : ol[2]);
+    } else { list = null; a.blocks.push({ t: 'p', s: line }); }
+  }
+  return arts;
+}
+const hvMoney = n => (Number(n) || 0).toLocaleString('fr-CA', { style: 'currency', currency: 'CAD', minimumFractionDigits: Number(n) % 1 ? 2 : 0 });
+const hvDateLong = s => s ? D(s.length === 10 ? s + 'T12:00:00' : s).toLocaleDateString('fr-CA', { weekday: s.length === 10 ? undefined : 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: TZ }) : '';
+const hvStamp = iso => `${hvDateLong(iso)} à ${fmtTime(iso)}`;
+const hvPdf = (pid, v, dl) => `/api/club/hiver-pdf?${pid ? 'pid=' + encodeURIComponent(pid) + '&' : ''}v=${v}${dl ? '&dl=1' : ''}`;
+function hvSignedCurrent(){ const h = S.d.hiver; return !!(h && (h.signatures || []).some(s => s.v === h.version.v)); }
+
+function hvHead(v, extra){
+  return `<div class="hv-head">
+    <img class="hv-crest" src="fx/yul-crest-hd.png" alt="YUL FC">
+    <div class="hv-head-t">
+      <div class="hv-kick">CONTRAT JOUEUR · VERSION ${esc(v.v)}</div>
+      <h1 class="hv-title">${esc(v.title)}</h1>
+      <div class="hv-sub">${esc(v.season || '')}${extra ? ' · ' + extra : ''}</div>
+    </div>
+  </div>`;
+}
+function hvArticles(v){
+  return `<div class="hv-arts">${hvParse(v.text).map(a => `
+    <section class="hv-art">
+      ${a.n ? `<div class="hv-art-h"><span class="hv-n">${String(a.n).padStart(2, '0')}</span><div><small>ARTICLE ${a.n}</small><h2>${esc(a.title)}</h2></div></div>` : ''}
+      ${a.blocks.map(b => b.t === 'p' ? `<p>${esc(b.s)}</p>` : `<${b.t}>${b.items.map(i => `<li>${esc(i)}</li>`).join('')}</${b.t}>`).join('')}
+    </section>`).join('')}</div>`;
+}
+function hvSchedule(v){
+  return `<div class="hv-sched">
+    <div class="hv-sched-h"><small>MODALITÉS FINANCIÈRES</small><h2>Échéancier de paiement</h2></div>
+    ${v.installments.map((x, i) => `<div class="hv-inst"><span class="hv-inst-n">${i + 1}</span><b>${esc(hvMoney(x.amount))}</b><span>avant le ${esc(hvDateLong(x.due))}</span></div>`).join('')}
+    <div class="hv-total">Cotisation totale : <b>${esc(hvMoney(v.fee))} CAD</b> par joueur</div>
+  </div>`;
+}
+
+/* ---------- vue joueur ---------- */
+function hiverPlayerView(){
+  const h = S.d.hiver, v = h.version, me = S.d.player || {};
+  const mine = (h.signatures || []).find(s => s.v === v.v);
+  const older = (h.signatures || []).filter(s => s.v !== v.v);
+  const top = mine
+    ? `<div class="hv-done"><div class="hv-done-ic">✓</div><div><b>Contrat signé</b><span>Le ${esc(hvStamp(mine.signedAt))} · version ${mine.v} · ${esc(mine.statusLabel)}</span></div>
+        <div class="hv-done-a"><a class="btn primary" href="${hvPdf(null, mine.v, 1)}">Télécharger mon contrat (PDF)</a><a class="btn" href="${hvPdf(null, mine.v)}" target="_blank" rel="noopener">Ouvrir</a></div></div>`
+    : older.length
+      ? `<div class="hv-note gold"><b>Le contrat a été mis à jour (version ${v.v}).</b> Relis-le et signe la nouvelle version. Ta signature précédente (version ${older[older.length - 1].v}) reste conservée.</div>`
+      : `<div class="hv-note">Lis attentivement les 10 articles, puis remplis le formulaire et signe en bas de la page.</div>`;
+  const form = mine ? '' : `
+    <form class="hv-form" data-form="hiversign" autocomplete="on">
+      <div class="hv-sched-h"><small>SIGNATURE</small><h2>Tes informations</h2></div>
+      <div class="hv-grid">
+        <div class="field"><label for="hvName">Nom complet</label><input id="hvName" name="fullName" required minlength="3" autocomplete="name" value="${esc(pName(me))}"></div>
+        <div class="field"><label for="hvBirth">Date de naissance</label><input id="hvBirth" name="birthDate" type="date" required max="${new Date().getFullYear() - 12}-12-31" min="${new Date().getFullYear() - 90}-01-01" autocomplete="bday"></div>
+        <div class="field"><label for="hvMail">Courriel</label><input id="hvMail" name="email" type="email" required autocomplete="email" value="${esc(S.user.email || me.email || '')}"></div>
+        <div class="field"><label>Statut du joueur</label><div class="hv-lock"><b>${esc(HV_STATUS[h.status] || h.status)}</b><span>Attribué par le club</span></div></div>
+      </div>
+      <label class="check hv-accept"><input type="checkbox" name="accepted" id="hvAccept" required> ${esc(HV_CONSENT)}</label>
+      <div class="hv-pad-l"><span>Signature</span><button type="button" class="btn sm ghost" id="hvClear">Effacer</button></div>
+      <div class="hv-pad"><canvas id="hvPad" aria-label="Zone de signature"></canvas><span class="hv-pad-ph" id="hvPh">Signe ici avec ton doigt ou ta souris</span></div>
+      <div class="hv-when">Date et heure de signature : <b id="hvNow">${esc(hvStamp(new Date().toISOString()))}</b> <span class="muted">(enregistrées par le serveur au moment où tu signes)</span></div>
+      <button class="btn primary block hv-sign" id="hvSign" disabled>Signer mon contrat</button>
+      <p class="muted small mt">Une copie PDF de ton contrat signé est créée automatiquement. Tu peux la télécharger tout de suite et la retrouver ici à tout moment. Le club en garde une copie.</p>
+    </form>`;
+  return `<div class="hv-page">
+    ${hvHead(v, esc(HV_STATUS[h.status] || ''))}
+    ${top}
+    ${hvArticles(v)}
+    ${hvSchedule(v)}
+    ${form}
+    ${older.length ? `<div class="section-lbl">Versions déjà signées</div><div class="list">${older.map(s => `<div class="li"><div class="main"><div class="t">Version ${s.v}</div><div class="s">Signée le ${esc(hvStamp(s.signedAt))}</div></div><a class="btn sm" href="${hvPdf(null, s.v, 1)}">PDF</a></div>`).join('')}</div>` : ''}
+  </div>`;
+}
+
+/* ---------- zone de signature (doigt ou souris) ---------- */
+let hvInk = 0;
+function hvPadInit(root){
+  const cv = $('#hvPad', root); if(!cv) return;
+  const ctx = cv.getContext('2d');
+  const fit = () => {
+    const r = cv.getBoundingClientRect(), dpr = Math.max(1, window.devicePixelRatio || 1);
+    const old = hvInk ? cv.toDataURL() : null;
+    cv.width = Math.round(r.width * dpr); cv.height = Math.round(r.height * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#0C1730'; ctx.lineWidth = 2.6;
+    if(old){ const im = new Image(); im.onload = () => ctx.drawImage(im, 0, 0, r.width, r.height); im.src = old; }
+  };
+  hvInk = 0; fit();
+  let last = null;
+  const pos = e => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+  cv.addEventListener('pointerdown', e => { e.preventDefault(); cv.setPointerCapture(e.pointerId); last = pos(e); ctx.beginPath(); ctx.arc(last[0], last[1], 1.2, 0, Math.PI * 2); ctx.fillStyle = '#0C1730'; ctx.fill(); });
+  cv.addEventListener('pointermove', e => {
+    if(!last) return; e.preventDefault();
+    const p = pos(e);
+    ctx.beginPath(); ctx.moveTo(last[0], last[1]); ctx.lineTo(p[0], p[1]); ctx.stroke();
+    hvInk += Math.hypot(p[0] - last[0], p[1] - last[1]); last = p;
+    $('#hvPh', root).hidden = true; hvCheck(root);
+  });
+  const up = () => { last = null; hvCheck(root); };
+  cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up); cv.addEventListener('pointerleave', () => { last = null; });
+  $('#hvClear', root).addEventListener('click', () => { ctx.clearRect(0, 0, cv.width, cv.height); hvInk = 0; $('#hvPh', root).hidden = false; hvCheck(root); });
+  $$('input', root.querySelector('.hv-form')).forEach(i => i.addEventListener('input', () => hvCheck(root)));
+  $('#hvAccept', root).addEventListener('change', () => hvCheck(root));
+  window.addEventListener('resize', () => { if(document.body.contains(cv)) fit(); }, { passive: true });
+  const tick = setInterval(() => { const n = $('#hvNow'); if(!n){ clearInterval(tick); return; } n.textContent = hvStamp(new Date().toISOString()); }, 20000);
+  hvCheck(root);
+}
+function hvCheck(root){
+  const f = root.querySelector('.hv-form'); if(!f) return;
+  const ok = f.checkValidity() && $('#hvAccept', f).checked && hvInk > 60;
+  $('#hvSign', f).disabled = !ok;
+}
+function hvSignatureJpeg(){
+  const cv = $('#hvPad'), r = cv.getBoundingClientRect();
+  const out = document.createElement('canvas'); out.width = 900; out.height = Math.round(900 * r.height / r.width);
+  const c = out.getContext('2d'); c.fillStyle = '#FFFFFF'; c.fillRect(0, 0, out.width, out.height);
+  c.drawImage(cv, 0, 0, out.width, out.height);
+  return out.toDataURL('image/jpeg', .85);
+}
+
+/* ---------- vue staff (dans Contrats) ---------- */
+let hvFilter = 'all', hvAll = false;
+function hiverStaffBlock(){
+  const h = S.d.hiver; if(!h) return '';
+  const v = h.version, ro = h.roster || {}, sigs = h.signatures || [];
+  const sigOf = (pid, n) => sigs.find(s => s.playerId === pid && s.v === n);
+  const lastSig = pid => sigs.filter(s => s.playerId === pid).sort((a, b) => b.v - a.v)[0];
+  const sel = Object.keys(ro).filter(pid => playerById(pid));
+  const signed = sel.filter(pid => sigOf(pid, v.v)), todo = sel.filter(pid => !sigOf(pid, v.v));
+  let pool = players().filter(p => p.status !== 'inactif' && (hvAll || p.t7 || ro[p.id]));
+  pool.sort((a, b) => (!!ro[b.id] - !!ro[a.id]) || (a.num ?? 999) - (b.num ?? 999));
+  if(hvFilter === 'signed') pool = pool.filter(p => ro[p.id] && sigOf(p.id, v.v));
+  if(hvFilter === 'todo') pool = pool.filter(p => ro[p.id] && !sigOf(p.id, v.v));
+  const nP = sel.filter(pid => ro[pid].status === 'principal').length, nR = sel.length - nP;
+  const row = p => {
+    const r = ro[p.id], s = r && sigOf(p.id, v.v), ls = r && !s && lastSig(p.id);
+    const state = !r ? '<span class="muted small">Non sélectionné</span>'
+      : s ? `<span class="tag green">Signé</span><div class="small muted mt-xs">${esc(hvStamp(s.signedAt))}</div>`
+      : ls ? `<span class="tag gold">À resigner</span><div class="small muted mt-xs">v${ls.v} signée, v${v.v} en attente</div>`
+      : '<span class="tag red">Pas encore signé</span>';
+    const pdf = s || ls;
+    return `<tr>
+      <td class="hv-sel"><label class="hv-tg"><input type="checkbox" data-hv-sel="${p.id}" ${r ? 'checked' : ''} aria-label="Sélectionner ${esc(pName(p))}"><span></span></label></td>
+      <td><b>${esc(pName(p))}</b>${p.num != null ? ` <span class="muted">#${p.num}</span>` : ''}${p.t7 ? ' <span class="tag t7">7v7</span>' : ''}</td>
+      <td>${r ? `<select class="hv-st" data-hv-st="${p.id}">${Object.entries(HV_STATUS).map(([k, l]) => `<option value="${k}" ${r.status === k ? 'selected' : ''}>${l.replace('Joueur ', '')}</option>`).join('')}</select>` : '<span class="muted">–</span>'}</td>
+      <td>${state}</td>
+      <td class="r">${pdf ? `<a class="btn sm" href="${hvPdf(p.id, pdf.v, 1)}">PDF v${pdf.v}</a> <a class="btn sm ghost" href="${hvPdf(p.id, pdf.v)}" target="_blank" rel="noopener" aria-label="Ouvrir">↗</a>` : ''}</td>
+    </tr>`;
+  };
+  return `<section class="hv-staff">
+    ${hvHead(v, 'publiée le ' + esc(hvDateLong(v.publishedAt)))}
+    <div class="row mt" style="flex-wrap:wrap;gap:8px"><button class="btn sm" data-act="hv-view">Voir le contrat</button><button class="btn sm" data-act="hv-publish">Publier une nouvelle version</button>${h.versions.length > 1 ? `<span class="muted small" style="align-self:center">${h.versions.length} versions publiées</span>` : ''}</div>
+    <div class="kpis mt">
+      <div class="kpi"><div class="n gold">${sel.length}</div><div class="l">Sélectionnés</div></div>
+      <div class="kpi"><div class="n green">${signed.length}</div><div class="l">Ont signé (v${v.v})</div></div>
+      <div class="kpi"><div class="n ${todo.length ? 'red' : ''}">${todo.length}</div><div class="l">Pas encore signé</div></div>
+      <div class="kpi"><div class="n">${nP} <small class="muted" style="font-size:.5em">/ ${nR}</small></div><div class="l">Principaux / réservistes</div></div>
+    </div>
+    ${todo.length ? `<p class="small mt"><span class="red">Pas encore signé :</span> ${todo.map(pid => esc(pName(playerById(pid)))).join(', ')}.</p>` : sel.length ? '<p class="small mt green">Tous les joueurs sélectionnés ont signé.</p>' : ''}
+    <div class="row mt" style="justify-content:space-between;flex-wrap:wrap;gap:8px">
+      <div class="subtabs" role="tablist" style="margin:0">${[['all', 'Tous'], ['signed', 'Signés'], ['todo', 'Pas encore signé']].map(([k, l]) => `<button role="tab" class="${hvFilter === k ? 'on' : ''}" data-act="hv-filter" data-f="${k}">${l}</button>`).join('')}</div>
+      <label class="check" style="margin:0"><input type="checkbox" data-act="hv-all" ${hvAll ? 'checked' : ''}> Afficher tout l'effectif</label>
+    </div>
+    ${pool.length ? `<div class="table-wrap mt"><table class="hv-table"><thead><tr><th>Voit le contrat</th><th>Joueur</th><th>Statut</th><th>Signature</th><th class="r">Copie</th></tr></thead><tbody>${pool.map(row).join('')}</tbody></table></div>`
+      : `<div class="empty mt">${hvAll || hvFilter !== 'all' ? 'Aucun joueur.' : 'Aucun joueur 7v7 dans l’effectif. Coche « Afficher tout l’effectif » ou ajoute la case 7v7 dans la fiche des joueurs.'}</div>`}
+    <p class="muted small mt">Seuls les joueurs cochés voient ce contrat dans leur espace. Le statut (principal ou réserviste) est fixé ici et ne peut pas être modifié par le joueur. Une copie PDF est conservée pour chaque signature.</p>
+  </section>`;
+}
+function hvOpenView(){
+  const v = S.d.hiver.version;
+  openSheet(v.title, `<div class="hv-page">${hvHead(v, 'publiée le ' + esc(hvDateLong(v.publishedAt)))}${hvArticles(v)}${hvSchedule(v)}<p class="muted small mt">Empreinte SHA-256 de cette version : <code style="word-break:break-all">${esc(v.hash)}</code></p></div>`);
+}
+function hvOpenPublish(){
+  const v = S.d.hiver.version;
+  openSheet('Nouvelle version du contrat', `
+    <form data-form="hiverpublish">
+      <div class="hv-note gold">Publier une nouvelle version oblige <b>tous les joueurs sélectionnés à relire et signer de nouveau</b>. Les contrats déjà signés restent conservés tels quels.</div>
+      <div class="field"><label>Titre</label><input name="title" required value="${esc(v.title)}"></div>
+      <div class="field"><label>Saison</label><input name="season" value="${esc(v.season || '')}"></div>
+      <div class="field"><label>Texte du contrat</label><textarea name="text" rows="22" required style="font-family:var(--ff-mono);font-size:.8rem;line-height:1.5">${esc(v.text)}</textarea>
+        <p class="muted small">Format : une ligne « Article 1 – Titre » par article, « * » au début d'une ligne pour une puce, « 1. » pour une liste numérotée.</p></div>
+      <div class="section-lbl">Échéances de paiement</div>
+      ${[0, 1, 2].map(i => { const x = v.installments[i] || {}; return `<div class="row" style="gap:8px"><div class="field" style="flex:1"><label>Montant ${i + 1} ($)</label><input name="amount${i}" type="number" min="0" step="0.01" value="${x.amount ?? ''}"></div><div class="field" style="flex:1"><label>Avant le</label><input name="due${i}" type="date" value="${esc(x.due || '')}"></div></div>`; }).join('')}
+      <button class="btn primary block">Publier la version ${v.v + 1}</button>
+    </form>`);
+}
+
+const PLAYER_AFTER = {
+  contrat(v){ if(S.d.hiver) hvPadInit(v); },
+};
 
 /* ==========================================================================
    VUES STAFF
@@ -1018,6 +1225,19 @@ const STAFF_VIEWS = {
   },
 };
 
+/* Contrat 7v7 Hiver 2027 : branché sur les vues Contrat (joueur) et Contrats (staff) */
+{
+  const pv = PLAYER_VIEWS.contrat;
+  PLAYER_VIEWS.contrat = () => S.d.hiver
+    ? hiverPlayerView() + (S.d.contract ? `<details class="hv-old"><summary>Voir mon ancien contrat et ma cotisation</summary>${pv()}</details>` : '')
+    : pv();
+  const sv = STAFF_VIEWS.contrats;
+  STAFF_VIEWS.contrats = () => {
+    const html = sv(), i = html.indexOf('</div></div>');
+    if(!S.d.hiver || i < 0) return html;
+    return html.slice(0, i + 12) + hiverStaffBlock() + '<div class="section-lbl" style="margin-top:34px">Autres contrats et cotisations</div>' + html.slice(i + 12);
+  };
+}
 const STAFF_AFTER = {
   effectif(v){
     const s = $('#squadSearch', v);
@@ -1454,6 +1674,10 @@ const ACT = {
   'ps-type': b => { psType = b.dataset.t; const y = window.scrollY; renderView(); window.scrollTo(0, y); },
   'ps-sort': b => { psSort = b.dataset.s; const y = window.scrollY; renderView(); window.scrollTo(0, y); },
   'ps-open': b => openPresence(b.dataset.id),
+  'hv-view': () => hvOpenView(),
+  'hv-publish': () => hvOpenPublish(),
+  'hv-filter': b => { hvFilter = b.dataset.f; const y = window.scrollY; renderView(); window.scrollTo(0, y); },
+  'hv-all': b => { hvAll = !hvAll; const y = window.scrollY; renderView(); window.scrollTo(0, y); },
   'md-month': b => { mdMonth = b.dataset.m; renderView(); },
   'sd-month': b => { sdMonth = b.dataset.m; renderView(); },
   'md-week': b => { const w = mdDraft.week[+b.dataset.w], k = b.dataset.s, i = w.indexOf(k); if(i < 0) w.push(k); else w.splice(i, 1); b.classList.toggle('on', i < 0); },
@@ -1664,6 +1888,30 @@ document.addEventListener('click', e => {
    FORMULAIRES (envoi)
    ========================================================================== */
 const FORMS = {
+  async hiversign(f, btn){
+    const v = S.d.hiver.version, x = formData(f);
+    if(!$('#hvAccept', f).checked){ toast('Coche la case d\u2019acceptation.', true); return; }
+    if(hvInk <= 60){ toast('Ajoute ta signature dans la zone prévue.', true); return; }
+    if(!confirm('Confirmer la signature de ton contrat ? Il ne pourra plus être modifié.')) return;
+    await busy(btn, async () => {
+      const rec = await api('/api/club/hiver/sign', {
+        v: v.v, hash: v.hash, accepted: true, fullName: x.fullName, birthDate: x.birthDate, email: x.email,
+        signature: hvSignatureJpeg(), clientTime: new Date().toString().slice(0, 40), clientTz: Intl.DateTimeFormat().resolvedOptions().timeZone || '',
+      });
+      S.d.hiver.signatures = (S.d.hiver.signatures || []).concat(rec);
+      renderShell(); window.scrollTo(0, 0);
+      toast('Contrat signé. Ta copie PDF est prête.');
+    });
+  },
+  async hiverpublish(f, btn){
+    const x = formData(f);
+    const installments = [0, 1, 2].map(i => ({ amount: x['amount' + i], due: x['due' + i] })).filter(i => Number(i.amount) > 0 && i.due);
+    if(!confirm('Publier cette nouvelle version ? Tous les joueurs sélectionnés devront la signer de nouveau.')) return;
+    await busy(btn, async () => {
+      await api('/api/club/hiver/publish', { title: x.title, season: x.season, text: x.text, installments });
+      closeSheet(); await refresh(); toast('Nouvelle version publiée.');
+    });
+  },
   async login(f){
     const v = formData(f);
     try{
@@ -1804,6 +2052,19 @@ document.addEventListener('keydown', e => {
 });
 document.addEventListener('input', e => {
   if(e.target.name === 'birthDate' && $('#ageHint')){ const a = ageOf(e.target.value); $('#ageHint').textContent = a != null ? a + ' ans' : ''; }
+});
+/* Contrat 7v7 : sélection des joueurs et statut */
+document.addEventListener('change', e => {
+  const t = e.target;
+  const pid = t.dataset && (t.dataset.hvSel || t.dataset.hvSt);
+  if(!pid || !S.d || !S.d.hiver) return;
+  const body = t.dataset.hvSel ? { playerId: pid, selected: t.checked, status: (S.d.hiver.roster[pid] || {}).status || 'principal' } : { playerId: pid, selected: true, status: t.value };
+  t.disabled = true;
+  api('/api/club/hiver/roster', body).then(r => {
+    S.d.hiver.roster = r.roster;
+    const y = window.scrollY; renderView(); window.scrollTo(0, y);
+    toast(t.dataset.hvSel ? (t.checked ? 'Le joueur voit maintenant le contrat.' : 'Le joueur ne voit plus le contrat.') : 'Statut mis à jour.');
+  }).catch(er => { t.disabled = false; toast(er.message, true); });
 });
 document.addEventListener('submit', e => {
   const f = e.target.closest('form[data-form]');

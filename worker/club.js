@@ -9,6 +9,8 @@
    Premier compte admin : /espace.html → « Première configuration » avec la clé STAFF_UPLOAD_KEY.
    ========================================================================== */
 
+import { hiverBootstrap, hiverRoute, hiverPdf } from './hiver.js';
+
 const SESSION_DAYS = 30;
 const COOKIE = 'yul_s';
 const PBKDF2_ITER = 100000;
@@ -318,6 +320,7 @@ async function bootstrap(env, u){
     if(finance){
       out.contracts = await D.all('contracts/');
       out.payments = await D.all('payments/');
+      out.hiver = await hiverBootstrap(D, u, null);
     }
     return json(out);
   }
@@ -348,6 +351,7 @@ async function bootstrap(env, u){
     const c = await D.get('contracts/' + me.id + '.json');
     out.contract = c && c.status !== 'brouillon' ? c : null;
     out.payments = (await D.all('payments/' + me.id + '/')).sort((a, b) => String(a.date).localeCompare(String(b.date)));
+    out.hiver = await hiverBootstrap(D, u, me.id);
   }
   return json(out);
 }
@@ -758,6 +762,13 @@ export async function handleClub(request, env){
 
   if(request.method !== 'GET' && !sameOrigin(request)) return err('Origine refusée.', 403);
 
+  if(p === '/api/club/hiver-pdf' && request.method === 'GET'){
+    const u = await currentUser(request, env);
+    if(!u) return err('Connexion requise.', 401);
+    if(u.mustChange) return err('Change d\'abord ton code temporaire.', 403);
+    return hiverPdf(request, env, u);
+  }
+
   if(p === '/api/club/contract-file'){
     const u = await currentUser(request, env);
     if(!u) return err('Connexion requise.', 401);
@@ -787,6 +798,7 @@ export async function handleClub(request, env){
   if(!m) return err('Introuvable.', 404);
   if(m[1] === 'bootstrap' ? request.method !== 'GET' : request.method !== 'POST') return err('Méthode non permise.', 405);
   try{
+    if(m[1].startsWith('hiver/')){ const r = await hiverRoute(m[1], request, env, body, u, db(env)); if(r) return r; return err('Introuvable.', 404); }
     return await route(m[1], request, env, body, u);
   }catch(e){
     if(e.status === 403) return err('Accès refusé pour ton rôle.', 403);
