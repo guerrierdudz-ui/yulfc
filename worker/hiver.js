@@ -83,7 +83,7 @@ export async function hiverBootstrap(D, u, playerId){
     const sigs = (await D.all('hiver/sig/')).map(publicSig);
     const meta = await D.get('hiver/meta.json');
     const versions = [];
-    for(let n = 1; n <= (meta ? meta.current : 1); n++){ const x = n === v.v ? v : await D.get('hiver/v/' + n + '.json'); if(x) versions.push({ v: x.v, title: x.title, publishedAt: x.publishedAt, hash: x.hash }); }
+    for(let n = 1; n <= (meta ? meta.current : 1); n++){ const x = n === v.v ? v : await D.get('hiver/v/' + n + '.json'); if(x) versions.push({ v: x.v, title: x.title, publishedAt: x.publishedAt, hash: x.hash, fee: x.fee, installments: x.installments }); }
     return { version: v, versions, roster: r.players, signatures: sigs };
   }
   if(!playerId || !r.players[playerId]) return null;

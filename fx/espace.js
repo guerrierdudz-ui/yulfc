@@ -819,6 +819,78 @@ function hiverStaffBlock(){
     <p class="muted small mt">Seuls les joueurs cochés voient ce contrat dans leur espace. Le statut (principal ou réserviste) est fixé ici et ne peut pas être modifié par le joueur. Une copie PDF est conservée pour chaque signature.</p>
   </section>`;
 }
+/* ---------- cotisations : seulement les joueurs qui ont signé le contrat ---------- */
+function hvPayState(pid){
+  const h = S.d.hiver;
+  const sig = (h.signatures || []).filter(s => s.playerId === pid).sort((a, b) => b.v - a.v)[0];
+  if(!sig) return null;
+  const ver = (h.versions || []).find(x => x.v === sig.v) || h.version;
+  const inst = ver.installments || h.version.installments || [];
+  const fee = Number(ver.fee ?? h.version.fee) || 0;
+  const pays = paymentsFor(pid), paid = pays.reduce((t, x) => t + (Number(x.amount) || 0), 0);
+  const todayIso = today();
+  let cum = 0, late = 0;
+  const steps = inst.map((x, i) => {
+    cum += Number(x.amount) || 0;
+    const st = paid + 0.001 >= cum ? 'paid' : x.due < todayIso ? 'late' : 'open';
+    if(st === 'late') late++;
+    return { ...x, i, st };
+  });
+  return { sig, fee, paid, due: Math.max(0, Math.round((fee - paid) * 100) / 100), steps, late, pays };
+}
+const HV_ST = { paid: ['green', 'Payé'], late: ['red', 'En retard'], open: ['', 'À venir'] };
+function hvCotisations(){
+  const h = S.d.hiver;
+  const rows = players().map(p => ({ p, s: hvPayState(p.id) })).filter(r => r.s)
+    .sort((a, b) => (b.s.late - a.s.late) || (a.p.num ?? 999) - (b.p.num ?? 999));
+  const tFee = rows.reduce((t, r) => t + r.s.fee, 0), tPaid = rows.reduce((t, r) => t + Math.min(r.s.paid, r.s.fee), 0);
+  const nLate = rows.filter(r => r.s.late).length;
+  const inst = h.version.installments || [];
+  return `<div class="section-lbl" style="margin-top:34px">Cotisations · joueurs ayant signé</div>
+    <div class="kpis">
+      <div class="kpi"><div class="n" style="font-size:1.4rem">${esc(money(tFee))}</div><div class="l">Attendu (${rows.length} joueur${rows.length > 1 ? 's' : ''})</div></div>
+      <div class="kpi"><div class="n green" style="font-size:1.4rem">${esc(money(tPaid))}</div><div class="l">Encaissé</div></div>
+      <div class="kpi"><div class="n ${tFee - tPaid > 0 ? 'red' : ''}" style="font-size:1.4rem">${esc(money(Math.max(0, tFee - tPaid)))}</div><div class="l">Reste dû</div></div>
+      <div class="kpi"><div class="n ${nLate ? 'red' : ''}" style="font-size:1.4rem">${nLate}</div><div class="l">En retard de paiement</div></div>
+    </div>
+    ${rows.length ? `<div class="table-wrap mt"><table class="hv-table"><thead><tr><th>Joueur</th><th>Statut</th>${inst.map((x, i) => `<th>${esc(money(x.amount))} · ${esc(fmtDateOnly(x.due))}</th>`).join('')}<th class="r">Payé</th><th class="r">Reste</th></tr></thead><tbody>
+      ${rows.map(({ p, s }) => `<tr class="clickable" data-act="hv-pay" data-id="${p.id}">
+        <td><b>${esc(pName(p))}</b>${p.num != null ? ` <span class="muted">#${p.num}</span>` : ''}</td>
+        <td><span class="small">${esc((s.sig.statusLabel || '').replace('Joueur ', ''))}</span></td>
+        ${s.steps.map(x => `<td><span class="tag ${HV_ST[x.st][0]}">${HV_ST[x.st][1]}</span></td>`).join('')}
+        <td class="r">${esc(money(s.paid))}</td><td class="r ${s.due > 0 ? 'red' : ''}">${esc(money(s.due))}</td></tr>`).join('')}
+    </tbody></table></div>`
+    : '<div class="empty mt">Aucun joueur n’a encore signé le contrat. Les joueurs apparaîtront ici dès leur signature.</div>'}
+    <p class="muted small mt">Seuls les joueurs qui ont signé le contrat apparaissent ici. Touche un joueur pour enregistrer un paiement.</p>`;
+}
+function hvOpenPay(pid){
+  const p = playerById(pid), s = hvPayState(pid); if(!p || !s) return closeSheet();
+  S.sheet = () => hvOpenPay(pid);
+  openSheet('Cotisation · ' + pName(p), `
+    <p class="muted small">Contrat version ${s.sig.v} signé le ${esc(hvStamp(s.sig.signedAt))} · ${esc(s.sig.statusLabel || '')}</p>
+    <div class="kpis" style="grid-template-columns:repeat(3,1fr)">
+      <div class="kpi"><div class="n" style="font-size:1.25rem">${esc(money(s.fee))}</div><div class="l">Cotisation</div></div>
+      <div class="kpi"><div class="n green" style="font-size:1.25rem">${esc(money(s.paid))}</div><div class="l">Payé</div></div>
+      <div class="kpi"><div class="n ${s.due > 0 ? 'red' : ''}" style="font-size:1.25rem">${esc(money(s.due))}</div><div class="l">Reste</div></div>
+    </div>
+    <div class="section-lbl">Échéances</div>
+    <div class="list">${s.steps.map(x => `<div class="li"><div class="main"><div class="t">Versement ${x.i + 1} · ${esc(money(x.amount))}</div><div class="s">avant le ${esc(hvDateLong(x.due))}</div></div><span class="tag ${HV_ST[x.st][0]}">${HV_ST[x.st][1]}</span></div>`).join('')}</div>
+    <div class="section-lbl">Paiements reçus</div>
+    ${s.pays.length ? `<div class="list">${s.pays.map(x => `<div class="li"><div class="main"><div class="t">${esc(money(x.amount))}</div><div class="s">${esc(fmtDateOnly(x.date))} · ${esc(x.method)}${x.note ? ' · ' + esc(x.note) : ''} · noté par ${esc(x.by || '')}</div></div>
+      <button class="btn sm danger" data-act="pay-del" data-p="${pid}" data-id="${x.id}" aria-label="Supprimer ce paiement">✕</button></div>`).join('')}</div>` : '<p class="muted small">Aucun paiement enregistré.</p>'}
+    <form data-form="payment" class="card flat mt">
+      <input type="hidden" name="playerId" value="${pid}">
+      <div class="grid2">
+        <div class="field"><label>Montant ($)</label><input name="amount" type="number" step="0.01" inputmode="decimal" required value="${(s.steps.find(x => x.st !== 'paid') || {}).amount ?? (s.due || '')}"></div>
+        <div class="field"><label>Date</label><input name="date" type="date" value="${today()}"></div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label>Mode</label><select name="method"><option>virement</option><option>comptant</option><option>carte</option><option>autre</option></select></div>
+        <div class="field"><label>Note</label><input name="note" value="${(() => { const n = s.steps.find(x => x.st !== 'paid'); return n ? 'Versement ' + (n.i + 1) : ''; })()}"></div>
+      </div>
+      <button class="btn">Enregistrer le paiement</button>
+    </form>`);
+}
 function hvOpenView(){
   const v = S.d.hiver.version;
   openSheet(v.title, `<div class="hv-page">${hvHead(v, 'publiée le ' + esc(hvDateLong(v.publishedAt)))}${hvArticles(v)}${hvSchedule(v)}<p class="muted small mt">Empreinte SHA-256 de cette version : <code style="word-break:break-all">${esc(v.hash)}</code></p></div>`);
@@ -1233,9 +1305,9 @@ const STAFF_VIEWS = {
     : pv();
   const sv = STAFF_VIEWS.contrats;
   STAFF_VIEWS.contrats = () => {
-    const html = sv(), i = html.indexOf('</div></div>');
-    if(!S.d.hiver || i < 0) return html;
-    return html.slice(0, i + 12) + hiverStaffBlock() + '<div class="section-lbl" style="margin-top:34px">Autres contrats et cotisations</div>' + html.slice(i + 12);
+    if(!S.d.hiver) return sv();
+    return `<div class="page-head"><div><h1 class="page-title">Contrats</h1><p class="page-sub">Contrat 7v7 Hiver 2027, signatures et suivi des cotisations.</p></div></div>`
+      + hiverStaffBlock() + hvCotisations();
   };
 }
 const STAFF_AFTER = {
@@ -1675,6 +1747,7 @@ const ACT = {
   'ps-sort': b => { psSort = b.dataset.s; const y = window.scrollY; renderView(); window.scrollTo(0, y); },
   'ps-open': b => openPresence(b.dataset.id),
   'hv-view': () => hvOpenView(),
+  'hv-pay': b => hvOpenPay(b.dataset.id),
   'hv-publish': () => hvOpenPublish(),
   'hv-filter': b => { hvFilter = b.dataset.f; const y = window.scrollY; renderView(); window.scrollTo(0, y); },
   'hv-all': b => { hvAll = !hvAll; const y = window.scrollY; renderView(); window.scrollTo(0, y); },
